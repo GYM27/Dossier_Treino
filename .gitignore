@@ -47,3 +47,6 @@ Thumbs.db
 
 # Agent Config (optional)
 .agents/
+
+# Documentação Interna Privada
+EXPLICACAO_DETALHADA.md

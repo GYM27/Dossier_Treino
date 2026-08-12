@@ -47,4 +47,10 @@ Durante a Fase 1, implementÃ¡mos o padrÃ£o industrial para aplicaÃ§Ãµes 
 - **CORS Seguro**: Foi configurado o CorsConfigurationSource no Spring Security para permitir chamadas do localhost:3000 suportando a flag llowCredentials=true, o que possibilita o tráfego do JWT HttpOnly Cookie.
 - **Segurança no Next.js**: Foi criado o utilitário estrito pi.ts que força a flag credentials: 'include' em todos os pedidos e processa eventuais 401 Unauthorized.
 - **Proteção de Rotas**: Adicionado o middleware.ts do Next.js. O sistema agora avalia de imediato a presença do cookie jwt na rota e protege o dashboard (Client-side & Server-side protection).
-- **Data Fetching (Plantel)**: O componente oster-view.tsx foi migrado para ler do backend os Atletas criados na Base de Dados, substituindo os dados mock.
+- **Data Fetching (Plantel)**: O componente 
+oster-view.tsx foi migrado para ler do backend os Atletas criados na Base de Dados, substituindo os dados mock.
+
+### Etapa 14: Gestão do Plano de Treino
+- **Arquitetura Relacional com Catálogo**: Em vez de se escrever o nome do exercício em cada sessão, criou-se a entidade Exercicio (Catálogo global) e a entidade SessaoTreino.
+- **Associação Rica (SessaoTreinoExercicio)**: A ligação @OneToMany foi enriquecida para conter atributos específicos do contexto do treino, como ordem, duracaoMinutos e observacoesDoTreinador.
+- **Auditoria e RGPD**: O catálogo de exercícios e as sessões estão auditados pelo AuditingEntityListener.

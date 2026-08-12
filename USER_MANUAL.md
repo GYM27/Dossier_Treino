@@ -39,3 +39,7 @@ Esquece as folhas de Excel onde tinhas de escrever o nome dos 25 jogadores todos
 - **Login Inicial**: Ao tentar aceder ao Dossier, será agora recebido por um ecrã de Login interativo. 
 - A sua sessão estará segura. A inatividade prolongada ou logout invalidarão a chave e redirecionarão novamente para este ecrã.
 - O Plantel agora mostra exatamente os dados que estão inseridos na Base de Dados e na Área Clínica (Lesões/Convocatórias dependem diretamente destes dados).
+
+### 📝 Gestão do Plano de Treino (Novo)
+- **Catálogo de Exercícios**: Pode criar exercícios base com categorias (Tático, Físico, etc.) e níveis de dificuldade.
+- **Sessões de Treino**: Para cada dia de treino, crie uma "Sessão" e adicione exercícios do catálogo. O sistema calculará automaticamente a duração total da sessão somando a duração que atribuiu a cada exercício para aquele dia!

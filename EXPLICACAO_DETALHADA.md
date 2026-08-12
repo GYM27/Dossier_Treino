@@ -291,4 +291,13 @@ Até aqui o nosso Backend estava fechado numa "fortaleza". Quando ligámos o Nex
 1. **CORS com Credenciais**: O Spring Security foi ensinado a aceitar pedidos do "localhost:3000". E o mais importante: ativámos o setAllowCredentials(true). Sem isto, o browser recusava-se a enviar o cookie JWT para a API!
 2. **Utilitário piFetch**: Criámos um wrapper em /lib/api.ts onde a flag credentials: "include" garante que todos os requests ao servidor transportam o passaporte (JWT).
 3. **Segurança de Borda (Middleware)**: O middleware.ts do Next.js é genial. Ele corre ANTES da página carregar. Se não tiveres o cookie jwt, ele nem te deixa ver a UI, reencaminhando logo para /login.
-4. **Fim do "Mock"**: O nosso oster-view.tsx foi atualizado com um hook useEffect que contacta o nosso novo endpoint GET /api/atletas.
+4. **Fim do "Mock"**: O nosso 
+oster-view.tsx foi atualizado com um hook useEffect que contacta o nosso novo endpoint GET /api/atletas.
+
+### Etapa 14: Gestão do Plano de Treino
+Nesta etapa resolvemos o problema clássico de planeamento tático: reutilizar exercícios e construir as sessões.
+
+1. **Catálogo Global (Exercicio)**: Criámos a entidade Exercicio que vive isolada. Pode ser um exercício de passe, um remate à baliza, etc. Todos estes têm Auditoria RGPD ligada.
+2. **Cabeçalho da Sessão (SessaoTreino)**: Apenas data, objetivo, intensidade e total de minutos. Fica ligada à Equipa.
+3. **A Cola Mágica (SessaoTreinoExercicio)**: Em vez de usarmos uma simples @ManyToMany, criámos uma entidade associativa de propósito. Porquê? Porque precisamos de saber a **ordem** do exercício *NAQUELE* treino específico, a sua **duração** e as **observações** do treinador para o dia.
+4. **Calculadora de Minutos**: O SessaoTreinoService soma inteligentemente os minutos dos exercícios na associação e guarda o total automaticamente.
