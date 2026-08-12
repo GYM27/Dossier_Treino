@@ -1,0 +1,126 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<project xmlns="http://maven.apache.org/POM/4.0.0"
+         xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+         xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 https://maven.apache.org/xsd/maven-4.0.0.xsd">
+    <!-- 1. IDENTIFICAÇÃO DO MODELO E PARENT -->
+    <modelVersion>4.0.0</modelVersion>
+    <parent>
+        <groupId>org.springframework.boot</groupId>
+        <artifactId>spring-boot-starter-parent</artifactId>
+        <version>3.2.4</version>
+        <relativePath/> <!-- Procura o parent no repositório central do Maven -->
+    </parent>
+
+    <!-- 2. IDENTIFICAÇÃO DO NOSSO PROJETO -->
+    <groupId>com.dossiertreinador</groupId>
+    <artifactId>backend</artifactId>
+    <version>0.0.1-SNAPSHOT</version>
+    <name>Dossier do Treinador</name>
+    <description>Backend para a plataforma de gestão desportiva</description>
+
+    <!-- 3. CONFIGURAÇÕES ESPECÍFICAS -->
+    <properties>
+        <java.version>21</java.version>
+    </properties>
+
+    <!-- 4. DEPENDÊNCIAS DO PROJETO -->
+    <dependencies>
+        <!-- A. SPRING WEB: Dá-nos a capacidade de criar APIs REST (Controllers) e inclui o servidor web (Tomcat) embutido -->
+        <dependency>
+            <groupId>org.springframework.boot</groupId>
+            <artifactId>spring-boot-starter-web</artifactId>
+        </dependency>
+
+        <!-- B. SPRING DATA JPA: Dá-nos as ferramentas para ligar à base de dados (Hibernate, Repositórios) -->
+        <dependency>
+            <groupId>org.springframework.boot</groupId>
+            <artifactId>spring-boot-starter-data-jpa</artifactId>
+        </dependency>
+
+        <!-- C. VALIDATION: Dá-nos anotações como @NotNull e @NotBlank para validar dados antes de chegarem à base de dados -->
+        <dependency>
+            <groupId>org.springframework.boot</groupId>
+            <artifactId>spring-boot-starter-validation</artifactId>
+        </dependency>
+
+        <!-- D. POSTGRESQL DRIVER: O "tradutor" que ensina a nossa aplicação Java a falar com o PostgreSQL -->
+        <dependency>
+            <groupId>org.postgresql</groupId>
+            <artifactId>postgresql</artifactId>
+            <scope>runtime</scope>
+        </dependency>
+
+        <!-- E. H2 DATABASE: A nossa base de dados em memória, exclusiva para testes rápidos (escopo "test") -->
+        <dependency>
+            <groupId>com.h2database</groupId>
+            <artifactId>h2</artifactId>
+            <scope>test</scope>
+        </dependency>
+
+        <!-- F. LOMBOK: O gerador automático de Getters/Setters. Marcado como "optional" para não vazar para bibliotecas filhas -->
+        <dependency>
+            <groupId>org.projectlombok</groupId>
+            <artifactId>lombok</artifactId>
+            <optional>true</optional>
+        </dependency>
+
+        <!-- G. SPRING BOOT STARTER TEST: O pacote completo para TDD (inclui JUnit 5, Mockito e Spring TestContext) -->
+        <dependency>
+            <groupId>org.springframework.boot</groupId>
+            <artifactId>spring-boot-starter-test</artifactId>
+            <scope>test</scope>
+        </dependency>
+
+        <!-- H. SPRING SECURITY: Autenticação e Autorização -->
+        <dependency>
+            <groupId>org.springframework.boot</groupId>
+            <artifactId>spring-boot-starter-security</artifactId>
+        </dependency>
+
+        <!-- I. SPRING SECURITY TEST: Para TDD com controllers protegidos -->
+        <dependency>
+            <groupId>org.springframework.security</groupId>
+            <artifactId>spring-security-test</artifactId>
+            <scope>test</scope>
+        </dependency>
+
+        <!-- J. JWT (JSON Web Token): Para tokens stateless -->
+        <dependency>
+            <groupId>io.jsonwebtoken</groupId>
+            <artifactId>jjwt-api</artifactId>
+            <version>0.12.5</version>
+        </dependency>
+        <dependency>
+            <groupId>io.jsonwebtoken</groupId>
+            <artifactId>jjwt-impl</artifactId>
+            <version>0.12.5</version>
+            <scope>runtime</scope>
+        </dependency>
+        <dependency>
+            <groupId>io.jsonwebtoken</groupId>
+            <artifactId>jjwt-jackson</artifactId>
+            <version>0.12.5</version>
+            <scope>runtime</scope>
+        </dependency>
+    </dependencies>
+
+    <!-- 5. PLUGINS DE BUILD -->
+    <build>
+        <plugins>
+            <!-- Plugin oficial do Spring Boot: diz ao Maven como empacotar a aplicação num JAR executável -->
+            <plugin>
+                <groupId>org.springframework.boot</groupId>
+                <artifactId>spring-boot-maven-plugin</artifactId>
+                <configuration>
+                    <!-- Exclui o Lombok do JAR final, porque ele só serve durante a compilação -->
+                    <excludes>
+                        <exclude>
+                            <groupId>org.projectlombok</groupId>
+                            <artifactId>lombok</artifactId>
+                        </exclude>
+                    </excludes>
+                </configuration>
+            </plugin>
+        </plugins>
+    </build>
+</project>
