@@ -1,4 +1,4 @@
-﻿# Caderno de Apontamentos: Dossier do Treinador
+# Caderno de Apontamentos: Dossier do Treinador
 
 Este documento guarda as explicaÃ§Ãµes passo a passo (o "por detrÃ¡s dos panos") de cada linha de cÃ³digo implementada ao longo do projeto. Serve como o teu caderno de estudo pessoal.
 
@@ -301,3 +301,12 @@ Nesta etapa resolvemos o problema clássico de planeamento tático: reutilizar e
 2. **Cabeçalho da Sessão (SessaoTreino)**: Apenas data, objetivo, intensidade e total de minutos. Fica ligada à Equipa.
 3. **A Cola Mágica (SessaoTreinoExercicio)**: Em vez de usarmos uma simples @ManyToMany, criámos uma entidade associativa de propósito. Porquê? Porque precisamos de saber a **ordem** do exercício *NAQUELE* treino específico, a sua **duração** e as **observações** do treinador para o dia.
 4. **Calculadora de Minutos**: O SessaoTreinoService soma inteligentemente os minutos dos exercícios na associação e guarda o total automaticamente.
+
+### Etapa 15: Integração Real do Dashboard (Frontend)
+Nesta fase fechámos o ciclo, pegando no ecrã de Dashboard (que tinha dados fixos falsos/mock) e ligando-o à base de dados.
+1. **Interfaces TypeScript**: Adicionámos a `interface Atleta` que funciona como um "contrato" espelho do `AtletaResponseDTO` do Java, dando-nos auto-complete e segurança (evitando erros de digitação de propriedades).
+2. **State e Effect (Memória e Controlo)**: Usámos o `useState` para criar um "cofre" (gaveta) local no ecrã e o `useEffect` para garantir que o pedido à API (`apiFetch("/atletas")`) ocorre apenas **uma vez** quando o ecrã carrega.
+3. **Distribuição do Plantel (Matemática)**: No ecrã da Distribuição, apagámos os números fixos e usámos funções JavaScript de Arrays (`.filter(a => a.posicaoPrincipal === "DEFESA").length`) para recalcular a distribuição dinamicamente com base nos dados que vieram do servidor, inclusive precavendo divisão por zero no cálculo da largura das barras.
+
+### Etapa 15.1: Limpeza de Nomenclatura (Clean Code Frontend)
+Nesta etapa, refator�mos os ficheiros gerados pelo v0 para respeitarem as regras de Clean Code e a sem�ntica da linguagem. Apesar de mantermos o ingl�s para componentes estruturais (sidebar, 	op-header), os nomes gen�ricos como oster-view foram alterados para squad (jarg�o de futebol) e os sufixos desnecess�rios (-view) foram removidos. O pp/page.tsx foi limpo para usar <Squad />, <Dashboard />, e <Attendance /> diretamente.

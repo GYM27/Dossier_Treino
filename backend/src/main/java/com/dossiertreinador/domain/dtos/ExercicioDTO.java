@@ -14,4 +14,5 @@ public class ExercicioDTO {
     private String descricao;
     private CategoriaExercicio categoria;
     private Integer nivelDificuldade;
+    private java.util.Map<String, Object> dadosTaticos;
 }

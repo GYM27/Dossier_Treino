@@ -33,6 +33,9 @@ public class AtletaRequestDTO {
     private Double pesoKg;
 
     private String nacionalidade;
+
+    @Min(1) @Max(99)
+    private Integer numeroCamisola;
     
     @NotNull(message = "A posição principal é obrigatória")
     private Posicao posicaoPrincipal;

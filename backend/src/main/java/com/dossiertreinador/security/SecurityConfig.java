@@ -40,7 +40,7 @@ public class SecurityConfig {
             .cors(Customizer.withDefaults()) // Ativa o CORS e procura pelo Bean corsConfigurationSource
             .exceptionHandling(exception -> exception.authenticationEntryPoint(jwtAuthEntryPoint)) // Devolver 401
             .authorizeHttpRequests(auth -> auth
-                .requestMatchers("/api/auth/login").permitAll()
+                .requestMatchers("/api/auth/login", "/api/auth/logout").permitAll()
                 .anyRequest().authenticated()
             )
             .sessionManagement(session -> session.sessionCreationPolicy(SessionCreationPolicy.STATELESS))

@@ -45,8 +45,14 @@ public class AtletaController {
     }
     
     @GetMapping
-    public ResponseEntity<java.util.List<AtletaResponseDTO>> listarTodosAtletas() {
-        java.util.List<com.dossiertreinador.domain.entities.Atleta> atletas = atletaService.listarTodos();
+    public ResponseEntity<java.util.List<AtletaResponseDTO>> listarTodosAtletas(
+            @RequestParam(required = false) java.util.UUID equipaId) {
+        java.util.List<com.dossiertreinador.domain.entities.Atleta> atletas;
+        if (equipaId != null) {
+            atletas = atletaService.listarPorEquipa(equipaId);
+        } else {
+            atletas = atletaService.listarTodos();
+        }
         
         java.util.List<AtletaResponseDTO> resposta = atletas.stream()
                 .map(atletaMapper::toResponseDTO)

@@ -1,4 +1,4 @@
-const API_BASE_URL = process.env.NEXT_PUBLIC_API_URL || "http://localhost:8080/api";
+﻿const API_BASE_URL = process.env.NEXT_PUBLIC_API_URL || "http://localhost:8080/api";
 
 export async function apiFetch(endpoint: string, options: RequestInit = {}) {
   // Prepara os cabeçalhos padrão
@@ -43,4 +43,32 @@ export async function apiFetch(endpoint: string, options: RequestInit = {}) {
   }
 
   return response.text();
+}
+
+// Interfaces de Tipo para o Domínio de Treino
+export interface Exercicio {
+  id: string;
+  nome: string;
+  descricao: string;
+  categoria: 'AQUECIMENTO' | 'TECNICO' | 'TATICO' | 'FISICO' | 'GUARDA_REDES' | 'LUDICO';
+  nivelDificuldade: number;
+}
+
+export interface SessaoTreinoExercicio {
+  id?: string;
+  exercicioId: string;
+  exercicioNome: string;
+  ordem: number;
+  duracaoMinutos: number;
+  observacoesDoTreinador?: string;
+}
+
+export interface SessaoTreino {
+  id: string;
+  data: string;
+  objetivo: string;
+  intensidadeGeral: number;
+  duracaoTotalMinutos: number;
+  equipaId: string;
+  exercicios: SessaoTreinoExercicio[];
 }

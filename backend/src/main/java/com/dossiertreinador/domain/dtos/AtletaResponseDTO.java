@@ -27,6 +27,7 @@ public class AtletaResponseDTO {
     private String nacionalidade;
     
     private Posicao posicaoPrincipal;
+    private Integer numeroCamisola;
     
     private String pePreferido;
     

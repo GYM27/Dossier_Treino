@@ -49,6 +49,10 @@ public class Exercicio {
     @Column
     private Integer nivelDificuldade;
 
+    @org.hibernate.annotations.JdbcTypeCode(org.hibernate.type.SqlTypes.JSON)
+    @Column
+    private java.util.Map<String, Object> dadosTaticos;
+
     // --- AUDITORIA ---
     @CreatedBy
     @Column(updatable = false)

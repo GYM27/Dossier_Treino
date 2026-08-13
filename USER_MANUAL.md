@@ -1,4 +1,4 @@
-﻿# Manual do Utilizador: Dossier do Treinador
+# Manual do Utilizador: Dossier do Treinador
 
 Bem-vindo Ã  tua plataforma profissional de gestÃ£o desportiva. 
 
@@ -43,3 +43,8 @@ Esquece as folhas de Excel onde tinhas de escrever o nome dos 25 jogadores todos
 ### 📝 Gestão do Plano de Treino (Novo)
 - **Catálogo de Exercícios**: Pode criar exercícios base com categorias (Tático, Físico, etc.) e níveis de dificuldade.
 - **Sessões de Treino**: Para cada dia de treino, crie uma "Sessão" e adicione exercícios do catálogo. O sistema calculará automaticamente a duração total da sessão somando a duração que atribuiu a cada exercício para aquele dia!
+
+### 📊 Dashboard Profissional em Tempo Real
+- O Painel de Controlo principal ("Bem-vindo") deixou de mostrar dados exemplificativos.
+- **Total de Atletas**: Sincronizado automaticamente com os jogadores que inserir no plantel.
+- **Distribuição Tática**: O gráfico de barras que mostra quantos Defesas, Médios, etc. tem na equipa é atualizado no exato milissegundo em que um atleta entra ou sai da equipa. A percentagem visual ajusta-se inteligentemente ao tamanho do plantel, nunca excedendo o limite.

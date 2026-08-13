@@ -1,13 +1,14 @@
 "use client"
-
 import { Button } from "@/components/ui/button"
 import { cn } from "@/lib/utils"
-import {
-  currentEvent,
-  players,
-  type AttendanceRecord,
-  type AttendanceStatus,
-} from "@/lib/mock-data"
+
+export type AttendanceStatus = "presente" | "faltou" | "atrasado" | null;
+export interface AttendanceRecord {
+  status: AttendanceStatus;
+  minutesLate?: number;
+}
+const currentEvent = { type: "Treino", date: "15 Outubro", time: "19:00", location: "Campo Nº 1" };
+const players: any[] = [];
 import { Calendar, CircleCheck, CircleX, Clock, MapPin, Save } from "lucide-react"
 import { useMemo, useState } from "react"
 
@@ -42,7 +43,7 @@ const statusOptions: {
   },
 ]
 
-export function AttendanceView() {
+export function Attendance() {
   const [records, setRecords] = useState<Record<string, AttendanceRecord>>(() =>
     Object.fromEntries(players.map((p) => [p.id, { status: null }])),
   )

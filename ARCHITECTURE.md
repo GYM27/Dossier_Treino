@@ -1,4 +1,4 @@
-﻿# Arquitetura e DecisÃµes TÃ©cnicas: Dossier do Treinador
+# Arquitetura e DecisÃµes TÃ©cnicas: Dossier do Treinador
 
 Este documento Ã© o nosso "diÃ¡rio de bordo" de Engenharia de Software. Aqui registamos a evoluÃ§Ã£o da arquitetura e as justificaÃ§Ãµes tÃ©cnicas do projeto, escrito numa Ã³tica de aprendizagem passo-a-passo.
 
@@ -54,3 +54,12 @@ oster-view.tsx foi migrado para ler do backend os Atletas criados na Base de Dad
 - **Arquitetura Relacional com Catálogo**: Em vez de se escrever o nome do exercício em cada sessão, criou-se a entidade Exercicio (Catálogo global) e a entidade SessaoTreino.
 - **Associação Rica (SessaoTreinoExercicio)**: A ligação @OneToMany foi enriquecida para conter atributos específicos do contexto do treino, como ordem, duracaoMinutos e observacoesDoTreinador.
 - **Auditoria e RGPD**: O catálogo de exercícios e as sessões estão auditados pelo AuditingEntityListener.
+
+### Etapa 15: O Padrão "Container/Presenter" e Fetching no Dashboard
+- **Separação de Preocupações**: A comunicação com a API (fetch, cabeçalhos, tratamento de erros HTTP) foi encapsulada no ficheiro estrito `api.ts`. O componente UI (`dashboard-view.tsx`) agora age apenas como consumidor, mantendo-se agnóstico à lógica de rede.
+- **Tipagem Estrita**: Os DTOs do backend são espelhados em TypeScript Interfaces no frontend, ativando early-catch de bugs durante a transpilação em vez de causar erros de runtime no browser.
+- **Processamento no Cliente vs Servidor**: Em vez de pedir ao backend a "contagem de defesas", pedimos a lista de atletas inteira (um só pedido REST) e fazemos cálculos de filtragem in-memory no frontend usando `.filter()`. É um *trade-off* adequado para listas pequenas (como plantéis de 25-30 pessoas) reduzindo a carga do servidor de base de dados.
+
+### Etapa 15.1: Clean Code no Frontend (Nomenclatura Descritiva)
+- **Conven��es de Nomes:** Adot�mos uma abordagem rigorosa onde os componentes de layout partilhados usam ingl�s estrutural t�cnico (sidebar, 	op-header), enquanto que os ecr�s que representam dom�nios de neg�cio s�o nomeados de forma identificativa e clara (squad, dashboard, ttendance).
+- **Remo��o de Sufixos:** Foram removidos sufixos de contexto gen�ricos (como -view) gerados automaticamente, promovendo a simplicidade e evitando ru�do visual no c�digo.

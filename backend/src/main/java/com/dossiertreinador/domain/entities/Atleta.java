@@ -71,6 +71,9 @@ public class Atleta {
     @Column
     private Double pesoKg;
 
+    @Column
+    private Integer numeroCamisola;
+
     // --- RELACIONAMENTOS ---
     // Cada atleta tem de estar inscrito num plantel (Equipa) daquela época.
     @NotNull(message = "O atleta tem de estar associado a uma equipa.")

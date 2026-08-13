@@ -1,6 +1,7 @@
-"use client"
+"use client";
 
-import { cn } from "@/lib/utils"
+import { cn } from "@/lib/utils";
+import { apiFetch } from "@/lib/api";
 import {
   Calendar,
   ClipboardList,
@@ -8,16 +9,22 @@ import {
   Settings,
   Users,
   CheckSquare,
+  LogOut,
   type LucideIcon,
-} from "lucide-react"
+} from "lucide-react";
 
-export type NavKey = "dashboard" | "plantel" | "calendario" | "assiduidade" | "config"
+export type NavKey =
+  | "dashboard"
+  | "plantel"
+  | "calendario"
+  | "assiduidade"
+  | "config";
 
 type NavItem = {
-  key: NavKey
-  label: string
-  icon: LucideIcon
-}
+  key: NavKey;
+  label: string;
+  icon: LucideIcon;
+};
 
 const navItems: NavItem[] = [
   { key: "dashboard", label: "Dashboard", icon: LayoutDashboard },
@@ -25,14 +32,14 @@ const navItems: NavItem[] = [
   { key: "calendario", label: "Calendário", icon: Calendar },
   { key: "assiduidade", label: "Assiduidade", icon: CheckSquare },
   { key: "config", label: "Configurações", icon: Settings },
-]
+];
 
 export function Sidebar({
   active,
   onNavigate,
 }: {
-  active: NavKey
-  onNavigate: (key: NavKey) => void
+  active: NavKey;
+  onNavigate: (key: NavKey) => void;
 }) {
   return (
     <aside className="glass-strong sticky top-0 hidden h-screen w-64 shrink-0 flex-col border-r p-4 md:flex">
@@ -51,8 +58,8 @@ export function Sidebar({
           Menu
         </p>
         {navItems.map((item) => {
-          const isActive = active === item.key
-          const Icon = item.icon
+          const isActive = active === item.key;
+          const Icon = item.icon;
           return (
             <button
               key={item.key}
@@ -67,23 +74,35 @@ export function Sidebar({
               {isActive && (
                 <span className="absolute left-0 top-1/2 h-5 w-1 -translate-y-1/2 rounded-r-full bg-primary" />
               )}
-              <Icon className={cn("size-[18px] transition-transform group-hover:scale-110")} />
+              <Icon
+                className={cn(
+                  "size-[18px] transition-transform group-hover:scale-110",
+                )}
+              />
               {item.label}
             </button>
-          )
+          );
         })}
       </nav>
-
-      <div className="mt-auto rounded-xl border border-border bg-foreground/[0.02] p-4">
-        <p className="text-xs font-medium text-foreground">Plano Pro</p>
-        <p className="mt-1 text-xs text-muted-foreground">
-          Gestão ilimitada de plantéis e relatórios.
-        </p>
-        <div className="mt-3 h-1.5 w-full overflow-hidden rounded-full bg-foreground/10">
-          <div className="h-full w-3/4 rounded-full bg-primary" />
-        </div>
-        <p className="mt-2 text-[0.7rem] text-muted-foreground">18 / 24 atletas</p>
+      {/* Empurra o botão de logout para o fundo */}
+      <div className="mt-auto px-2">
+        <button
+          onClick={async () => {
+            try {
+              await apiFetch("/auth/logout", { method: "POST" });
+              window.location.href = "/login";
+            } catch (err) {
+              console.error("Erro ao fazer logout", err);
+              // Força o redirecionamento mesmo que a rede falhe
+              window.location.href = "/login";
+            }
+          }}
+          className="group flex w-full items-center justify-between rounded-xl px-3 py-2 text-sm text-muted-foreground hover:bg-destructive/10 hover:text-destructive transition-colors"
+        >
+          <span className="font-medium">Terminar Sessão</span>
+          <LogOut className="size-4 opacity-50 group-hover:opacity-100 transition-opacity" />
+        </button>
       </div>
     </aside>
-  )
+  );
 }

@@ -29,4 +29,9 @@ public class AtletaServiceImpl implements AtletaService {
     public java.util.List<Atleta> listarTodos() {
         return atletaRepository.findAll();
     }
+
+    @Override
+    public java.util.List<Atleta> listarPorEquipa(java.util.UUID equipaId) {
+        return atletaRepository.findByEquipaId(equipaId);
+    }
 }

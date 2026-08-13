@@ -31,6 +31,7 @@ public class AtletaMapper {
                 .posicaoPrincipal(dto.getPosicaoPrincipal())
                 .posicaoSecundaria(dto.getPosicaoSecundaria())
                 .pePreferido(dto.getPePreferido())
+                .numeroCamisola(dto.getNumeroCamisola())
                 // A grande conversão: O DTO trazia um simples UUID, mas nós
                 // injetamos na entidade Atleta o objeto Equipa verdadeiro e completo.
                 .equipa(equipa)
@@ -54,6 +55,7 @@ public class AtletaMapper {
                 .nacionalidade(atleta.getNacionalidade())
                 .posicaoPrincipal(atleta.getPosicaoPrincipal())
                 .pePreferido(atleta.getPePreferido() != null ? atleta.getPePreferido().name() : null)
+                .numeroCamisola(atleta.getNumeroCamisola())
                 .nomeEquipa(nomeEquipa) // O telemóvel recebe apenas o nome, e não a equipa inteira
                 .build();
     }

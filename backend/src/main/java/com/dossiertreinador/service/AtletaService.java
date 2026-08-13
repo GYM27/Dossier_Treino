@@ -14,4 +14,6 @@ public interface AtletaService {
     Atleta registarNovoAtleta(Atleta atleta);
     
     java.util.List<Atleta> listarTodos();
+
+    java.util.List<Atleta> listarPorEquipa(java.util.UUID equipaId);
 }

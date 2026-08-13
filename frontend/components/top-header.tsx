@@ -1,16 +1,18 @@
 "use client"
 
 import { cn } from "@/lib/utils"
-import { teams, type Team } from "@/lib/mock-data"
+import { type Team } from "@/models/team"
 import { Bell, Check, ChevronsUpDown, Menu } from "lucide-react"
 import { useEffect, useRef, useState } from "react"
 import { ThemeToggle } from "@/components/theme-toggle"
 
 export function TopHeader({
+  teams = [],
   activeTeam,
   onTeamChange,
   onOpenMobileNav,
 }: {
+  teams?: Team[]
   activeTeam: Team
   onTeamChange: (team: Team) => void
   onOpenMobileNav: () => void
@@ -43,9 +45,9 @@ export function TopHeader({
             className="flex items-center gap-2 rounded-lg border border-border bg-foreground/[0.03] px-3 py-2 text-sm font-medium transition-colors hover:bg-foreground/[0.06]"
           >
             <span className="flex size-6 items-center justify-center rounded-md bg-primary/15 text-xs font-bold text-primary">
-              {activeTeam.name.charAt(0)}
+              {activeTeam.nome.charAt(0)}
             </span>
-            <span className="max-w-[9rem] truncate sm:max-w-none">{activeTeam.name}</span>
+            <span className="max-w-[9rem] truncate sm:max-w-none">{activeTeam.nome}</span>
             <ChevronsUpDown className="size-4 text-muted-foreground" />
           </button>
 
@@ -66,7 +68,7 @@ export function TopHeader({
                     team.id === activeTeam.id ? "text-primary" : "text-foreground",
                   )}
                 >
-                  <span className="truncate">{team.name}</span>
+                  <span className="truncate">{team.nome}</span>
                   {team.id === activeTeam.id && <Check className="size-4 shrink-0" />}
                 </button>
               ))}

@@ -36,4 +36,39 @@ class ExercicioRepositoryTest {
         assertThat(aquecimentos.get(0).getNome()).isEqualTo("Meínhos 4x1");
         // Nota: getDataCriacao() seria null aqui porque o @DataJpaTest não carrega configurações extra de Auditoria por omissão.
     }
+
+    @Test
+    void testSalvarEBuscarComJsonb() {
+        // Arrange
+        java.util.Map<String, Object> dadosTaticos = new java.util.HashMap<>();
+        dadosTaticos.put("pitchStyle", "full");
+        dadosTaticos.put("isPlaying", false);
+        
+        java.util.List<String> activePath = new java.util.ArrayList<>();
+        activePath.add("root");
+        dadosTaticos.put("activePath", activePath);
+
+        Exercicio ex = Exercicio.builder()
+                .nome("Transição Rápida")
+                .descricao("Exercício de contra-ataque")
+                .categoria(CategoriaExercicio.TATICO)
+                .nivelDificuldade(4)
+                .dadosTaticos(dadosTaticos)
+                .build();
+        
+        ex = exercicioRepository.saveAndFlush(ex);
+
+        // Act
+        java.util.Optional<Exercicio> carregado = exercicioRepository.findById(ex.getId());
+
+        // Assert
+        assertThat(carregado).isPresent();
+        assertThat(carregado.get().getDadosTaticos()).isNotNull();
+        assertThat(carregado.get().getDadosTaticos().get("pitchStyle")).isEqualTo("full");
+        
+        // Verifica se listas internas são preservadas
+        @SuppressWarnings("unchecked")
+        java.util.List<String> pathRecuperado = (java.util.List<String>) carregado.get().getDadosTaticos().get("activePath");
+        assertThat(pathRecuperado).contains("root");
+    }
 }

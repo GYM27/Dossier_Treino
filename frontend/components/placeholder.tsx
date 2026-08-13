@@ -1,6 +1,6 @@
 import { Construction } from "lucide-react"
 
-export function PlaceholderView({ title }: { title: string }) {
+export function Placeholder({ title }: { title: string }) {
   return (
     <div className="space-y-6">
       <h1 className="text-2xl font-semibold tracking-tight">{title}</h1>
