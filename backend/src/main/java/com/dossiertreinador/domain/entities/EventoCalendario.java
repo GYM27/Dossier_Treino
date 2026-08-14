@@ -44,6 +44,15 @@ public class EventoCalendario {
     @Column
     private String local; // Ex: "Campo Sintético 2"
 
+    @Column(name = "numero_treino")
+    private Integer numeroTreino; // Usado apenas quando tipoEvento = TREINO
+
+    @Column(name = "equipa_casa")
+    private String equipaCasa; // Usado apenas quando tipoEvento = JOGO
+
+    @Column(name = "equipa_fora")
+    private String equipaFora; // Usado apenas quando tipoEvento = JOGO
+
     // O evento pertence a uma Equipa inteira (ex: é o Treino dos Seniores, não dos Sub-19)
     @NotNull(message = "O evento tem de estar associado a uma equipa.")
     @ManyToOne(fetch = FetchType.LAZY)

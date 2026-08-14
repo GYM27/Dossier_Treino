@@ -34,7 +34,6 @@ export function StaffForm({ onSuccess, onCancel }: StaffFormProps) {
 
       alert("Membro da Equipa Técnica convidado com sucesso!");
       
-      // Quando tem sucesso, limpa os dados e avisa o "Pai"
       setFormData({
         nomeCompleto: "",
         email: "",

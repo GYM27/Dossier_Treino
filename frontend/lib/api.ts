@@ -1,4 +1,4 @@
-﻿const API_BASE_URL = process.env.NEXT_PUBLIC_API_URL || "http://localhost:8080/api";
+const API_BASE_URL = process.env.NEXT_PUBLIC_API_URL || "http://localhost:8080/api";
 
 export async function apiFetch(endpoint: string, options: RequestInit = {}) {
   // Prepara os cabeçalhos padrão
@@ -15,7 +15,19 @@ export async function apiFetch(endpoint: string, options: RequestInit = {}) {
     credentials: "include", // CRÍTICO: Permite receber e enviar o cookie HttpOnly!
   };
 
-  const response = await fetch(`${API_BASE_URL}${endpoint}`, config);
+  let response;
+  try {
+    response = await fetch(`${API_BASE_URL}${endpoint}`, config);
+  } catch (error) {
+    // Se o fetch falhar completamente (ex: servidor em baixo ou sem internet)
+    if (typeof window !== "undefined") {
+      if (window.location.pathname !== "/login" && window.location.pathname !== "/register") {
+        alert("Ligação ao servidor perdida. A redirecionar para o Login...");
+        window.location.href = "/login";
+      }
+    }
+    throw new Error("Não foi possível ligar ao servidor.");
+  }
 
   if (!response.ok) {
     let errorMessage = "Erro na chamada à API";
@@ -26,11 +38,12 @@ export async function apiFetch(endpoint: string, options: RequestInit = {}) {
       // Falha a fazer parse do JSON de erro
     }
     
-    // Se receber 401 Unauthorized, pode significar token inválido/expirado
+    // Se receber 401 Unauthorized, a sessão expirou
     if (response.status === 401 && typeof window !== "undefined") {
-      // Se estivermos no browser, podemos forçar o redirecionamento para o login
-      // Apenas comentar por agora para o middleware tratar disto, ou ativar mais tarde
-      // window.location.href = "/login";
+      // Prevenir loop infinito se já estivermos na página de login
+      if (window.location.pathname !== "/login" && window.location.pathname !== "/register") {
+        window.location.href = "/login";
+      }
     }
 
     throw new Error(errorMessage);
@@ -43,32 +56,4 @@ export async function apiFetch(endpoint: string, options: RequestInit = {}) {
   }
 
   return response.text();
-}
-
-// Interfaces de Tipo para o Domínio de Treino
-export interface Exercicio {
-  id: string;
-  nome: string;
-  descricao: string;
-  categoria: 'AQUECIMENTO' | 'TECNICO' | 'TATICO' | 'FISICO' | 'GUARDA_REDES' | 'LUDICO';
-  nivelDificuldade: number;
-}
-
-export interface SessaoTreinoExercicio {
-  id?: string;
-  exercicioId: string;
-  exercicioNome: string;
-  ordem: number;
-  duracaoMinutos: number;
-  observacoesDoTreinador?: string;
-}
-
-export interface SessaoTreino {
-  id: string;
-  data: string;
-  objetivo: string;
-  intensidadeGeral: number;
-  duracaoTotalMinutos: number;
-  equipaId: string;
-  exercicios: SessaoTreinoExercicio[];
 }

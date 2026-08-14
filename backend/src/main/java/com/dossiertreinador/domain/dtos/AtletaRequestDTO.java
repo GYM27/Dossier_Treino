@@ -34,6 +34,8 @@ public class AtletaRequestDTO {
 
     private String nacionalidade;
 
+    private String fotoUrl;
+
     @Min(1) @Max(99)
     private Integer numeroCamisola;
     

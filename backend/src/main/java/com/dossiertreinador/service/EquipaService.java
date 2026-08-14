@@ -5,4 +5,5 @@ import com.dossiertreinador.domain.entities.Utilizador;
 
 public interface EquipaService {
     Equipa criarEquipa(Equipa equipa, String designacaoEpoca, Utilizador utilizador);
+    Equipa atualizarEquipa(java.util.UUID id, Equipa equipaAtualizada);
 }

@@ -4,46 +4,23 @@ import { apiFetch } from "@/lib/api";
 import { cn } from "@/lib/utils";
 import { Calendar, Clock, TrendingUp, Users } from "lucide-react";
 import { useState, useEffect } from "react";
-import { Atleta } from "@/models/atleta";
+import { Utilizador } from "@/models/utilizador";
+import { upcomingEvents } from "./constants";
 
-const upcoming = [
-  {
-    day: "15",
-    month: "OUT",
-    title: "Treino Tático",
-    time: "19:00",
-    tone: "bg-primary",
-  },
-  {
-    day: "18",
-    month: "OUT",
-    title: "Jogo vs. SC Braga",
-    time: "16:00",
-    tone: "bg-danger",
-  },
-  {
-    day: "20",
-    month: "OUT",
-    title: "Treino de Recuperação",
-    time: "10:30",
-    tone: "bg-chart-2",
-  },
-  {
-    day: "22",
-    month: "OUT",
-    title: "Análise de Vídeo",
-    time: "18:00",
-    tone: "bg-warning",
-  },
-];
+interface DashboardProps {
+  activeTeam: any;
+  me?: Utilizador | null;
+}
 
-export function Dashboard() {
-  const [atletas, setAtletas] = useState<Atleta[]>([]);
+export function Dashboard({ activeTeam, me }: DashboardProps) {
+  const [atletas, setAtletas] = useState<any[]>([]);
   useEffect(() => {
-    apiFetch("/atletas")
-      .then((dados) => setAtletas(dados))
-      .catch((erro) => console.error("Erro ao carregar atletas:", erro));
-  }, []);
+    if (activeTeam?.id) {
+      apiFetch(`/atletas?equipaId=${activeTeam.id}`)
+        .then((dados: any) => setAtletas(dados))
+        .catch((erro) => console.error("Erro ao carregar atletas:", erro));
+    }
+  }, [activeTeam?.id]);
 
   const metrics = [
     {
@@ -59,19 +36,14 @@ export function Dashboard() {
       icon: TrendingUp,
     },
     { label: "Próximo evento", value: "Hoje", sub: `19`, icon: Calendar },
-    {
-      label: "Atrasos do mês",
-      value: "7",
-      sub: "-3 vs. mês anterior",
-      icon: Clock,
-    },
+    { label: "Atrasos do mês", value: "7", sub: "-3 vs. mês anterior", icon: Clock },
   ];
 
   return (
     <div className="space-y-6">
       <div>
         <h1 className="text-2xl font-semibold tracking-tight">
-          Bem-vindo, José
+          Bem-vindo, {me?.nomeCompleto || "Treinador"}
         </h1>
         <p className="text-sm text-muted-foreground">
           Resumo da tua equipa e atividade recente
@@ -93,10 +65,14 @@ export function Dashboard() {
                   <Icon className="size-4" />
                 </span>
               </div>
-              <p className="mt-3 text-3xl font-bold tracking-tight">
-                {m.value}
-              </p>
-              <p className="mt-1 text-xs text-muted-foreground">{m.sub}</p>
+              <div className="mt-4 flex items-baseline gap-2">
+                <span className="text-3xl font-mono font-bold tracking-tight text-foreground">
+                  {m.value}
+                </span>
+                <span className="text-xs font-medium text-muted-foreground">
+                  {m.sub}
+                </span>
+              </div>
             </div>
           );
         })}
@@ -106,7 +82,7 @@ export function Dashboard() {
         <div className="glass rounded-2xl p-5 lg:col-span-2">
           <h2 className="font-semibold tracking-tight">Próximos Eventos</h2>
           <ul className="mt-4 space-y-2">
-            {upcoming.map((e) => (
+            {upcomingEvents.map((e) => (
               <li
                 key={e.title}
                 className="flex items-center gap-4 rounded-xl border border-border bg-foreground/[0.02] p-3 transition-colors hover:bg-foreground/[0.05]"
@@ -136,25 +112,25 @@ export function Dashboard() {
               {
                 label: "Guarda-Redes",
                 value: atletas.filter(
-                  (a) => a.posicaoPrincipal === "GUARDA_REDES",
+                  (a: any) => a.posicaoPrincipal === "GUARDA_REDES",
                 ).length,
                 tone: "bg-warning",
               },
               {
                 label: "Defesas",
-                value: atletas.filter((a) => a.posicaoPrincipal === "DEFESA")
+                value: atletas.filter((a: any) => a.posicaoPrincipal === "DEFESA")
                   .length,
                 tone: "bg-chart-2",
               },
               {
                 label: "Médios",
-                value: atletas.filter((a) => a.posicaoPrincipal === "MEDIO")
+                value: atletas.filter((a: any) => a.posicaoPrincipal === "MEDIO")
                   .length,
                 tone: "bg-primary",
               },
               {
                 label: "Avançados",
-                value: atletas.filter((a) => a.posicaoPrincipal === "AVANCADO")
+                value: atletas.filter((a: any) => a.posicaoPrincipal === "AVANCADO")
                   .length,
                 tone: "bg-danger",
               },

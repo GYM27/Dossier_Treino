@@ -2,6 +2,9 @@ package com.dossiertreinador;
 
 import org.springframework.boot.SpringApplication;
 import org.springframework.boot.autoconfigure.SpringBootApplication;
+import org.springframework.context.annotation.Bean;
+import org.springframework.boot.CommandLineRunner;
+import org.springframework.jdbc.core.JdbcTemplate;
 
 /**
  * A classe principal do Dossier do Treinador.
@@ -22,4 +25,15 @@ public class DossierTreinadorApplication {
         SpringApplication.run(DossierTreinadorApplication.class, args);
     }
 
+    @Bean
+    public CommandLineRunner fixDbConstraints(JdbcTemplate jdbcTemplate) {
+        return args -> {
+            try {
+                jdbcTemplate.execute("ALTER TABLE registo_assiduidade DROP CONSTRAINT IF EXISTS registo_assiduidade_tipo_assiduidade_check");
+                System.out.println("✅ Constraint de TipoAssiduidade limpa com sucesso!");
+            } catch (Exception e) {
+                System.out.println("Aviso ao limpar constraint: " + e.getMessage());
+            }
+        };
+    }
 }

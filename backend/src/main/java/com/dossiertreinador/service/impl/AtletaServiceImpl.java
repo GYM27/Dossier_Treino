@@ -5,6 +5,8 @@ import com.dossiertreinador.repository.AtletaRepository;
 import com.dossiertreinador.service.AtletaService;
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
+import java.util.UUID;
+import java.util.List;
 
 /**
  * Esta é a implementação verdadeira (o Cérebro) que cumpre o contrato do AtletaService.
@@ -26,12 +28,31 @@ public class AtletaServiceImpl implements AtletaService {
     }
 
     @Override
-    public java.util.List<Atleta> listarTodos() {
+    public List<Atleta> listarTodos() {
         return atletaRepository.findAll();
     }
 
     @Override
-    public java.util.List<Atleta> listarPorEquipa(java.util.UUID equipaId) {
+    public List<Atleta> listarPorEquipa(UUID equipaId) {
         return atletaRepository.findByEquipaId(equipaId);
+    }
+
+    @Override
+    public Atleta atualizarAtleta(UUID id, Atleta atletaAtualizado) {
+        Atleta atletaExistente = atletaRepository.findById(id)
+                .orElseThrow(() -> new IllegalArgumentException("Atleta não encontrado!"));
+
+        atletaExistente.setNome(atletaAtualizado.getNome());
+        atletaExistente.setDataNascimento(atletaAtualizado.getDataNascimento());
+        atletaExistente.setAlturaCm(atletaAtualizado.getAlturaCm());
+        atletaExistente.setPesoKg(atletaAtualizado.getPesoKg());
+        atletaExistente.setNacionalidade(atletaAtualizado.getNacionalidade());
+        atletaExistente.setPosicaoPrincipal(atletaAtualizado.getPosicaoPrincipal());
+        atletaExistente.setPosicaoSecundaria(atletaAtualizado.getPosicaoSecundaria());
+        atletaExistente.setPePreferido(atletaAtualizado.getPePreferido());
+        atletaExistente.setNumeroCamisola(atletaAtualizado.getNumeroCamisola());
+        atletaExistente.setFotoUrl(atletaAtualizado.getFotoUrl());
+
+        return atletaRepository.save(atletaExistente);
     }
 }

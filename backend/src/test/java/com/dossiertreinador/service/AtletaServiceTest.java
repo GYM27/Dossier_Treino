@@ -8,6 +8,7 @@ import org.mockito.InjectMocks;
 import org.mockito.Mock;
 import org.mockito.junit.jupiter.MockitoExtension;
 
+import java.util.Optional;
 import java.util.UUID;
 
 import static org.assertj.core.api.Assertions.assertThat;
@@ -57,5 +58,52 @@ class AtletaServiceTest {
         // Perguntamos ao boneco: "O Service chamou-te 1 vez usando o método save()?"
         // Isto garante que a lógica do Cérebro (Service) não se esqueceu de mandar gravar na BD.
         verify(atletaRepository, times(1)).save(novoAtleta);
+    }
+
+    @Test
+    void deveAtualizarAtletaComSucesso() {
+        // ARRANGE
+        UUID atletaId = UUID.randomUUID();
+        Atleta atletaNaBaseDeDados = Atleta.builder()
+                .id(atletaId)
+                .nome("Pepe")
+                .numeroCamisola(3)
+                .pesoKg(80.0)
+                .build();
+                
+        Atleta atletaAtualizado = Atleta.builder()
+                .nome("Pepe Atualizado")
+                .numeroCamisola(4)
+                .pesoKg(79.0)
+                .build();
+
+        when(atletaRepository.findById(atletaId)).thenReturn(Optional.of(atletaNaBaseDeDados));
+        when(atletaRepository.save(any(Atleta.class))).thenAnswer(i -> i.getArguments()[0]);
+
+        // ACT
+        Atleta resultado = atletaService.atualizarAtleta(atletaId, atletaAtualizado);
+
+        // ASSERT
+        assertThat(resultado.getNome()).isEqualTo("Pepe Atualizado");
+        assertThat(resultado.getNumeroCamisola()).isEqualTo(4);
+        assertThat(resultado.getPesoKg()).isEqualTo(79.0);
+        verify(atletaRepository, times(1)).findById(atletaId);
+        verify(atletaRepository, times(1)).save(atletaNaBaseDeDados); // A instância da BD é alterada e guardada
+    }
+
+    @Test
+    void deveLancarExcecaoAoAtualizarAtletaNaoExistente() {
+        UUID atletaId = UUID.randomUUID();
+        Atleta atletaAtualizado = Atleta.builder().nome("Pepe").build();
+
+        when(atletaRepository.findById(atletaId)).thenReturn(Optional.empty());
+
+        try {
+            atletaService.atualizarAtleta(atletaId, atletaAtualizado);
+        } catch (IllegalArgumentException e) {
+            assertThat(e.getMessage()).isEqualTo("Atleta não encontrado!");
+        }
+
+        verify(atletaRepository, never()).save(any(Atleta.class));
     }
 }

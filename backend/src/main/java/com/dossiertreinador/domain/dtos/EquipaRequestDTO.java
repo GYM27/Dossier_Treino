@@ -20,4 +20,9 @@ public class EquipaRequestDTO {
     
     @NotBlank(message = "A época é obrigatória (ex: 2024/2025)")
     private String designacaoEpoca;
+
+    private String modalidade;
+    private String duracaoJogo;
+    private String numeroJogadores;
+    private String emblemaUrl;
 }

@@ -310,3 +310,75 @@ Nesta fase fech√°mos o ciclo, pegando no ecr√£ de Dashboard (que tinha dados fix
 
 ### Etapa 15.1: Limpeza de Nomenclatura (Clean Code Frontend)
 Nesta etapa, refator·mos os ficheiros gerados pelo v0 para respeitarem as regras de Clean Code e a sem‚ntica da linguagem. Apesar de mantermos o inglÍs para componentes estruturais (sidebar, 	op-header), os nomes genÈricos como oster-view foram alterados para squad (jarg„o de futebol) e os sufixos desnecess·rios (-view) foram removidos. O pp/page.tsx foi limpo para usar <Squad />, <Dashboard />, e <Attendance /> diretamente.
+
+---
+## Atualiza√ß√£o: O Meu Perfil (Frontend e Backend)
+
+**O que fizemos:** 
+Cri√°mos a funcionalidade para o utilizador alterar o pr√≥prio nome e password.
+
+**Por detr√°s dos panos (Backend - Spring Boot):**
+- Us√°mos a anota√ß√£o `@AuthenticationPrincipal` no `UtilizadorController`. Isto √© crucial! Em vez de recebermos o ID do utilizador pela rota (ex: `/api/utilizadores/1`), o Spring injeta o utilizador que est√° associado ao Token JWT enviado no cabe√ßalho da resposta. Isto impede vulnerabilidades do tipo IDOR (Insecure Direct Object Reference) onde o utilizador "A" tenta alterar os dados do utilizador "B" manipulando o URL.
+- No `UtilizadorService`, verific√°mos se a password nova vinha vazia. Se vier, apenas alteramos o nome. Caso contr√°rio, usamos o `PasswordEncoder` (BCrypt) para fazer o *hash* antes de guardar na BD. O TDD garantiu este comportamento com precis√£o cir√∫rgica.
+
+**Por detr√°s dos panos (Frontend - Next.js/React):**
+- Refator√°mos a p√°gina de Configura√ß√µes (`settings.tsx`) para usar **Abas (Tabs)**. Us√°mos um simples estado React `const [activeTab, setActiveTab] = useState("perfil")`. O React encarrega-se de mostrar apenas o componente condicionalmente: se `perfil`, mostra `ProfileForm`; se `equipa`, mostra `StaffList` e `StaffForm`.
+- Cri√°mos um Dropdown no cabe√ßalho (`top-header.tsx`). O truque m√°gico foi usar o gancho `useRef` para detetar cliques *fora* do menu. Se o utilizador clica em qualquer s√≠tio que n√£o o menu (`!profileRef.current.contains(e.target)`), fechamos o dropdown (`setProfileOpen(false)`).
+
+
+### Como a API lida com as Assiduidades (Grelha Semanal)
+Quando abres a p·gina de Assiduidade, o frontend faz 3 pedidos em paralelo:
+1. GET /api/atletas/equipa/{id} -> Todos os atletas (Y-Axis).
+2. GET /api/eventos/equipa/{id}/semana?start=X&end=Y -> Todos os eventos (X-Axis).
+3. GET /api/assiduidade/equipa/{id}/semana?start=X&end=Y -> Todos os registos.
+
+No backend, o mÈtodo indByEquipaAndDateRange cruza as tabelas usando JPQL (.evento.equipa.id = :id) para ir buscar rapidamente todas as presenÁas dos eventos da semana.
+
+No frontend (Attendance.tsx), a grelha cruza tleta.id com evento.id. Se o registo existir (que È criado automaticamente no EventoCalendarioServiceImpl.registarEventoEGerarGrelha sempre que crias um evento), a cÈlula È preenchida com o Ìcone do estado (PRESENTE, AUSENTE, etc). Ao clicares na cÈlula, a UI envia um pedido PUT /api/assiduidade/{registoId} para atualizar apenas o TipoAssiduidade desse jogador naquele evento especÌfico.
+
+
+### Sincroniza√ß√£o de Calend√°rio (iCal) - Fix de Seguran√ßa e Conectividade
+**O que foi feito:**
+Adicion√°mos o endpoint /api/eventos/equipa/*/ical √†s exce√ß√µes de seguran√ßa no SecurityConfig.java.
+**Por detr√°s dos panos:**
+A maioria dos servi√ßos de calend√°rio (como o Google Calendar ou Apple Calendar) n√£o envia cabe√ßalhos de autentica√ß√£o ao subscrever a um calend√°rio. Se o endpoint estiver protegido, recebem 401 Unauthorized e a sincroniza√ß√£o falha. Ao adicionarmos este endpoint ao .permitAll(), a subscri√ß√£o passa a funcionar. A seguran√ßa mant√©m-se pois o ID da equipa (UUID) atua como chave de acesso secreta.
+**Problema do Localhost:**
+Servidores externos (Google) n√£o acedem a localhost. Para testes locais, √© preciso usar ferramentas como o 
+grok para obter um link p√∫blico.
+
+### Sincroniza√ß√£o de Calend√°rio (iCal) - Fix de Seguran√ßa e Conectividade
+**O que foi feito:**
+Adicion√°mos o endpoint /api/eventos/equipa/*/ical √†s exce√ß√µes de seguran√ßa no SecurityConfig.java.
+**Por detr√°s dos panos:**
+A maioria dos servi√ßos de calend√°rio (como o Google Calendar ou Apple Calendar) n√£o envia cabe√ßalhos de autentica√ß√£o ao subscrever a um calend√°rio. Se o endpoint estiver protegido, recebem 401 Unauthorized e a sincroniza√ß√£o falha. Ao adicionarmos este endpoint ao .permitAll(), a subscri√ß√£o passa a funcionar. A seguran√ßa mant√©m-se pois o ID da equipa (UUID) atua como chave de acesso secreta.
+**Problema do Localhost:**
+Servidores externos (Google) n√£o acedem a localhost. Para testes locais, √© preciso usar ferramentas como o 
+grok para obter um link p√∫blico.
+
+### Corre√ß√£o de Registo de Assiduidade (Upsert)
+**O que foi feito:**
+Alterado o sistema de assiduidade para usar o padr√£o UPSERT (Update or Insert) por Evento e Atleta.
+**Por detr√°s dos panos:**
+Quando um jogador novo √© adicionado ao plantel, ele n√£o tem registos de assiduidade passados. A grelha de presen√ßas falhava ao tentar atualizar um ID que n√£o existia. A solu√ß√£o foi criar um novo endpoint PUT /api/assiduidade/evento/{id}/atleta/{id} que procura se existe o registo. Se n√£o existir, cria-o no momento, de forma transparente.
+
+### Adicionar Fotografia ao Atleta
+**O que foi feito:**
+Adicionado o campo `fotoUrl` √† entidade Atleta, passando pelos DTOs e Mapper, at√© ao Frontend, permitindo inserir um URL de imagem.
+**Por detr√°s dos panos:**
+Em vez de montar um sistema complexo de armazenamento de ficheiros (S3, disco local), guardamos apenas o link (URL) da imagem. Na grelha de plantel e assiduidade, usamos o condicional JSX `{atleta.fotoUrl ? <img src... /> : <div... />}` para mostrar a foto ou um avatar com iniciais/n√∫mero como fallback.
+
+
+## MÛdulo de Treinos e Cat·logo - IntegraÁ„o Stitch e PeriodizaÁ„o T·tica
+Nesta fase, recebemos um layout HTML em Dark Mode gerado pelo Google Stitch (Tactical Dossier - Training Session Builder). Para integrar este design complexo, ajust·mos o Backend (SessaoTreino e Exercicio) para acomodar as nomenclaturas da PeriodizaÁ„o T·tica: Morfociclo, Microciclo, Fase, e outros detalhes operacionais como N˙mero de Jogadores e EspaÁo. No Frontend, cri·mos o componente base TreinosOrchestrator que encaminha o utilizador para o TreinoBuilderStitch.tsx. Este ˙ltimo È uma reproduÁ„o rigorosa do design em React (Tailwind classes arbitr·rias como g-[#181A20]), que orquestra tambÈm a listagem do Cat·logo atravÈs do CatalogoExerciciosModal. A nÌvel de dados, conect·mos o modal ‡ API piFetch('/exercicios') para ser possÌvel selecionar exercÌcios globalmente criados.
+
+
+## PadronizaÁ„o T·tica no Calend·rio
+Para garantir consistÍncia em toda a aplicaÁ„o, o termo 'Mesociclo' foi substituÌdo por 'Morfociclo' no componente do Calend·rio (\PlaneamentoSemanal.tsx\), bem como em toda a cadeia de backend (Entidade \PlaneamentoMicrociclo\, DTOs, Mappers, Services e Controllers). Isto garante que a PeriodizaÁ„o T·tica È a linguagem base de toda a plataforma.
+
+
+## AssociaÁ„o do N˙mero do Treino aos Eventos de Calend·rio
+Removido o controlo do Microciclo do topo do Calend·rio e transferida a responsabilidade do N˙mero do Treino diretamente para a Entidade \EventoCalendario\. Agora, ao criar ou editar um evento do tipo TREINO, È possÌvel introduzir o 'N∫ do Treino (Microciclo)', que passa a ser gravado com o evento e È apresentado nas etiquetas renderizadas no Calend·rio.
+
+
+## Incremento Autom·tico do N˙mero do Treino
+Para facilitar a vida ao utilizador, o backend passou a ter um endpoint (\/equipa/{equipaId}/ultimo-numero-treino\) que vai ‡ base de dados buscar o ˙ltimo n˙mero de treino registado. O frontend chama este endpoint sempre que se clica para adicionar um novo evento e, se for do tipo Treino, incrementa esse valor automaticamente (N+1) no formul·rio.

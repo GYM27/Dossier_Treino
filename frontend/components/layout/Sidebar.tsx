@@ -1,7 +1,6 @@
 "use client";
 
 import { cn } from "@/lib/utils";
-import { apiFetch } from "@/lib/api";
 import {
   Calendar,
   ClipboardList,
@@ -9,15 +8,18 @@ import {
   Settings,
   Users,
   CheckSquare,
-  LogOut,
+  Shield,
+  Dumbbell,
   type LucideIcon,
 } from "lucide-react";
 
 export type NavKey =
   | "dashboard"
+  | "clube"
   | "plantel"
   | "calendario"
   | "assiduidade"
+  | "treinos"
   | "config";
 
 type NavItem = {
@@ -28,8 +30,10 @@ type NavItem = {
 
 const navItems: NavItem[] = [
   { key: "dashboard", label: "Dashboard", icon: LayoutDashboard },
+  { key: "clube", label: "Clube", icon: Shield },
   { key: "plantel", label: "Plantel", icon: Users },
   { key: "calendario", label: "Calendário", icon: Calendar },
+  { key: "treinos", label: "Treinos", icon: Dumbbell },
   { key: "assiduidade", label: "Assiduidade", icon: CheckSquare },
   { key: "config", label: "Configurações", icon: Settings },
 ];
@@ -84,25 +88,6 @@ export function Sidebar({
           );
         })}
       </nav>
-      {/* Empurra o botão de logout para o fundo */}
-      <div className="mt-auto px-2">
-        <button
-          onClick={async () => {
-            try {
-              await apiFetch("/auth/logout", { method: "POST" });
-              window.location.href = "/login";
-            } catch (err) {
-              console.error("Erro ao fazer logout", err);
-              // Força o redirecionamento mesmo que a rede falhe
-              window.location.href = "/login";
-            }
-          }}
-          className="group flex w-full items-center justify-between rounded-xl px-3 py-2 text-sm text-muted-foreground hover:bg-destructive/10 hover:text-destructive transition-colors"
-        >
-          <span className="font-medium">Terminar Sessão</span>
-          <LogOut className="size-4 opacity-50 group-hover:opacity-100 transition-opacity" />
-        </button>
-      </div>
     </aside>
   );
 }

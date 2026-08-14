@@ -1,0 +1,217 @@
+﻿/**
+ * useAtletasCrud.ts â€” Hook Custom para operaÃ§Ãµes CRUD de Atletas.
+ *
+ * Responsabilidade ÃšNICA: Gerir o estado dos atletas e comunicar com a API.
+ * Encapsula: fetch, create, update, e toda a lÃ³gica de estado do formulÃ¡rio.
+ *
+ * â”€â”€ PorquÃª um Hook Custom? â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€
+ * Hooks custom sÃ£o a forma do React de reutilizar lÃ³gica com estado.
+ * Imagina-os como "mini-cÃ©rebros" que podem ser ligados a qualquer componente.
+ * Assim, se amanhÃ£ quisÃ©ssemos mostrar atletas na Dashboard, bastava escrever:
+ *   const { atletas, loading } = useAtletasCrud(equipeId)
+ * ...sem duplicar uma Ãºnica linha de cÃ³digo!
+ */
+
+"use client";
+
+import { useState, useEffect, useMemo, useCallback } from "react";
+import { apiFetch } from "@/lib/api";
+import { ATLETA_VAZIO } from "./constants";
+import type { AtletaFormData } from "./constants";
+
+// â”€â”€ Interface para o jogador jÃ¡ formatado para o Frontend â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€
+export interface JogadorFormatado {
+  id: string;
+  name: string;
+  country: string;
+  flag: string;
+  age: number;
+  number: number;
+  positionGroup: string;
+  position: string;
+  foot: string;
+  status: string;
+  // Campos originais do Backend (necessÃ¡rios para prÃ©-preencher o formulÃ¡rio de ediÃ§Ã£o)
+  dataNascimento: string;
+  posicaoPrincipal: string;
+  pePreferido: string;
+  alturaCm: number;
+  pesoKg: number;
+}
+
+// â”€â”€ Tipo para o estado interno do hook, incluindo dados "memorizados" â”€â”€â”€â”€â”€â”€â”€â”€
+type HookState = {
+  formData: AtletaFormData;
+  // Guardar dados "memorizados" do Ãºltimo atleta editado/criado (para manter dados entre renders/submissÃµes)
+  memorizedData: AtletaFormData | null;
+};
+
+// â”€â”€ FunÃ§Ã£o auxiliar: Converte o DTO do Backend para o formato do Frontend â”€â”€â”€
+function formatarAtletaDTO(dto: any): JogadorFormatado {
+  return {
+    id: dto.id,
+    name: dto.nome,
+    country: dto.nacionalidade || "Portugal",
+    flag: "ðŸ‡µðŸ‡¹",
+    age: dto.idade,
+    number: dto.numeroCamisola || 0,
+    positionGroup: dto.posicaoPrincipal.includes("GUARDA_REDES")
+      ? "Guarda-Redes"
+      : dto.posicaoPrincipal.includes("DEFESA")
+        ? "Defesa"
+        : dto.posicaoPrincipal.includes("MEDIO")
+          ? "MÃ©dio"
+          : "AvanÃ§ado",
+    position: dto.posicaoPrincipal.replace(/_/g, " "),
+    foot:
+      dto.pePreferido === "DESTRO"
+        ? "Direito"
+        : dto.pePreferido === "ESQUERDO"
+          ? "Esquerdo"
+          : "Ambidestro",
+    status: "active",
+    dataNascimento: dto.dataNascimento,
+    posicaoPrincipal: dto.posicaoPrincipal,
+    pePreferido: dto.pePreferido,
+    alturaCm: dto.alturaCm,
+    pesoKg: dto.pesoKg,
+  };
+}
+
+// â”€â”€ O Hook Custom â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€
+export function useAtletasCrud(equipaId: string) {
+  // Estado da lista de jogadores
+  const [jogadores, setJogadores] = useState<JogadorFormatado[]>([]);
+  const [loading, setLoading] = useState(true);
+  const [error, setError] = useState("");
+
+  // â”€â”€ Estado do modal de formulÃ¡rio (com memorizaÃ§Ã£o de dados) â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€
+  // O 'memorizedData' mantÃ©m os valores que o utilizador jÃ¡ preencheu,
+  // para que nÃ£o tenha que re-digitÃ¡-los sempre que abre o modal.
+  const [memorizedData, setMemorizedData] = useState<AtletaFormData | null>(
+    null,
+  );
+
+  const [showModal, setShowModal] = useState(false);
+  const [editingPlayerId, setEditingPlayerId] = useState<string | null>(null);
+  const [isSubmitting, setIsSubmitting] = useState(false);
+  
+  // Estado real do formulÃ¡rio com setter (setFormData)
+  const [formData, setFormData] = useState<AtletaFormData>({ ...ATLETA_VAZIO });
+
+  // â”€â”€ Buscar os atletas ao Backend â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€
+  const fetchJogadores = useCallback(async () => {
+    try {
+      setLoading(true);
+      const data = await apiFetch(`/atletas?equipaId=${equipaId}`);
+      setJogadores(data.map(formatarAtletaDTO));
+    } catch (err: any) {
+      setError(err.message);
+    } finally {
+      setLoading(false);
+    }
+  }, [equipaId]);
+
+  // Recarregar sempre que a equipa muda
+  useEffect(() => {
+    if (equipaId) {
+      fetchJogadores();
+    }
+  }, [equipaId, fetchJogadores]);
+
+  // â”€â”€ Abrir modal em modo CRIAR â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€
+  const abrirModalCriar = useCallback(() => {
+    // Quando cria novo, limpar a memÃ³ria para comeÃ§ar do zero
+    setMemorizedData(null);
+    setEditingPlayerId(null);
+    setShowModal(true);
+  }, []);
+
+  // â”€â”€ Abrir modal em modo EDITAR â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€
+  const abrirModalEditar = useCallback((jogador: JogadorFormatado) => {
+    // Memorizar os dados vindo do backend para preservar valores jÃ¡ existentes
+    setMemorizedData({
+      dataNascimento: jogador.dataNascimento,
+      nome: jogador.name,
+      nacionalidade: jogador.country || "Portugal",
+      posicaoPrincipal: jogador.posicaoPrincipal || "GUARDA_REDES",
+      pePreferido: jogador.pePreferido || "DESTRO",
+      numeroCamisola: jogador.number,
+      alturaCm: jogador.alturaCm || 180,
+      pesoKg: jogador.pesoKg || 75,
+    });
+    setEditingPlayerId(jogador.id);
+    setShowModal(true);
+  }, []);
+
+  // â”€â”€ Fechar modal â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€
+  const fecharModal = useCallback(() => {
+    setShowModal(false);
+    // NÃƒO limpar memorizedData aqui - queremos que os dados permaneÃ§am
+    // para que o prÃ³ximo aperto em "Editar" mantenha os valores jÃ¡ preenchidos
+  }, []);
+
+  // â”€â”€ Submeter formulÃ¡rio (Criar ou Atualizar) â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€
+  const submeterFormulario = useCallback(
+    async (e: React.FormEvent) => {
+      e.preventDefault();
+      setIsSubmitting(true);
+      try {
+        const payload = {
+          equipaId,
+          nome: formData.nome,
+          dataNascimento: formData.dataNascimento,
+          nacionalidade: formData.nacionalidade,
+          posicaoPrincipal: formData.posicaoPrincipal,
+          pePreferido: formData.pePreferido,
+          numeroCamisola: formData.numeroCamisola,
+          alturaCm: formData.alturaCm,
+          pesoKg: formData.pesoKg,
+        };
+
+        if (editingPlayerId) {
+          await apiFetch(`/atletas/${editingPlayerId}`, {
+            method: "PUT",
+            body: JSON.stringify(payload),
+          });
+        } else {
+          await apiFetch("/atletas", {
+            method: "POST",
+            body: JSON.stringify(payload),
+          });
+        }
+
+        // âœ… ApÃ³s submit bem-sucedido: MEMORIZAR os dados que foram enviados
+        // Isso permite que ao abrir o modal novamente, os campos jÃ¡ venham preenchidos
+        setMemorizedData({ ...formData });
+
+        setShowModal(false);
+        fetchJogadores(); // Recarrega a lista instantaneamente
+      } catch (err: any) {
+        alert("Erro ao guardar atleta: " + err.message);
+      } finally {
+        setIsSubmitting(false);
+      }
+    },
+    [equipaId, formData, editingPlayerId, fetchJogadores],
+  );
+
+  // â”€â”€ Devolver tudo empacotado â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€
+  return {
+    // Dados da lista
+    jogadores,
+    loading,
+    error,
+    // Estado do modal
+    showModal,
+    editingPlayerId,
+    isSubmitting,
+    formData,
+    setFormData, // NecessÃ¡rio para o AtletaFormModal fazer o onChange
+    // AÃ§Ãµes
+    abrirModalCriar,
+    abrirModalEditar,
+    fecharModal,
+    submeterFormulario,
+  };
+}

@@ -3,6 +3,7 @@ package com.dossiertreinador.domain.dtos;
 import com.dossiertreinador.domain.enums.Posicao;
 import lombok.Builder;
 import lombok.Data;
+import java.time.LocalDate;
 
 import java.util.UUID;
 
@@ -19,12 +20,16 @@ public class AtletaResponseDTO {
     private String nome;
     
     // MAGIA DOS DTOs: 
-    // Nós não queremos enviar a data de nascimento crua e obrigar o 
-    // telemóvel a calcular a idade. Nós calculamos no servidor e 
-    // enviamos a idade já mastigadinha!
+    // Nós calculamos a idade no servidor e enviamos já mastigadinha,
+    // mas também enviamos a data de nascimento crua para pré-preencher o formulário de edição!
     private Integer idade; 
+    private LocalDate dataNascimento;
+    
+    private Integer alturaCm;
+    private Double pesoKg; 
     
     private String nacionalidade;
+    private String fotoUrl;
     
     private Posicao posicaoPrincipal;
     private Integer numeroCamisola;

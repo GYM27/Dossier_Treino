@@ -36,7 +36,7 @@ export function ProfileForm({ initialData, onSuccess }: ProfileFormProps) {
       });
 
       alert("Perfil atualizado com sucesso!");
-      setFormData(prev => ({...prev, novaPassword: ""})); // Limpar a password após submeter
+      setFormData(prev => ({...prev, novaPassword: ""}));
       onSuccess();
     } catch (err: any) {
       alert("Erro ao atualizar perfil: " + err.message);

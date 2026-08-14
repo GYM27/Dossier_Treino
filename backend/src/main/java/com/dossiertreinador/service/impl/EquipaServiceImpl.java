@@ -42,4 +42,25 @@ public class EquipaServiceImpl implements EquipaService {
         
         return equipaRepository.save(equipa);
     }
+
+    @Override
+    public Equipa atualizarEquipa(java.util.UUID id, Equipa equipaAtualizada) {
+        Equipa equipa = equipaRepository.findById(id)
+                .orElseThrow(() -> new RuntimeException("Equipa não encontrada."));
+        
+        if (equipaAtualizada.getDuracaoJogo() != null) {
+            equipa.setDuracaoJogo(equipaAtualizada.getDuracaoJogo());
+        }
+        if (equipaAtualizada.getNumeroJogadores() != null) {
+            equipa.setNumeroJogadores(equipaAtualizada.getNumeroJogadores());
+        }
+        if (equipaAtualizada.getModalidade() != null) {
+            equipa.setModalidade(equipaAtualizada.getModalidade());
+        }
+        if (equipaAtualizada.getEmblemaUrl() != null) {
+            equipa.setEmblemaUrl(equipaAtualizada.getEmblemaUrl());
+        }
+
+        return equipaRepository.save(equipa);
+    }
 }

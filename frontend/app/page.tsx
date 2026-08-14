@@ -1,11 +1,15 @@
 "use client";
 
-import { Attendance } from "@/components/attendance";
-import { Dashboard } from "@/components/dashboard";
-import { Placeholder } from "@/components/placeholder";
-import { Squad } from "@/components/squad";
-import { Sidebar, type NavKey } from "@/components/sidebar";
-import { TopHeader } from "@/components/top-header";
+import { Attendance } from "@/components/assiduidade/Attendance";
+import { Dashboard } from "@/components/dashboard/Dashboard";
+import { ClubePage } from "@/components/clube/ClubePage";
+import { Placeholder } from "@/components/ui/Placeholder";
+import { Squad } from "@/components/plantel/Squad";
+import { Sidebar, type NavKey } from "@/components/layout/Sidebar";
+import { TopHeader } from "@/components/layout/TopHeader";
+import { MobileDrawer } from "@/components/layout/MobileDrawer";
+import { PlaneamentoSemanal } from "@/components/calendario/PlaneamentoSemanal";
+import { TreinosOrchestrator } from "@/components/treinos/TreinosOrchestrator";
 import { apiFetch } from "@/lib/api";
 import { cn } from "@/lib/utils";
 import {
@@ -14,21 +18,12 @@ import {
   LayoutDashboard,
   SettingsIcon,
   Users,
-  X,
 } from "lucide-react";
 import { Team } from "@/models/team";
 import { Utilizador } from "@/models/utilizador";
 import { useState, useEffect, useCallback } from "react";
-import { Settings } from "@/components/settings";
-import { TeamForm } from "@/components/team-form";
-
-const mobileNav: { key: NavKey; label: string; icon: typeof Users }[] = [
-  { key: "dashboard", label: "Dashboard", icon: LayoutDashboard },
-  { key: "plantel", label: "Plantel", icon: Users },
-  { key: "calendario", label: "Calendário", icon: Calendar },
-  { key: "assiduidade", label: "Assiduidade", icon: CheckSquare },
-  { key: "config", label: "Configurações", icon: Settings },
-];
+import { Settings } from "@/components/settings/Settings";
+import { TeamForm } from "@/components/settings/TeamForm";
 
 export default function Page() {
   const [active, setActive] = useState<NavKey>("dashboard");
@@ -55,11 +50,11 @@ export default function Page() {
       // 1. Carregar Quem sou eu
       const meData = await apiFetch("/auth/me");
       setMe(meData);
-      
+
       // 2. Carregar Equipas
       const equipasData = await apiFetch("/equipas");
       setTeams(equipasData);
-      
+
       if (equipasData && equipasData.length > 0) {
         setActiveTeam(equipasData[0]);
       }
@@ -92,67 +87,22 @@ export default function Page() {
       <Sidebar active={active} onNavigate={navigate} />
 
       {/* Mobile drawer */}
-      {mobileOpen && (
-        <div
-          className="fixed inset-0 z-50 md:hidden"
-          role="dialog"
-          aria-modal="true"
-        >
-          <div
-            className="absolute inset-0 bg-black/60 backdrop-blur-sm"
-            onClick={() => setMobileOpen(false)}
-          />
-          <div className="glass-strong animate-fade-up absolute left-0 top-0 h-full w-72 border-r p-4">
-            <div className="flex items-center justify-between px-2 py-2">
-              <p className="text-sm font-semibold">Dossier do Treinador</p>
-              <button
-                onClick={() => setMobileOpen(false)}
-                className="flex size-8 items-center justify-center rounded-lg text-muted-foreground hover:bg-foreground/5"
-                aria-label="Fechar menu"
-              >
-                <X className="size-5" />
-              </button>
-            </div>
-            <nav className="mt-4 flex flex-col gap-1">
-              {mobileNav.map((item) => {
-                const Icon = item.icon;
-                const isActive = active === item.key;
-                return (
-                  <button
-                    key={item.key}
-                    onClick={() => navigate(item.key)}
-                    className={cn(
-                      "flex items-center gap-3 rounded-lg px-3 py-2.5 text-sm font-medium transition-colors",
-                      isActive
-                        ? "bg-primary/10 text-primary"
-                        : "text-muted-foreground hover:bg-foreground/5 hover:text-foreground",
-                    )}
-                  >
-                    <Icon className="size-[18px]" />
-                    {item.label}
-                  </button>
-                );
-              })}
-            </nav>
-          </div>
-        </div>
-      )}
+      <MobileDrawer
+        isOpen={mobileOpen}
+        active={active}
+        onNavigate={navigate}
+        onClose={() => setMobileOpen(false)}
+      />
 
       <div className="flex min-w-0 flex-1 flex-col">
-        {activeTeam ? (
-          <TopHeader
-            teams={teams}
-            activeTeam={activeTeam}
-            onTeamChange={setActiveTeam}
-            onOpenMobileNav={() => setMobileOpen(true)}
-          />
-        ) : (
-          <header className="glass sticky top-0 z-30 flex items-center justify-between border-b p-4">
-            <div className="text-muted-foreground">
-              Nenhuma equipa configurada.
-            </div>
-          </header>
-        )}
+        <TopHeader
+          teams={teams}
+          activeTeam={activeTeam}
+          me={me}
+          onTeamChange={setActiveTeam}
+          onOpenMobileNav={() => setMobileOpen(true)}
+          onRefreshMe={fetchData}
+        />
 
         <main className="mx-auto w-full max-w-[1600px] flex-1 p-4 md:p-8">
           {teams.length === 0 ? (
@@ -163,7 +113,10 @@ export default function Page() {
             )
           ) : (
             <>
-              {active === "dashboard" && <Dashboard />}
+              {active === "dashboard" && (
+                <Dashboard activeTeam={activeTeam} me={me} />
+              )}
+              {active === "clube" && <ClubePage activeTeam={activeTeam} onRefreshMe={fetchData} />}
               {active === "plantel" ? (
                 activeTeam ? (
                   <Squad activeTeam={activeTeam} />
@@ -171,8 +124,9 @@ export default function Page() {
                   <Placeholder title="Nenhum plantel configurado" />
                 )
               ) : null}
-              {active === "assiduidade" && <Attendance />}
-              {active === "calendario" && <Placeholder title="Calendário" />}
+              {active === "assiduidade" && <Attendance activeTeam={activeTeam} />}
+              {active === "calendario" && <PlaneamentoSemanal activeTeam={activeTeam} />}
+              {active === "treinos" && <TreinosOrchestrator activeTeam={activeTeam} />}
               {active === "config" && <Settings />}
             </>
           )}

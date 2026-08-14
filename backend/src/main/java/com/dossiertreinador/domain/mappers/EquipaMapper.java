@@ -15,6 +15,10 @@ public class EquipaMapper {
                 .nome(equipa.getNome())
                 .escalao(equipa.getEscalao())
                 .epocaNome(equipa.getEpoca() != null ? equipa.getEpoca().getDesignacao() : null)
+                .modalidade(equipa.getModalidade())
+                .duracaoJogo(equipa.getDuracaoJogo())
+                .numeroJogadores(equipa.getNumeroJogadores())
+                .emblemaUrl(equipa.getEmblemaUrl())
                 .build();
     }
 }

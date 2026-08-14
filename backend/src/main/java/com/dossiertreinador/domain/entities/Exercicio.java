@@ -39,6 +39,15 @@ public class Exercicio {
     @Column(columnDefinition = "TEXT")
     private String descricao;
 
+    @Column(columnDefinition = "TEXT")
+    private String objetivosEspecificos; // Specific Objectives
+
+    @Column
+    private String espaco; // Area (ex: 30x20m)
+
+    @Column
+    private Integer jogadoresEnvolvidos; // Group (Nº jogadores)
+
     @NotNull(message = "A categoria é obrigatória.")
     @Enumerated(EnumType.STRING)
     @Column(nullable = false)

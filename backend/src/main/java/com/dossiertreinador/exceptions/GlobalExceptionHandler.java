@@ -47,4 +47,21 @@ public class GlobalExceptionHandler {
                 .build();
         return new ResponseEntity<>(erroFormatado, HttpStatus.UNAUTHORIZED);
     }
+
+    // Apanha erros de validação nos DTOs (como @NotNull, @NotBlank no AtletaRequestDTO)
+    @ExceptionHandler(org.springframework.web.bind.MethodArgumentNotValidException.class)
+    public ResponseEntity<ErrorResponse> handleMethodArgumentNotValid(org.springframework.web.bind.MethodArgumentNotValidException ex) {
+        String errorMessage = ex.getBindingResult().getFieldErrors().stream()
+                .map(org.springframework.validation.FieldError::getDefaultMessage)
+                .collect(java.util.stream.Collectors.joining(". "));
+
+        ErrorResponse erroFormatado = ErrorResponse.builder()
+                .timestamp(LocalDateTime.now())
+                .status(HttpStatus.BAD_REQUEST.value()) // Código 400
+                .error("Erro de Validação de Dados (DTO)")
+                .message(errorMessage) 
+                .build();
+                
+        return new ResponseEntity<>(erroFormatado, HttpStatus.BAD_REQUEST);
+    }
 }

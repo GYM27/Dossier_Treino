@@ -40,6 +40,9 @@ public class Atleta {
     @Column
     private String nacionalidade;
 
+    @Column(length = 1000)
+    private String fotoUrl;
+
     // --- DADOS TÉCNICOS / DESPORTIVOS ---
     @NotNull(message = "A posição principal é obrigatória.")
     @Enumerated(EnumType.STRING)

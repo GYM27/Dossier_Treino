@@ -11,7 +11,10 @@ import jakarta.validation.Valid;
 import lombok.RequiredArgsConstructor;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
+import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
+import java.util.UUID;
+import java.util.List;
 
 @RestController // Diz ao Spring: "Esta classe atende o telefone (Internet) e devolve tudo em formato JSON"
 @RequestMapping("/api/atletas") // Define o endereço do nosso "Empregado de Mesa"
@@ -24,40 +27,42 @@ public class AtletaController {
 
     // O método HTTP POST é a convenção universal da Internet para "CRIAR" algo
     // A anotação @Valid é crucial: ela liga as validações do nosso DTO (@Past, @NotNull)!
+    // Endpoint POST: Criar
     @PostMapping
     public ResponseEntity<AtletaResponseDTO> registarAtleta(@Valid @RequestBody AtletaRequestDTO dto) {
-        
-        // 1. Procuramos a equipa. Se não existir, atiramos um erro (apanhado pelo GlobalExceptionHandler!)
         Equipa equipa = equipaRepository.findById(dto.getEquipaId())
                 .orElseThrow(() -> new IllegalArgumentException("Equipa não encontrada!"));
 
-        // 2. O Tradutor converte a encomenda JSON na nossa Entidade Java verdadeira
         Atleta atletaParaGravar = atletaMapper.toEntity(dto, equipa);
-
-        // 3. Mandamos para a Cozinha (A nossa Lógica de Negócio nos Services)
         Atleta atletaGravado = atletaService.registarNovoAtleta(atletaParaGravar);
-
-        // 4. O Tradutor converte a Entidade gravada no nosso "Envelope Seguro" de saída (ResponseDTO)
+        
         AtletaResponseDTO resposta = atletaMapper.toResponseDTO(atletaGravado);
-
-        // 5. Devolvemos a resposta à Internet com o carimbo oficial HTTP 201 (CREATED)
         return new ResponseEntity<>(resposta, HttpStatus.CREATED);
     }
-    
+
+    // Endpoint GET: Listar por equipa
     @GetMapping
-    public ResponseEntity<java.util.List<AtletaResponseDTO>> listarTodosAtletas(
-            @RequestParam(required = false) java.util.UUID equipaId) {
-        java.util.List<com.dossiertreinador.domain.entities.Atleta> atletas;
-        if (equipaId != null) {
-            atletas = atletaService.listarPorEquipa(equipaId);
-        } else {
-            atletas = atletaService.listarTodos();
-        }
-        
-        java.util.List<AtletaResponseDTO> resposta = atletas.stream()
+    public ResponseEntity<List<AtletaResponseDTO>> listarAtletas(@RequestParam UUID equipaId) {
+        List<Atleta> atletas = atletaService.listarPorEquipa(equipaId);
+        List<AtletaResponseDTO> resposta = atletas.stream()
                 .map(atletaMapper::toResponseDTO)
                 .toList();
-                
+        return ResponseEntity.ok(resposta);
+    }
+
+    // Endpoint PUT: Atualizar
+    @PutMapping("/{id}")
+    public ResponseEntity<AtletaResponseDTO> atualizarAtleta(
+            @PathVariable UUID id, 
+            @Valid @RequestBody AtletaRequestDTO dto) {
+            
+        Equipa equipa = equipaRepository.findById(dto.getEquipaId())
+                .orElseThrow(() -> new IllegalArgumentException("Equipa não encontrada!"));
+
+        Atleta atletaParaAtualizar = atletaMapper.toEntity(dto, equipa);
+        Atleta atletaGravado = atletaService.atualizarAtleta(id, atletaParaAtualizar);
+        
+        AtletaResponseDTO resposta = atletaMapper.toResponseDTO(atletaGravado);
         return ResponseEntity.ok(resposta);
     }
 }

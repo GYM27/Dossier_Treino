@@ -11,6 +11,7 @@ import org.springframework.data.annotation.LastModifiedDate;
 import org.springframework.data.jpa.domain.support.AuditingEntityListener;
 
 import java.time.LocalDate;
+import java.time.LocalTime;
 import java.time.LocalDateTime;
 import java.util.ArrayList;
 import java.util.List;
@@ -32,9 +33,26 @@ public class SessaoTreino {
     @GeneratedValue(strategy = GenerationType.UUID)
     private UUID id;
 
-    @NotNull(message = "A data do treino é obrigatória.")
     @Column(nullable = false)
     private LocalDate data;
+
+    @Column
+    private LocalTime hora;
+
+    @Column
+    private Integer morfociclo; // Semana do treino
+
+    @Column
+    private Integer microciclo; // Número da unidade de treino
+
+    @Column
+    private String fase; // Ex: Pré-Época, Competitivo
+
+    @Column
+    private Integer numeroJogadores;
+
+    @Column
+    private String material;
 
     @Column
     private String objetivo;

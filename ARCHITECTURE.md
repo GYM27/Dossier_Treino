@@ -63,3 +63,36 @@ oster-view.tsx foi migrado para ler do backend os Atletas criados na Base de Dad
 ### Etapa 15.1: Clean Code no Frontend (Nomenclatura Descritiva)
 - **ConvenÁıes de Nomes:** Adot·mos uma abordagem rigorosa onde os componentes de layout partilhados usam inglÍs estrutural tÈcnico (sidebar, 	op-header), enquanto que os ecr„s que representam domÌnios de negÛcio s„o nomeados de forma identificativa e clara (squad, dashboard, ttendance).
 - **RemoÁ„o de Sufixos:** Foram removidos sufixos de contexto genÈricos (como -view) gerados automaticamente, promovendo a simplicidade e evitando ruÌdo visual no cÛdigo.
+
+---
+### Atualiza√ß√£o: O Meu Perfil e Configura√ß√µes (Fase 2)
+- **Decis√£o Arquitetural**: Separa√ß√£o visual das configura√ß√µes por "Abas" em vez de m√∫ltiplas p√°ginas independentes.
+- **Porqu√™**: Reduz a complexidade de navega√ß√£o e mant√©m todas as l√≥gicas de gest√£o administrativa aglomeradas num √∫nico "hub" (`settings.tsx`).
+- **Padr√µes de Desenho**: Inje√ß√£o de Depend√™ncias no Spring (`@AuthenticationPrincipal`) para garantir que o contexto de seguran√ßa (Security Context) dita quem √© o ator da a√ß√£o (Autoriza√ß√£o baseada em Token), eliminando verifica√ß√µes manuais de ID no service layer.
+
+## Assiduidade e Centro de Controlo
+
+- **Design Pattern / UX**: Optou-se por uma **Matriz (Grelha Semanal)** em vez de uma vis„o isolada por evento. Isto permite ao treinador observar imediatamente os padrıes da semana, ver lesıes recorrentes ou gerir de forma mais holÌstica.
+- **EficiÍncia de Rede**: O Backend devolve uma lista de DTOs achatada (flat) e o frontend agrupa os dados usando a estrutura da matriz e a memÛria (React useMemo).
+- **Update Otimista**: Na UI (Attendance.tsx), quando se clica num estado (ex: PRESENTE -> AUSENTE), a mudanÁa È refletida imediatamente na vista (para ser r·pida) e, em background, faz a chamada PUT ‡ API. Se falhar, È feito o 'rollback' e È mostrado erro.
+
+
+### Calendar Synchronization (iCal) - Security Bypass
+- **Decis√£o:** Permitir acesso an√≥nimo ao endpoint /api/eventos/equipa/*/ical.
+- **Justifica√ß√£o:** Clientes de calend√°rio n√£o suportam autentica√ß√£o JWT. A seguran√ßa baseia-se na obscuridade do ID da Equipa (UUID) que funciona como um *capability URL*.
+
+### Calendar Synchronization (iCal) - Security Bypass
+- **Decis√£o:** Permitir acesso an√≥nimo ao endpoint /api/eventos/equipa/*/ical.
+- **Justifica√ß√£o:** Clientes de calend√°rio n√£o suportam autentica√ß√£o JWT. A seguran√ßa baseia-se na obscuridade do ID da Equipa (UUID) que funciona como um *capability URL*.
+
+### Registo de Assiduidade Din√¢mico (Upsert)
+- **Problema:** Jogadores inseridos √† posteriori n√£o tinham inst√¢ncias de RegistoAssiduidade nos eventos j√° criados.
+- **Solu√ß√£o:** Implementa√ß√£o de um padr√£o UPSERT na API (PUT por ID de Evento e ID de Atleta) para resolver missing records de forma lazy (s√≥ cria quando o treinador clica para registar falta/presen√ßa).
+
+### Fotografia do Atleta (URL-based)
+- **Problema:** Necessidade de identifica√ß√£o visual r√°pida nas grelhas.
+- **Solu√ß√£o:** Adi√ß√£o de propriedade `fotoUrl` (String) √† entidade Atleta. Optou-se por guardar o URL absoluto para simplificar a infraestrutura, mantendo o Frontend respons√°vel por renderizar a tag `<img>` com fallbacks visuais adequados (Avatar com iniciais).
+
+
+## MÛdulo de Treinos (Treino Builder)
+O design de ecr„ inteiro exigiu que a arquitetura do Frontend isolasse o TreinoBuilderStitch dos layouts genÈricos. O Backend foi flexibilizado para incluir colunas da PeriodizaÁ„o T·tica (morfociclo, microciclo, ase). A separaÁ„o entre o Orquestrador (TreinosOrchestrator) e a visualizaÁ„o (TreinoBuilderStitch) mantÈm a componente de apresentaÁ„o (UI rica com Tailwind custom colors) desligada da mec‚nica de fetching das listas base.

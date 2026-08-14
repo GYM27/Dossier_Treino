@@ -5,9 +5,14 @@ package com.dossiertreinador.domain.enums;
  */
 public enum TipoAssiduidade {
     PRESENTE,
-    AUSENTE,
+    AUSENTE, // Legacy
+    FALTA_INJUSTIFICADA,
+    FALTA_JUSTIFICADA,
+    FALTA_AUTORIZADA,
     ATRASADO,
     LESIONADO,
     AO_SERVICO_SELECAO,
-    DISPENSADO
+    DISPENSADO, // Legacy
+    TREINO_CONDICIONADO,
+    OUTRO
 }

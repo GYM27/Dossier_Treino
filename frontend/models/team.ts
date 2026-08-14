@@ -3,4 +3,8 @@ export interface Team {
   nome: string;
   escalao?: string;
   epocaNome?: string;
+  modalidade?: string;
+  duracaoJogo?: string;
+  numeroJogadores?: string;
+  emblemaUrl?: string;
 }

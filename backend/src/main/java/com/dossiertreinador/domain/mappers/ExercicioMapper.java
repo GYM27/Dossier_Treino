@@ -15,6 +15,9 @@ public class ExercicioMapper {
                 .descricao(dto.getDescricao())
                 .categoria(dto.getCategoria())
                 .nivelDificuldade(dto.getNivelDificuldade())
+                .objetivosEspecificos(dto.getObjetivosEspecificos())
+                .espaco(dto.getEspaco())
+                .jogadoresEnvolvidos(dto.getJogadoresEnvolvidos())
                 .dadosTaticos(dto.getDadosTaticos())
                 .build();
     }
@@ -28,6 +31,9 @@ public class ExercicioMapper {
                 .descricao(entity.getDescricao())
                 .categoria(entity.getCategoria())
                 .nivelDificuldade(entity.getNivelDificuldade())
+                .objetivosEspecificos(entity.getObjetivosEspecificos())
+                .espaco(entity.getEspaco())
+                .jogadoresEnvolvidos(entity.getJogadoresEnvolvidos())
                 .dadosTaticos(entity.getDadosTaticos())
                 .build();
     }

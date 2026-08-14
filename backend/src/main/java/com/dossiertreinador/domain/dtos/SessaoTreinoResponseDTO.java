@@ -4,6 +4,7 @@ import lombok.Builder;
 import lombok.Data;
 
 import java.time.LocalDate;
+import java.time.LocalTime;
 import java.util.List;
 import java.util.UUID;
 
@@ -12,6 +13,12 @@ import java.util.UUID;
 public class SessaoTreinoResponseDTO {
     private UUID id;
     private LocalDate data;
+    private LocalTime hora;
+    private Integer morfociclo;
+    private Integer microciclo;
+    private String fase;
+    private Integer numeroJogadores;
+    private String material;
     private String objetivo;
     private Integer intensidadeGeral;
     private Integer duracaoTotalMinutos;

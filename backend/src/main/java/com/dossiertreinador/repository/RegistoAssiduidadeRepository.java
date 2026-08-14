@@ -13,6 +13,10 @@ import java.util.UUID;
 @Repository
 public interface RegistoAssiduidadeRepository extends JpaRepository<RegistoAssiduidade, UUID> {
 
+    void deleteByEventoId(UUID eventoId);
+
+    java.util.Optional<RegistoAssiduidade> findByEventoIdAndAtletaId(UUID eventoId, UUID atletaId);
+
     // --- A MAGIA DO JPQL (Java Persistence Query Language) ---
     // Em vez de escrevermos SQL puro que depende do Postgres, escrevemos JPQL que usa o nome 
     // das NOSSAS Classes Java (RegistoAssiduidade, r.atleta, r.evento). O Hibernate converte depois.
@@ -22,4 +26,11 @@ public interface RegistoAssiduidadeRepository extends JpaRepository<RegistoAssid
             @Param("atletaId") UUID atletaId, 
             @Param("inicioMes") LocalDateTime inicioMes, 
             @Param("fimMes") LocalDateTime fimMes);
+            
+    @Query("SELECT r FROM RegistoAssiduidade r WHERE r.evento.equipa.id = :equipaId " +
+           "AND r.evento.dataHoraInicio >= :start AND r.evento.dataHoraInicio <= :end")
+    List<RegistoAssiduidade> findByEquipaAndDateRange(
+            @Param("equipaId") UUID equipaId, 
+            @Param("start") LocalDateTime start, 
+            @Param("end") LocalDateTime end);
 }

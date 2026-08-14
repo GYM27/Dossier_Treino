@@ -13,7 +13,10 @@ import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
 import java.util.List;
+import java.util.UUID;
+import java.time.LocalDateTime;
 import java.util.stream.Collectors;
+import jakarta.persistence.EntityNotFoundException;
 
 @Service
 @RequiredArgsConstructor
@@ -47,5 +50,49 @@ public class EventoCalendarioServiceImpl implements EventoCalendarioService {
 
         // 5. Devolve o evento
         return eventoGravado;
+    }
+    
+    @Override
+    public List<EventoCalendario> listarEventosDaSemana(UUID equipaId, LocalDateTime start, LocalDateTime end) {
+        return eventoRepository.findByEquipaIdAndDataHoraInicioBetweenOrderByDataHoraInicioAsc(equipaId, start, end);
+    }
+    
+    @Override
+    @Transactional
+    public EventoCalendario atualizarEvento(UUID eventoId, EventoCalendario eventoAtualizado) {
+        EventoCalendario evento = eventoRepository.findById(eventoId)
+                .orElseThrow(() -> new EntityNotFoundException("Evento não encontrado"));
+                
+        evento.setTipoEvento(eventoAtualizado.getTipoEvento());
+        evento.setDataHoraInicio(eventoAtualizado.getDataHoraInicio());
+        evento.setDataHoraFim(eventoAtualizado.getDataHoraFim());
+        evento.setDescricao(eventoAtualizado.getDescricao());
+        evento.setLocal(eventoAtualizado.getLocal());
+        evento.setNumeroTreino(eventoAtualizado.getNumeroTreino());
+        evento.setEquipaCasa(eventoAtualizado.getEquipaCasa());
+        evento.setEquipaFora(eventoAtualizado.getEquipaFora());
+        
+        return eventoRepository.save(evento);
+    }
+    
+    @Override
+    @Transactional
+    public void eliminarEvento(UUID eventoId) {
+        if (!eventoRepository.existsById(eventoId)) {
+            throw new EntityNotFoundException("Evento não encontrado");
+        }
+        
+        // Remove child records (RegistoAssiduidade) first
+        registoRepository.deleteByEventoId(eventoId);
+        
+        // Remove parent
+        eventoRepository.deleteById(eventoId);
+    }
+    
+    @Override
+    public Integer obterUltimoNumeroTreino(UUID equipaId) {
+        return eventoRepository.findTopByEquipaIdAndTipoEventoOrderByDataHoraInicioDesc(equipaId, com.dossiertreinador.domain.enums.TipoEvento.TREINO)
+                .map(EventoCalendario::getNumeroTreino)
+                .orElse(0);
     }
 }

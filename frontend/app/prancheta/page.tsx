@@ -1,5 +1,5 @@
 ﻿"use client";
-import TacticalBoard from "@/components/TacticalBoard";
+import TacticalBoard from "@/components/prancheta/TacticalBoard";
 import { useState } from "react";
 import { apiFetch } from "@/lib/api";
 

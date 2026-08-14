@@ -6,14 +6,22 @@ import jakarta.validation.constraints.NotNull;
 import lombok.Data;
 
 import java.time.LocalDate;
+import java.time.LocalTime;
 import java.util.UUID;
 
 @Data
 public class SessaoTreinoRequestDTO {
     
-    @NotNull(message = "A data do treino é obrigatória.")
+    @NotNull(message = "A data é obrigatória.")
     private LocalDate data;
     
+    private LocalTime hora;
+    private Integer morfociclo;
+    private Integer microciclo;
+    private String fase;
+    private Integer numeroJogadores;
+    private String material;
+
     private String objetivo;
     
     @Min(value = 1, message = "Intensidade mínima é 1.")

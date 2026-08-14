@@ -43,6 +43,18 @@ public class Equipa {
     @Column(nullable = false)
     private String escalao; // Exemplo: "Seniores" ou "Sub-19"
 
+    @Column
+    private String modalidade; // Exemplo: "Futebol"
+
+    @Column
+    private String duracaoJogo; // Exemplo: "45' + 45'"
+
+    @Column
+    private String numeroJogadores; // Exemplo: "Futebol 11"
+
+    @Column
+    private String emblemaUrl; // URL da imagem do clube
+
     // A MÁGICA DOS RELACIONAMENTOS EM SQL/JPA: 
     // @ManyToOne significa "Muitas Equipas podem pertencer a Uma Epoca".
     // 

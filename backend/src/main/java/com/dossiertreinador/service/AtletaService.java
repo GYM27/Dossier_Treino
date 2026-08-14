@@ -2,6 +2,9 @@ package com.dossiertreinador.service;
 
 import com.dossiertreinador.domain.entities.Atleta;
 
+import java.util.List;
+import java.util.UUID;
+
 /**
  * Em Engenharia de Software robusta (Clean Architecture), o Service é primeiro criado
  * como uma Interface. Isto é um "contrato". Diz ao resto do sistema: 
@@ -13,7 +16,9 @@ public interface AtletaService {
     // O contrato diz apenas que recebemos um Atleta e devolvemos um Atleta
     Atleta registarNovoAtleta(Atleta atleta);
     
-    java.util.List<Atleta> listarTodos();
+    List<Atleta> listarTodos();
 
-    java.util.List<Atleta> listarPorEquipa(java.util.UUID equipaId);
+    List<Atleta> listarPorEquipa(UUID equipaId);
+
+    Atleta atualizarAtleta(UUID id, Atleta atletaAtualizado);
 }

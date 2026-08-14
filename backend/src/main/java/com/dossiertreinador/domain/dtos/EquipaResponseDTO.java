@@ -12,4 +12,8 @@ public class EquipaResponseDTO {
     private String nome;
     private String escalao;
     private String epocaNome;
+    private String modalidade;
+    private String duracaoJogo;
+    private String numeroJogadores;
+    private String emblemaUrl;
 }

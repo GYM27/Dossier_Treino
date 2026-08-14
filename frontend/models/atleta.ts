@@ -4,7 +4,8 @@ export interface Atleta {
   idade: number;
   nacionalidade: string;
   posicaoPrincipal: string;
-  numeroCamisola: number;
+  numeroCamisola?: number;
+  fotoUrl?: string;
   pePreferido: string;
   nomeEquipa: string;
 }

@@ -54,7 +54,7 @@ public class AuthController {
                 .secure(isSecureCookie)
                 .path("/")
                 .maxAge(24 * 60 * 60) // 1 dia
-                .sameSite("Strict")
+                .sameSite("Lax") // CRÍTICO: 'Strict' bloqueia o envio em fetch() com origens diferentes (porta 3000 vs 8080)
                 .build();
 
         return ResponseEntity.ok()
@@ -84,7 +84,7 @@ public class AuthController {
                 .secure(isSecureCookie)
                 .path("/")
                 .maxAge(0) // 0 segundos = apagar imediatamente
-                .sameSite("Strict")
+                .sameSite("Lax")
                 .build();
         return ResponseEntity.ok()
                 .header(HttpHeaders.SET_COOKIE, apagarCookie.toString())
