@@ -146,3 +146,69 @@ Se adicionares um jogador novo ao plantel a meio da epoca, ele aparecera imediat
 No menu lateral esquerdo ir�s reparar num novo �cone com um Haltere chamado **Treinos**. Ao clicares nele, e depois em **Novo Treino**, abres o ecr� do Construtor de Sess�es de Treino.
 Neste ecr� t�tico de fundo escuro, podes ver no topo todos os dados estruturais do teu treino segundo a Periodiza��o T�tica (Morfociclo, Microciclo, Fase).
 Se desceres a p�gina, v�s o separador 'Exercise Flow'. Ao clicares em **IMPORT LIBRARY**, ir�s abrir a tua biblioteca global de Exerc�cios, onde podes escolher qualquer um que tenhas criado para o incorporar imediatamente na sess�o que est�s a construir!
+
+ # #   P r a n c h e t a   T � t i c a 
+ N a   p � g i n a   d e   c o n s t r u � � o   d e   u m   T r e i n o ,   p o d e s   a g o r a   e d i t a r   o s   * * O b j e t i v o s   G e r a i s * *   ( c l i c a n d o   e m   +   A d i c i o n a r )   e   o   * * M a t e r i a l * * .   C l i c a   e m   * * G R A V A R   T R E I N O * *   p a r a   g u a r d a r e s   e s t a s   a l t e r a � � e s . 
+ M a i s   i m p o r t a n t e ,   a o   c l i c a r e s   e m   * * N O V O   E X E R C � C I O * * ,   a b r i r - s e - �   a   * * P r a n c h e t a   T � t i c a * * .   A q u i   p o d e s   d e s e n h a r   a   t u a   j o g a d a ,   a r r a s t a n d o   j o g a d o r e s ,   d e s e n h a n d o   l i n h a s   d e   p a s s e   o u   c o r r i d a ,   e   i n s e r i n d o   n o t a s   p a r a   c a d a   q u a d r o .   Q u a n d o   t e r m i n a r e s ,   p r e e n c h e   o   N o m e   e   c l i c a   e m   * * G r a v a r   T � t i c a * *   ( n o   m e n u   d a   p r a n c h e t a ) .   A   t � t i c a   f i c a r �   a s s o c i a d a   a o   t r e i n o   e   a p a r e c e r �   u m a   m i n i a t u r a   i n t e r a t i v a   n a   l i s t a g e m   d o   t e u   T r e i n o !  
+ 
+
+
+## Guia do Treinador - Prancheta Tática Avançada
+
+### Como Utilizar a Prancheta Tática
+
+1. **Desenhar Formas e Linhas**:
+   - Na barra inferior, escolhe a forma desejada (**Retângulo**, **Círculo**, **Triângulo**) ou linha (**Passe/Tracejada**, **Corrida/Contínua**, **Caneta Livre**).
+   - Clica e arrasta no relvado para traçar a forma ou seta.
+
+2. **Selecionar, Mover e Redimensionar**:
+   - Com o cursor de **Seleção** ativo, clica sobre qualquer objeto no campo:
+     - **Jogadores, Cones e Bola**: Exibem um anel luminoso ciano tracejado à volta da peça.
+     - **Formas**: Exibem uma moldura delimitadora luminosa com pegas circulares azuis nos cantos. Clica dentro para arrastar ou puxa as pegas para aumentar/diminuir.
+     - **Linhas**: Exibem uma aura neon brilhante ao longo da linha com pegas azuis nas pontas para mudar a direção e comprimento.
+
+3. **Barra Flutuante de Edição Rápida (Floating Toolbar)**:
+   - Ao selecionares qualquer forma ou linha, surge uma barra escura diretamente por cima dela com tamanho padronizado:
+     - **Mudar Tipo**: Transforma um quadrado num círculo, triângulo, pentágono ou hexágono, ou uma linha contínua em tracejada com 1 só clique.
+     - **Cores & Linha**: Ajusta a cor do contorno, a cor de preenchimento e o tipo de linha (sólida/tracejada).
+     - **Espessura & Opacidade**: Define a espessura do traço e a transparência do interior da forma (0% a 100%).
+
+4. **Eliminar Objetos com a Tecla Delete ou Backspace**:
+   - Clica no objeto e prime a tecla **Delete** ou **Backspace** no teclado do teu computador para o remover instantaneamente. Podes também usar o ícone do lixo na barra flutuante.
+
+5. **Limpar Campo e Reposicionar Jogadores**:
+   - Clica no ícone do **caixote do lixo** na barra inferior:
+     - Todos os desenhos, setas, linhas e cones são limpos do relvado.
+     - Os 11 jogadores Amarelos voltam alinhados atrás da baliza esquerda e os 11 jogadores Azuis voltam alinhados atrás da baliza direita.
+     - A bola 3D regressa ao círculo central, pronta para começares a desenhar um novo exercício!
+
+
+### Atalhos de Teclado no Quadro Tático
+- **Desfazer (Undo)**: Prime **Ctrl + Z** (ou Cmd + Z no Mac) para anular a última ação, linha desenhada, movimento de jogador ou limpeza.
+- **Refazer (Redo)**: Prime **Ctrl + Y** ou **Ctrl + Shift + Z** para recuperar uma ação anulada.
+- **Eliminar Elemento**: Prime **Delete** ou **Backspace** para remover a forma, linha ou jogador selecionado.
+
+
+- **Copiar e Colar (Copy & Paste)**:
+  - Clica em qualquer jogador, cone, bola, linha ou forma geométrica para selecionar.
+  - Prime **Ctrl + C** (ou Cmd + C no Mac) para copiar para a área de transferência.
+  - Prime **Ctrl + V** (ou Cmd + V no Mac) para colar uma cópia duplicada com deslocamento imediato no campo.
+## Guia das Novas Funcionalidades da Prancheta Tática
+
+### 1. Seleção de Campo (Full / Half / Free)
+- No topo da prancheta, o Treinador pode alternar entre:
+  - **Full**: Campo completo com 2 balizas.
+  - **Half**: Meio-campo com grande área e linha de meio-campo.
+  - **Free**: Relvado livre sem linhas interiores, ideal para criar exercícios do zero.
+
+### 2. Balizas Móveis (Mini, Fut 7, Fut 11)
+- Na barra inferior de peças, clica no ícone da baliza (ao lado do cone) para adicionar uma baliza móvel.
+- Clica na baliza para abrir a barra de controlo:
+  - Escolhe a dimensão: **Mini**, **Fut 7** ou **Fut 11**.
+  - Roda a baliza com o botão **+90°**, botões direcionais ou premindo **R** no teclado.
+
+### 3. Personalização de Jogadores e Coringas
+- Clica em qualquer jogador com o cursor:
+  - **Dimensão**: Escolhe entre **Pequeno**, **Médio** ou **Grande**.
+  - **Nome / Sigla**: Escreve 'GR', 'C' (Coringa), '10', 'MC', etc.
+  - **Cores**: Escolhe entre as 7 cores de coletes (amarelo, azul, vermelho, verde, laranja, branco, preto) ou escolhe uma cor livre no gradiente.

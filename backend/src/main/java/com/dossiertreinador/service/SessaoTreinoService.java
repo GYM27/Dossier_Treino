@@ -17,4 +17,10 @@ public interface SessaoTreinoService {
     
     SessaoTreino buscarPorId(UUID id);
     SessaoTreino buscarPorEventoId(UUID eventoId);
+    
+    // Atualizar metadados de uma sessão existente (objetivo, material, etc.)
+    SessaoTreino atualizarSessao(UUID id, String objetivo, String material, Integer numeroJogadores, Integer intensidadeGeral);
+    
+    // Remover um exercício associado a uma sessão
+    void removerExercicio(UUID sessaoId, UUID exercicioAssocId);
 }

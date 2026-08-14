@@ -5,6 +5,7 @@ export interface SessaoTreinoExercicio {
   ordem: number;
   duracaoMinutos: number;
   observacoesDoTreinador?: string;
+  dadosTaticos?: any;
 }
 
 export interface SessaoTreino {

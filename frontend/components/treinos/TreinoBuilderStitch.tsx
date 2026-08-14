@@ -1,12 +1,15 @@
 "use client";
 
 import React, { useState } from "react";
+import dynamic from "next/dynamic";
 import {
   Calendar,
   Clock,
   Flag,
   Box,
   PlusSquare,
+  PlaySquare,
+  LayoutDashboard,
   Library,
   GripVertical,
   Maximize2,
@@ -15,14 +18,20 @@ import {
   Square,
   ImagePlus,
   Edit3,
+  X,
+  Plus,
+  Trash2,
 } from "lucide-react";
-import { SessaoTreino } from "@/models/sessao-treino";
+import { SessaoTreino, SessaoTreinoExercicio } from "@/models/sessao-treino";
 import { Team } from "@/models/team";
 import { Exercicio } from "@/models/exercicio";
 import { CatalogoExerciciosModal } from "./CatalogoExerciciosModal";
 import { apiFetch } from "@/lib/api";
 import { EventoFormModal } from "../calendario/EventoFormModal";
 import { EventoCalendario } from "@/models/planeamento";
+
+// Import dinâmico do TacticalBoard (usa Canvas, precisa de SSR desligado)
+const TacticalBoard = dynamic(() => import("@/components/prancheta/TacticalBoard"), { ssr: false });
 
 interface TreinoBuilderStitchProps {
   treino?: SessaoTreino | null; // Se null, é para criar novo
@@ -39,6 +48,7 @@ export function TreinoBuilderStitch({
   const [isSaving, setIsSaving] = useState(false);
   const [isModalOpen, setIsModalOpen] = useState(false);
   const [latestMicrociclo, setLatestMicrociclo] = useState(1);
+  const [showPrancheta, setShowPrancheta] = useState(false);
   
   // Controlled States para o Formulário do Cabeçalho
   const [titulo, setTitulo] = useState(treino?.objetivo || "Nova Sessão");
@@ -48,6 +58,28 @@ export function TreinoBuilderStitch({
   const [local, setLocal] = useState("Arregaça");
   const [microciclo, setMicrociclo] = useState<number>(treino?.microciclo || 1);
   const [morfociclo, setMorfociclo] = useState<number>(treino?.morfociclo || 1);
+
+  // Estados para Objetivos Gerais e Material (editáveis)
+  const [objetivosGerais, setObjetivosGerais] = useState<string[]>(
+    treino?.objetivo ? treino.objetivo.split('\n').filter(o => o.trim()) : [""]
+  );
+  const [material, setMaterial] = useState(treino?.material || "Bolas, cones, coletes.");
+
+  // Estado local dos exercícios (cópia editável)
+  const [exerciciosLocais, setExerciciosLocais] = useState<SessaoTreinoExercicio[]>(
+    treino?.exercicios || []
+  );
+
+  // Estado para o sessaoId (necessário para PUT/POST)
+  const [sessaoId, setSessaoId] = useState<string | null>(treino?.id || null);
+
+  // Estado para o modal do novo exercício
+  const [novoExercicioNome, setNovoExercicioNome] = useState("");
+  const [novoExercicioDuracao, setNovoExercicioDuracao] = useState(15);
+  const [novoExercicioJogadores, setNovoExercicioJogadores] = useState<string>("16");
+  const [novoExercicioEspaco, setNovoExercicioEspaco] = useState<string>("40x30m");
+  const [novoExercicioPitchStyle, setNovoExercicioPitchStyle] = useState<"full" | "half" | "free">("full");
+  const [novoExercicioCategoria, setNovoExercicioCategoria] = useState<string>("TATICO");
   const [fase, setFase] = useState(treino?.fase || "Competitivo");
   const [jogadores, setJogadores] = useState<number>(treino?.numeroJogadores || 20);
 
@@ -98,19 +130,35 @@ export function TreinoBuilderStitch({
   };
 
   const handleSave = async () => {
+    if (!sessaoId) {
+      alert("Crie um treino primeiro (+ NOVO TREINO)");
+      return;
+    }
+    
     try {
       setIsSaving(true);
-      // Aqui teremos um PUT /api/treinos/{treino.id} futuramente
       
-      // Simulação de gravação
-      setTimeout(() => {
-        setIsSaving(false);
-        alert("Metadados atualizados com sucesso!");
-      }, 500);
+      const objetivoString = objetivosGerais.filter(o => o.trim() !== "").join("\n");
       
-    } catch (e) {
+      const payload = {
+        eventoId: (treino as any)?.eventoId || "00000000-0000-0000-0000-000000000000",
+        equipaId: activeTeam.id,
+        objetivo: objetivoString,
+        material: material,
+        numeroJogadores: jogadores,
+        intensidadeGeral: 3
+      };
+      
+      await apiFetch(`/treinos/${sessaoId}`, {
+        method: "PUT",
+        body: JSON.stringify(payload)
+      });
+      
+      setIsSaving(false);
+      alert("Metadados do treino gravados com sucesso!");
+    } catch (e: any) {
       console.error(e);
-      alert("Erro de ligação.");
+      alert("Erro ao gravar treino: " + (e.message || "Erro desconhecido"));
       setIsSaving(false);
     }
   };
@@ -243,25 +291,55 @@ export function TreinoBuilderStitch({
           {/* Objectives and Material */}
           <div className={`grid grid-cols-1 md:grid-cols-2 gap-6 pt-4 border-t ${borderSubtle}`}>
             <div>
-              <h3 className={`${fontCaps} ${textPrimary} mb-2 flex items-center gap-2`}>
-                <Flag className="w-3.5 h-3.5" /> General Objectives
-              </h3>
-              <ul className="list-none space-y-1 text-sm">
-                <li className="flex items-start gap-2">
-                  <span className={`${textPrimary} mt-0.5`}>•</span> Transição defesa ataque
-                </li>
-                <li className="flex items-start gap-2">
-                  <span className={`${textPrimary} mt-0.5`}>•</span> Organização ofensiva
-                </li>
+              <div className="flex justify-between items-center mb-2">
+                <h3 className={`${fontCaps} ${textPrimary} flex items-center gap-2`}>
+                  <Flag className="w-3.5 h-3.5" /> Objetivos Gerais
+                </h3>
+                <button 
+                  onClick={() => setObjetivosGerais([...objetivosGerais, ""])}
+                  className={`text-xs ${textPrimary} flex items-center gap-1 hover:underline`}
+                >
+                  <Plus className="w-3 h-3" /> Adicionar
+                </button>
+              </div>
+              <ul className="list-none space-y-2 text-sm">
+                {objetivosGerais.map((obj, idx) => (
+                  <li key={idx} className="flex items-start gap-2">
+                    <span className={`${textPrimary} mt-2`}>•</span>
+                    <input
+                      type="text"
+                      className={`flex-1 bg-transparent border-b ${borderSubtle} focus:border-primary outline-none py-1 text-sm ${textOnSurface}`}
+                      placeholder="Novo objetivo..."
+                      value={obj}
+                      onChange={(e) => {
+                        const newObjs = [...objetivosGerais];
+                        newObjs[idx] = e.target.value;
+                        setObjetivosGerais(newObjs);
+                      }}
+                    />
+                    <button 
+                      onClick={() => setObjetivosGerais(objetivosGerais.filter((_, i) => i !== idx))}
+                      className="mt-1 text-muted-foreground hover:text-red-400"
+                    >
+                      <X className="w-3.5 h-3.5" />
+                    </button>
+                  </li>
+                ))}
+                {objetivosGerais.length === 0 && (
+                  <li className={`text-xs ${textVariant} italic`}>Nenhum objetivo definido.</li>
+                )}
               </ul>
             </div>
             <div>
               <h3 className={`${fontCaps} ${textVariant} mb-2 flex items-center gap-2`}>
                 <Box className="w-3.5 h-3.5" /> Material
               </h3>
-              <p className="text-sm">
-                {treino?.material || "Bolas, cones, coletes."}
-              </p>
+              <textarea
+                className={`w-full h-24 bg-transparent border ${borderSubtle} rounded-sm p-2 text-sm ${textOnSurface} focus:border-primary outline-none resize-none`}
+                placeholder="Ex: Bolas, cones, coletes..."
+                value={material}
+                onChange={(e) => setMaterial(e.target.value)}
+              />
             </div>
           </div>
         </section>
@@ -270,6 +348,7 @@ export function TreinoBuilderStitch({
           <h2 className={`${fontHeadline} ${textOnSurface}`}>Exercícios do Treino</h2>
           <div className="flex gap-3 w-full sm:w-auto">
             <button
+              onClick={() => setShowPrancheta(true)}
               className={`flex-1 sm:flex-none ${bgSurfaceVariant} ${textOnSurface} border ${borderSubtle} ${fontMono} py-2 px-4 hover:bg-muted hover:border-primary transition-colors flex items-center justify-center gap-2 rounded-sm`}
             >
               <PlusSquare className="w-[18px] h-[18px]" /> NOVO EXERCÍCIO
@@ -285,14 +364,14 @@ export function TreinoBuilderStitch({
 
         {/* Timeline / Exercises */}
         <div className="flex flex-col gap-6">
-          {(!treino?.exercicios || treino.exercicios.length === 0) ? (
+          {(!exerciciosLocais || exerciciosLocais.length === 0) ? (
             <div className={`p-12 text-center border-dashed border-2 ${borderSubtle} ${bgSurface} rounded-sm`}>
               <Library className={`w-12 h-12 ${textVariant} mx-auto mb-4 opacity-50`} />
               <h3 className={`${fontHeadline} ${textOnSurface} mb-2`}>Prancheta Vazia</h3>
               <p className={textVariant}>Clica em "Importar Biblioteca" para puxar exercícios guardados ou cria um de raiz.</p>
             </div>
           ) : (
-            treino.exercicios.map((assoc, idx) => (
+            exerciciosLocais.map((assoc, idx) => (
               <article key={assoc.id || idx} className={`${bgSurface} border ${borderSubtle} hover:border-primary/50 transition-colors group flex flex-col md:flex-row relative rounded-sm`}>
                 <div className={`absolute left-0 top-0 bottom-0 w-8 ${bgSurfaceVariant} border-r ${borderSubtle} flex-col items-center justify-center opacity-50 group-hover:opacity-100 transition-opacity cursor-move z-10 hidden md:flex rounded-l-sm`}>
                   <GripVertical className={textVariant} />
@@ -300,11 +379,18 @@ export function TreinoBuilderStitch({
 
                 <div className={`w-full md:w-1/3 p-4 md:pl-12 ${bgDark} border-b md:border-b-0 md:border-r ${borderSubtle} relative min-h-[200px] flex items-center justify-center`}>
                   <div className="w-full aspect-[4/3] bg-primary/10 border border-primary/20 relative overflow-hidden flex items-center justify-center">
-                    {/* Placeholder for Tactical Board */}
-                    <div className="absolute inset-0 border-2 border-primary/30 m-2"></div>
-                    <span className={`${fontMono} ${textSecondary} opacity-50`}>
-                      Esquema Tático (Brevemente)
-                    </span>
+                    {assoc.dadosTaticos ? (
+                       <div className="absolute inset-0 w-[200%] h-[200%] origin-top-left scale-50 pointer-events-none">
+                         <TacticalBoard initialTacticData={assoc.dadosTaticos} />
+                       </div>
+                    ) : (
+                      <>
+                        <div className="absolute inset-0 border-2 border-primary/30 m-2"></div>
+                        <span className={`${fontMono} ${textSecondary} opacity-50 text-center px-4`}>
+                          Esquema Tático (Sem Dados)
+                        </span>
+                      </>
+                    )}
                   </div>
                   <button className={`absolute bottom-6 left-6 md:left-14 ${bgSurfaceVariant} border ${borderSubtle} ${fontCaps} ${textOnSurface} px-2 py-1 rounded-sm hover:border-primary transition-colors flex items-center gap-1`}>
                     <Maximize2 className="w-3 h-3" /> FULLSCREEN
@@ -343,12 +429,216 @@ export function TreinoBuilderStitch({
       {showLibrary && (
         <CatalogoExerciciosModal
           onClose={() => setShowLibrary(false)}
-          onSelect={(exercicio) => {
-            console.log("Selecionado:", exercicio);
-            setShowLibrary(false);
+          onSelect={async (exercicio) => {
+            if (!sessaoId) {
+               alert("Grave a sessão de treino primeiro para adicionar exercícios.");
+               setShowLibrary(false);
+               return;
+            }
+            try {
+               setIsSaving(true);
+               const assocPayload = {
+                  exercicioId: exercicio.id,
+                  ordem: exerciciosLocais.length + 1,
+                  duracaoMinutos: 15,
+                  observacoesDoTreinador: ""
+               };
+               const atualizada = await apiFetch(`/treinos/${sessaoId}/exercicios`, {
+                  method: "POST",
+                  body: JSON.stringify(assocPayload)
+               });
+               setExerciciosLocais(atualizada.exercicios || []);
+            } catch(e: any) {
+               alert("Erro: " + e.message);
+            } finally {
+               setIsSaving(false);
+               setShowLibrary(false);
+            }
           }}
         />
       )}
+      
+      {showPrancheta && (
+        <div className="fixed inset-0 z-50 flex items-center justify-center bg-background/90 backdrop-blur-sm p-4">
+          <div className={`w-full max-w-[1600px] max-h-[95vh] bg-card border ${borderSubtle} rounded-md shadow-2xl flex flex-col overflow-hidden`}>
+            {/* Header */}
+            {/* Header */}
+            <div className={`p-3.5 border-b ${borderSubtle} flex justify-between items-center bg-[#0d1527] gap-3`}>
+              <div className="flex gap-3 items-center flex-1 flex-wrap">
+                <button 
+                  onClick={() => setShowPrancheta(false)} 
+                  className="w-8 h-8 flex items-center justify-center rounded-lg hover:bg-slate-800 text-slate-400 hover:text-white transition-colors shrink-0"
+                >
+                  <X className="w-5 h-5" />
+                </button>
+
+                <h2 className="font-bold text-base text-white shrink-0 flex items-center gap-2">
+                  <PlaySquare className="w-5 h-5 text-cyan-400" />
+                  Prancheta Tática
+                </h2>
+                
+                {/* Inputs do Topo: Campo, Nome, Tempo, Jogadores, Espaço */}
+                <div className="flex items-center gap-2 flex-1 max-w-5xl flex-wrap">
+                  {/* Campo (Full vs Half vs Free) */}
+                  <div className="flex items-center gap-1 bg-slate-900 border border-slate-800 rounded-lg p-1 shrink-0">
+                    <span className="text-[11px] font-semibold text-slate-400 pl-1 flex items-center gap-1">
+                      <LayoutDashboard className="w-3.5 h-3.5 text-cyan-400" />
+                      Campo
+                    </span>
+                    <div className="flex items-center gap-0.5 bg-slate-950 p-0.5 rounded border border-slate-800">
+                      <button
+                        onClick={() => setNovoExercicioPitchStyle("full")}
+                        className={`px-2 py-0.5 rounded text-[10px] font-bold transition-all ${
+                          novoExercicioPitchStyle === "full"
+                            ? "bg-yellow-500 text-slate-950 shadow-sm"
+                            : "text-slate-400 hover:text-white"
+                        }`}
+                        title="Campo Inteiro (Com Balizas e Áreas)"
+                      >
+                        Full
+                      </button>
+                      <button
+                        onClick={() => setNovoExercicioPitchStyle("half")}
+                        className={`px-2 py-0.5 rounded text-[10px] font-bold transition-all ${
+                          novoExercicioPitchStyle === "half"
+                            ? "bg-yellow-500 text-slate-950 shadow-sm"
+                            : "text-slate-400 hover:text-white"
+                        }`}
+                        title="Meio Campo (Com Meia Lua e Grande Área)"
+                      >
+                        Half
+                      </button>
+                      <button
+                        onClick={() => setNovoExercicioPitchStyle("free")}
+                        className={`px-2 py-0.5 rounded text-[10px] font-bold transition-all ${
+                          novoExercicioPitchStyle === "free"
+                            ? "bg-yellow-500 text-slate-950 shadow-sm"
+                            : "text-slate-400 hover:text-white"
+                        }`}
+                        title="Relvado Livre (Sem Áreas nem Balizas)"
+                      >
+                        Free
+                      </button>
+                    </div>
+                  </div>
+
+                  {/* Nome */}
+                  <input 
+                    type="text" 
+                    placeholder="Nome do Exercício..." 
+                    value={novoExercicioNome}
+                    onChange={e => setNovoExercicioNome(e.target.value)}
+                    className="flex-1 min-w-[170px] bg-slate-900 border border-slate-800 rounded-lg px-3 py-1.5 text-xs text-slate-200 outline-none focus:border-cyan-500 placeholder:text-slate-600"
+                  />
+
+                  {/* Tempo */}
+                  <div className="flex items-center gap-1.5 bg-slate-900 border border-slate-800 rounded-lg px-2.5 py-1.5 w-24 shrink-0">
+                    <Timer className="w-3.5 h-3.5 text-cyan-400 shrink-0" />
+                    <input 
+                      type="number" 
+                      value={novoExercicioDuracao}
+                      onChange={e => setNovoExercicioDuracao(Number(e.target.value))}
+                      className="w-full bg-transparent border-none outline-none p-0 text-xs text-slate-200"
+                    />
+                    <span className="text-[11px] text-slate-500 font-medium">min</span>
+                  </div>
+
+                  {/* Jogadores */}
+                  <div className="flex items-center gap-1.5 bg-slate-900 border border-slate-800 rounded-lg px-2.5 py-1.5 w-28 shrink-0">
+                    <Users className="w-3.5 h-3.5 text-cyan-400 shrink-0" />
+                    <input 
+                      type="text" 
+                      placeholder="Jogadores..."
+                      value={novoExercicioJogadores}
+                      onChange={e => setNovoExercicioJogadores(e.target.value)}
+                      className="w-full bg-transparent border-none outline-none p-0 text-xs text-slate-200 placeholder:text-slate-600"
+                    />
+                  </div>
+
+                  {/* Espaço */}
+                  <div className="flex items-center gap-1.5 bg-slate-900 border border-slate-800 rounded-lg px-2.5 py-1.5 w-28 shrink-0">
+                    <Maximize2 className="w-3.5 h-3.5 text-cyan-400 shrink-0" />
+                    <input 
+                      type="text" 
+                      placeholder="Espaço..."
+                      value={novoExercicioEspaco}
+                      onChange={e => setNovoExercicioEspaco(e.target.value)}
+                      className="w-full bg-transparent border-none outline-none p-0 text-xs text-slate-200 placeholder:text-slate-600"
+                    />
+                  </div>
+                </div>
+              </div>
+
+              <div className="text-[11px] text-slate-400 italic shrink-0 hidden md:block">
+                Usa o botão <span className="font-semibold text-yellow-400">"Guardar"</span> na lateral para finalizar.
+              </div>
+            </div>
+            
+            {/* Body */}
+            <div className="flex-1 overflow-y-auto p-3 bg-[#0a0f1c]">
+              <TacticalBoard 
+                initialTacticData={{
+                  pitchStyle: novoExercicioPitchStyle,
+                  tempo: String(novoExercicioDuracao),
+                  numeroJogadores: novoExercicioJogadores,
+                  espaco: novoExercicioEspaco,
+                }}
+                onSave={async (tacticData: any) => {
+                  try {
+                    setIsSaving(true);
+                    
+                    const payload = {
+                      nome: novoExercicioNome || "Novo Exercício Tático",
+                      descricao: tacticData.descricaoMetodologica || "Criado no treino builder.",
+                      objetivosEspecificos: tacticData.objetivoEspecifico || "",
+                      espaco: novoExercicioEspaco || tacticData.espaco || "",
+                      jogadoresEnvolvidos: parseInt(novoExercicioJogadores) || (tacticData.numeroJogadores ? parseInt(tacticData.numeroJogadores) : null),
+                      categoria: novoExercicioCategoria,
+                      nivelDificuldade: 3,
+                      dadosTaticos: {
+                        ...tacticData,
+                        tempo: String(novoExercicioDuracao),
+                        numeroJogadores: novoExercicioJogadores,
+                        espaco: novoExercicioEspaco
+                      }
+                    };
+                    const response = await apiFetch("/exercicios", {
+                      method: "POST",
+                      body: JSON.stringify(payload)
+                    });
+                    
+                    if (sessaoId && response.id) {
+                       const assocPayload = {
+                          exercicioId: response.id,
+                          ordem: exerciciosLocais.length + 1,
+                          duracaoMinutos: novoExercicioDuracao,
+                          observacoesDoTreinador: ""
+                       };
+                       const atualizada = await apiFetch(`/treinos/${sessaoId}/exercicios`, {
+                          method: "POST",
+                          body: JSON.stringify(assocPayload)
+                       });
+                       
+                       setExerciciosLocais(atualizada.exercicios || []);
+                       alert("Exercício guardado e associado com sucesso!");
+                    } else {
+                       alert("Exercício gravado no catálogo (mas guarde o Treino 1º para o associar).");
+                    }
+                    
+                    setShowPrancheta(false);
+                    setNovoExercicioNome("");
+                  } catch (e: any) {
+                    alert("Erro ao gravar exercício: " + e.message);
+                  } finally {
+                    setIsSaving(false);
+                  }
+                }}
+              />
+            </div>
+          </div>
+        </div>
+      )}
+
       {isModalOpen && (
         <EventoFormModal
           isOpen={isModalOpen}

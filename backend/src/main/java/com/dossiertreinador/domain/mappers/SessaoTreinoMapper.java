@@ -33,11 +33,9 @@ public class SessaoTreinoMapper {
                 .eventoId(entity.getEventoCalendario() != null ? entity.getEventoCalendario().getId() : null)
                 .data(entity.getEventoCalendario() != null ? entity.getEventoCalendario().getDataHoraInicio().toLocalDate() : null)
                 .hora(entity.getEventoCalendario() != null ? entity.getEventoCalendario().getDataHoraInicio().toLocalTime() : null)
-                .morfociclo(entity.getEventoCalendario() != null && entity.getEventoCalendario().getMicrocicloPlaneamento() != null 
-                    ? entity.getEventoCalendario().getMicrocicloPlaneamento().getMorfociclo() : null)
+                .morfociclo(null) // TODO: Implementar mapeamento correto de Morfociclo
                 .microciclo(entity.getEventoCalendario() != null ? entity.getEventoCalendario().getNumeroTreino() : null)
-                .fase(entity.getEventoCalendario() != null && entity.getEventoCalendario().getMicrocicloPlaneamento() != null 
-                    ? entity.getEventoCalendario().getMicrocicloPlaneamento().getFase() : null)
+                .fase(null) // TODO: Implementar mapeamento correto de Fase
                 .numeroJogadores(entity.getNumeroJogadores())
                 .material(entity.getMaterial())
                 .objetivo(entity.getObjetivo())
@@ -58,6 +56,7 @@ public class SessaoTreinoMapper {
                 .ordem(assoc.getOrdem())
                 .duracaoMinutos(assoc.getDuracaoMinutos())
                 .observacoesDoTreinador(assoc.getObservacoesDoTreinador())
+                .dadosTaticos(assoc.getExercicio().getDadosTaticos())
                 .build();
     }
 }

@@ -79,4 +79,37 @@ public class SessaoTreinoServiceImpl implements SessaoTreinoService {
         return sessaoTreinoRepository.findByEventoCalendarioId(eventoId)
                 .orElseThrow(() -> new RuntimeException("Sessão de Treino não encontrada para este evento."));
     }
+
+    @Override
+    @Transactional
+    public SessaoTreino atualizarSessao(UUID id, String objetivo, String material, Integer numeroJogadores, Integer intensidadeGeral) {
+        SessaoTreino sessao = buscarPorId(id);
+        
+        if (objetivo != null) sessao.setObjetivo(objetivo);
+        if (material != null) sessao.setMaterial(material);
+        if (numeroJogadores != null) sessao.setNumeroJogadores(numeroJogadores);
+        if (intensidadeGeral != null) sessao.setIntensidadeGeral(intensidadeGeral);
+        
+        return sessaoTreinoRepository.save(sessao);
+    }
+
+    @Override
+    @Transactional
+    public void removerExercicio(UUID sessaoId, UUID exercicioAssocId) {
+        SessaoTreino sessao = buscarPorId(sessaoId);
+        
+        boolean removido = sessao.getExercicios().removeIf(assoc -> assoc.getId().equals(exercicioAssocId));
+        
+        if (!removido) {
+            throw new RuntimeException("Exercício não encontrado nesta sessão.");
+        }
+        
+        // Recalcular duração total
+        int duracaoTotal = sessao.getExercicios().stream()
+                .mapToInt(SessaoTreinoExercicio::getDuracaoMinutos)
+                .sum();
+        sessao.setDuracaoTotalMinutos(duracaoTotal);
+        
+        sessaoTreinoRepository.save(sessao);
+    }
 }

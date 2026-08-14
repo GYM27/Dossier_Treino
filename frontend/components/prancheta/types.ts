@@ -5,21 +5,29 @@ export interface Point {
 
 export interface TacticalElement {
   id: string;
-  type: "home" | "away" | "ball" | "cone";
+  type: "home" | "away" | "ball" | "cone" | "mini_goal";
   x: number;
   y: number;
   number?: number;
+  label?: string;
   color?: string;
+  rotation?: number;
+  goalSize?: "mini" | "fut7" | "fut11";
+  size?: "sm" | "md" | "lg";
+}
+
+export interface DrawingConfig {
+  color?: string;
+  fillColor?: string;
+  size?: number;
+  opacity?: number;
+  lineStyle?: "solid" | "dashed";
 }
 
 export interface TacticalDrawing {
-  type: "select" | "run" | "pass" | "pen" | "rect";
+  type: "select" | "run" | "pass" | "pen" | "rect" | "circle" | "triangle" | "pentagon" | "hexagon";
   points: Point[];
-  config?: {
-    color?: string;
-    size?: number;
-    opacity?: number;
-  };
+  config?: DrawingConfig;
 }
 
 export interface FrameNode {
@@ -34,14 +42,15 @@ export interface FrameNode {
 export interface HistorySnapshot {
   framesMap: Record<string, FrameNode>;
   activePath: string[];
+  drawings?: TacticalDrawing[];
 }
 
 export interface TacticalState {
-  pitchStyle: "full" | "half";
+  pitchStyle: "full" | "half" | "free";
   framesMap: Record<string, FrameNode>;
   activePath: string[];
   currentFrameIdx: number;
-  drawingMode: "select" | "run" | "pass" | "pen" | "rect";
+  drawingMode: "select" | "run" | "pass" | "pen" | "rect" | "circle" | "triangle";
   drawings: TacticalDrawing[];
   isPlaying: boolean;
   transitionSpeed: number;
@@ -57,9 +66,12 @@ export interface TacticalState {
   historyIndex: number;
   originalDragPos: Point | null;
   activeDrawingIndex?: number;
-  drawingConfig?: {
-    color?: string;
-    size?: number;
-    opacity?: number;
-  };
+  drawingConfig?: DrawingConfig;
+  
+  // Metadados do exercício
+  tempo?: string;
+  numeroJogadores?: string;
+  espaco?: string;
+  objetivoEspecifico?: string;
+  descricaoMetodologica?: string;
 }

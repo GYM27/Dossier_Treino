@@ -72,4 +72,29 @@ public class SessaoTreinoController {
         
         return ResponseEntity.ok(sessaoTreinoMapper.toResponseDTO(atualizada));
     }
+
+    @PutMapping("/{sessaoId}")
+    public ResponseEntity<SessaoTreinoResponseDTO> atualizarSessao(
+            @PathVariable UUID sessaoId,
+            @RequestBody SessaoTreinoRequestDTO dto) {
+        
+        SessaoTreino atualizada = sessaoTreinoService.atualizarSessao(
+                sessaoId,
+                dto.getObjetivo(),
+                dto.getMaterial(),
+                dto.getNumeroJogadores(),
+                dto.getIntensidadeGeral()
+        );
+        
+        return ResponseEntity.ok(sessaoTreinoMapper.toResponseDTO(atualizada));
+    }
+
+    @DeleteMapping("/{sessaoId}/exercicios/{assocId}")
+    public ResponseEntity<Void> removerExercicioDaSessao(
+            @PathVariable UUID sessaoId,
+            @PathVariable UUID assocId) {
+        
+        sessaoTreinoService.removerExercicio(sessaoId, assocId);
+        return ResponseEntity.noContent().build();
+    }
 }

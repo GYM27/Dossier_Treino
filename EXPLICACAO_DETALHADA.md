@@ -382,3 +382,112 @@ Removido o controlo do Microciclo do topo do Calend�rio e transferida a responsa
 
 ## Incremento Autom�tico do N�mero do Treino
 Para facilitar a vida ao utilizador, o backend passou a ter um endpoint (\/equipa/{equipaId}/ultimo-numero-treino\) que vai � base de dados buscar o �ltimo n�mero de treino registado. O frontend chama este endpoint sempre que se clica para adicionar um novo evento e, se for do tipo Treino, incrementa esse valor automaticamente (N+1) no formul�rio.
+# #   I n t e g r a � � o   d a   P r a n c h e t a   T � t i c a 
+ O   c o m p o n e n t e   T a c t i c a l B o a r d   f o i   i n t e g r a d o   n a   p � g i n a   d e   T r e i n o s . 
+ -   A d i c i o n a d o   u m   b o t � o   N O V O   E X E R C � C I O   q u e   a b r e   u m   m o d a l   f u l l s c r e e n   c o m   a   p r a n c h e t a . 
+ -   O   c o m p o n e n t e   T a c t i c a l B o a r d   d e v o l v e   u m   o b j e t o   J S O N   q u e   �   g r a v a d o   n o   b a c k e n d   ( d a d o s T a t i c o s ) . 
+ -   O s   c a m p o s   O b j e t i v o s   e   M a t e r i a l   p a s s a r a m   a   s e r   e d i t � v e i s   l o c a l m e n t e   e   s � o   g u a r d a d o s   n o   b a c k e n d   ( P U T   / a p i / t r e i n o s / { i d } ) .  
+ 
+
+
+## Evolução da Prancheta Tática: Floating Toolbar, Redimensionamento, Aura Neon e Bola 3D
+
+Nesta etapa, a Prancheta Tática (*Tactical Board*) sofreu uma evolução de engenharia profunda, transformando-se num estúdio tático profissional, intuitivo e com gráficos de alta fidelidade.
+
+### 1. Arquitetura Modular Baseada em Funcionalidades (Feature-based)
+- **TacticalBoard.tsx**: Componente orquestrador central.
+  - **Loop a 60 FPS com equestAnimationFrame**: Para garantir desempenho de topo sem sobrecarregar o ciclo de vida do React com re-renders excessivos, o estado vivo da prancheta reside num useRef<TacticalState>.
+  - **Sincronização de Estado Reactivo**: Criada a referência selectedDrawingIdxRef e selectedElementIdRef emparelhadas com selectedDrawingIdx e selectedElementId do React. Isto resolve o problema clássico de *stale closure* no canvas loop, garantindo que o render loop lê em tempo real os objetos selecionados.
+  - **Hit-Testing Geométrico**: Algoritmos de colisão por raio euclidiano para jogadores/círculos, teste de pertença a *bounding box* para retângulos/triângulos/polígonos, e projeção ortogonal a segmentos de reta para linhas contínuas e tracejadas.
+- **TacticalBottomBar.tsx**: Barra de ferramentas inferior horizontal com seletores rápidos de modo (select, ect, circle, 	riangle, un, pass, pen), jogadores equipa A/B, cones, bola e botão de reposição inteligente.
+- **TacticalSidebar.tsx**: Painel lateral direito minimizável com suporte a metadados estruturados do exercício (Tempo, Número de Jogadores, Espaço, Objetivos Específicos e Descrição Metodológica) e controlos de Undo/Redo/Gravação.
+- **TacticalShapeFloatingBar.tsx**: Barra flutuante contextual padronizada (largura fixa de 380px) posicionada dinamicamente acima do objeto selecionado.
+
+### 2. Floating Toolbar Contextual com Dimensões Padronizadas
+Em vez de um modal central intrusivo, a edição foi transferida para o próprio relvado através de um *popover* flutuante no topo do objeto:
+- **Tamanho Fixo e Sem Saltos**: A barra mantém sempre 380px de largura e uma estrutura consistente de duas linhas quer se selecione um retângulo, círculo, triângulo, pentágono, hexágono ou linha de passe/corrida.
+- **Linha 1**: Tipo de Forma / Tipo de Linha, Linha Contínua vs Tracejada, e Seletor de Cor.
+- **Linha 2**: Dropdown de Espessura (1 a 10px), Seletor de Fundo, Dropdown de Opacidade (0% a 100%) e Botão de Eliminar.
+
+### 3. Aura Luminosa Neon e Pegas de Redimensionamento
+- **Para Linhas**: Renderização de uma aura neon ciano (#00e5ff com shadowBlur: 20 e globalAlpha: 0.55) ao longo de toda a extensão do segmento, acompanhada de pegas circulares azuis com anel branco nas extremidades.
+- **Para Formas**: Renderização de caixa delimitadora tracejada neon ciano (shadowBlur: 18), marcador central translúcido e 4 pegas circulares azuis nos cantos.
+- **Para Jogadores e Bola**: Anel circular tracejado neon ciano ao redor da peça.
+
+### 4. Bola de Futebol 3D Vetorial Realista
+A primitiva esfera branca com ponto preto foi substituída por um desenho vetorial 3D profissional:
+- **Gradiente Radial Esférico**: Iluminação no quadrante superior esquerdo (0% #ffffff a 100% #64748b) para criar volume e curvatura realista.
+- **Sombra de Contacto**: Elipse sombreada suave sob a bola projetada no relvado.
+- **Painéis e Costuras Geométricas**: Pentágono central escuro (#0f172a), 5 costuras radiais e 5 gomos curvos externos.
+- **Reflexo Glossy Especular**: Ponto de luz superior que confere o acabamento de couro sintético de futebol profissional.
+
+### 5. Reposicionamento Inteligente no Caixote do Lixo
+Ao acionar o botão de limpar campo (caixote do lixo na barra inferior):
+- Limpa todos os desenhos, linhas, setas e cones.
+- Reposiciona os 11 jogadores Amarelos atrás da baliza esquerda e os 11 jogadores Azuis atrás da baliza direita, com a bola de futebol no centro do relvado, deixando o campo pronto para iniciar um novo exercício.
+- Regista automaticamente um ponto de restauro no Histórico (*Undo*).
+
+### 6. Atalhos de Teclado (Delete / Backspace)
+- Listener global no teclado para apagar formas, linhas, jogadores ou cones selecionados.
+- Filtro inteligente que impede a eliminação se o utilizador estiver a escrever em caixas de texto (input, 	extarea, select).
+
+**Por detrás dos panos:**
+O canvas HTML5 desenha a 60fps através do equestAnimationFrame. As posições calculadas em percentagem relativas à resolução base 1000x625 garantem que a barra flutuante em HTML overlay acompanha exatamente o topo da forma selecionada, mesmo quando o ecrã se redimensiona.
+
+
+## Reorganização Ergonómica da Barra de Ferramentas Inferior (TacticalBottomBar)
+
+Organização dos controlos em dois blocos lógicos:
+1. **Bloco de Criação e Edição (Esquerda)**:
+   - Ferramentas de Seleção e Caneta Livre.
+   - Formas Geométricas (Retângulo, Círculo, Triângulo).
+   - Linhas Táticas (Contínua/Deslocamento e Tracejada/Passe).
+   - Controlos de Estilo (Cor da Linha, Espessura, Cor de Fundo e Opacidade).
+2. **Bloco de Peças e Gestão do Campo (Direita)**:
+   - Botões para adicionar Jogador Amarelo (Equipa A), Jogador Azul (Equipa B), Cone e Bola.
+   - Botão de Limpeza Inteligente que devolve os 22 jogadores para trás das balizas e a bola para o círculo central.
+
+
+## Otimização de Espaço e Design Modular na Barra Inferior (TacticalBottomBar)
+
+Para eliminar o espaço morto e tornar a interface harmoniosa e equilibrada:
+- A barra inferior foi decomposta em **4 cápsulas/módulos visuais segmentados** (g-slate-900/80 border border-slate-800/90 rounded-xl):
+  1. **Módulo de Criação & Formas (Esquerda)**: Ferramentas de seleção, caneta, formas geométricas e estilos de linha.
+  2. **Módulo de Estilos & Cores (Centro)**: Controlo centralizado de cor de traço, espessura, cor de preenchimento e opacidade.
+  3. **Módulo de Peças Táticas (Direita)**: Jogadores A/B, cones e bola com identificadores visuais.
+  4. **Módulo de Ações Rápidas (Extremo Direito)**: Botão de limpeza com etiqueta e ícone de destaque.
+
+
+## Atalhos de Teclado Universais: Desfazer (Ctrl+Z) e Refazer (Ctrl+Y / Ctrl+Shift+Z)
+
+### 1. Implementação Técnica
+- Adicionado intercetor de eventos de teclado no TacticalBoard.tsx:
+  - (e.ctrlKey || e.metaKey) && e.key === "z" && !e.shiftKey: Executa undo(), revertendo para o snapshot de estado anterior na pilha de histórico.
+  - (e.ctrlKey || e.metaKey) && e.key === "y" ou Ctrl+Shift+Z: Executa edo(), avançando para o estado seguinte na pilha.
+  - Proteção contextual: Se o foco estiver num input, 	extarea, select ou campo editável, os atalhos não interferem com a edição nativa de texto.
+
+
+## Atalhos de Teclado Universais: Copiar (Ctrl+C) e Colar (Ctrl+V) de Desenhos e Elementos
+
+### 1. Implementação Técnica do Clipboard
+- Adicionada a referência em memória clipboardRef no TacticalBoard.tsx.
+- **Copiar (Ctrl+C / Cmd+C)**:
+  - Se estiver selecionada uma forma ou linha (selectedDrawingIdxRef.current), clona em profundidade as propriedades geométricas e de estilo (points, color, illColor, size, opacity, lineStyle).
+  - Se estiver selecionado um jogador, cone ou bola (selectedElementIdRef.current), clona as propriedades do elemento.
+- **Colar (Ctrl+V / Cmd+V)**:
+  - **Para Desenhos/Formas**: Aplica um ligeiro deslocamento (*offset*) de +25px nas coordenadas X e Y (para que a cópia não fique perfeitamente sobreposta e seja imediatamente visível), insere na lista de desenhos, seleciona a nova cópia e grava no histórico (*Undo*).
+  - **Para Jogadores/Peças**: Cria um novo identificador único (id), atribui o próximo dorsal vago (se for jogador da Equipa A ou B), aplica o deslocamento de +25px, insere no quadro e seleciona a nova peça.
+## Módulos Avançados de Balizas, Jogadores e Otimização do Canvas
+
+### O Que Acontece por Detrás dos Panos:
+
+1. **Renderização de Balizas Vetoriais e Rotação Trigonométrica**:
+   - As balizas são desenhadas através de primitivas Canvas (linhas de travessão com espessuras de 3.5 a 4.5px, arcos para postes e malha de rede com ciclos 'for').
+   - A rotação aplica ctx.translate(el.x, el.y) e ctx.rotate(el.rotation), permitindo que toda a geometria (incluindo a sombra elíptica) gire com precisão de matriz 2D.
+
+2. **Pointer Capture e Continuidade de Eventos do Rato**:
+   - Quando um elemento é clicado, o browser executa setPointerCapture(e.pointerId). Isto faz com que os eventos de movimento continuem a ser encaminhados para o canvas, mesmo quando o ponteiro passa por cima das caixas de diálogo flutuantes ou sai do ecrã, garantindo arrasto 100% contínuo e sem bloqueios.
+
+3. **Cálculo de Tipografia Dinâmica e Contraste**:
+   - A função de renderização analisa o comprimento da sigla (ex: 'GR' vs '10' vs 'DC') e a escala do jogador ('sm', 'md', 'lg'), ajustando dinamicamente o tamanho da fonte entre 7px e 15px.
+   - O contraste entre o texto interior e o fundo do colete é calculado dinamicamente com base no valor hexadecimal da cor, garantindo legibilidade absoluta.

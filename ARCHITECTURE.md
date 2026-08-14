@@ -96,3 +96,71 @@ oster-view.tsx foi migrado para ler do backend os Atletas criados na Base de Dad
 
 ## M�dulo de Treinos (Treino Builder)
 O design de ecr� inteiro exigiu que a arquitetura do Frontend isolasse o TreinoBuilderStitch dos layouts gen�ricos. O Backend foi flexibilizado para incluir colunas da Periodiza��o T�tica (morfociclo, microciclo, ase). A separa��o entre o Orquestrador (TreinosOrchestrator) e a visualiza��o (TreinoBuilderStitch) mant�m a componente de apresenta��o (UI rica com Tailwind custom colors) desligada da mec�nica de fetching das listas base.
+
+ # # #   I n t e g r a � � o   d a   P r a n c h e t a   T � t i c a 
+ A   a r q u i t e t u r a   d o   T r e i n o   B u i l d e r   f o i   e x p a n d i d a   p a r a   s u p o r t a r   c r i a � � o   e   a s s o c i a � � o   d i r e t a   d e   e x e r c � c i o s . 
+ A   e n t i d a d e   \ E x e r c i c i o \   u t i l i z a   \ @ J d b c T y p e C o d e ( S q l T y p e s . J S O N ) \   n o   c a m p o   \ d a d o s T a t i c o s \   p a r a   p e r s i s t i r   o   e s t a d o   d o   C a n v a s   ( p o s i � � e s   X , Y   e   l i n h a s )   d e   f o r m a   s c h e m a - l e s s ,   g a r a n t i n d o   f l e x i b i l i d a d e   c a s o   o s   r e q u i s i t o s   d o   d e s e n h o   t � t i c o   e v o l u a m .   A   c o m u n i c a � � o   �   f e i t a   v i a   \ P O S T   / a p i / e x e r c i c i o s \   ( C r i a � � o   g l o b a l )   s e g u i d o   d e   \ P O S T   / a p i / t r e i n o s / { s e s s a o I d } / e x e r c i c i o s \   ( A s s o c i a � � o   a o   T r e i n o   A t u a l ) .  
+ 
+
+
+## Prancheta Tática (Tactical Board) - Arquitetura e Decisões de Engenharia
+
+### 1. Separação de Responsabilidades e Componentização
+- **Padrão Orquestrador / Apresentação**:
+  - TacticalBoard.tsx gere o motor Canvas, render loop a 60fps e sincronização de eventos de ponteiro/teclado.
+  - TacticalBottomBar.tsx é responsável pelas ferramentas globais e controlos de modo.
+  - TacticalSidebar.tsx gere os metadados do exercício e operações de persistência e histórico.
+  - TacticalShapeFloatingBar.tsx fornece edição contextual direta (in-place) sobre os objetos no campo.
+
+### 2. Sincronização entre Ciclo React e Canvas Loop (Prevenção de Stale Closures)
+- **Problema**: O render loop do Canvas executado em equestAnimationFrame dentro de um useEffect com dependências vazias mantinha referências antigas (*stale closures*) a variáveis de estado do React como selectedDrawingIdx.
+- **Solução Arquitetural**: Implementado o padrão de estado emparelhado com referências (selectedDrawingIdxRef e selectedElementIdRef). Todas as mutações de seleção atualizam simultaneamente a referência síncrona e o estado do React, permitindo que o loop gráfico leia em tempo real as seleções sem exigir a reinicialização do loop do canvas.
+
+### 3. Floating Toolbar com Dimensões Constantes (UX Invariante)
+- **Decisão**: A barra de edição flutuante foi dimensionada para uma largura fixa de 380px com uma grelha de duas linhas invariante.
+- **Justificação**: Evita o fenómeno de *layout shift* (salto visual brusco) quando o utilizador transita a seleção entre formas geométricas (com preenchimento e opacidade) e linhas/setas táticas.
+
+### 4. Renderização Vetorial 3D da Bola e Auras de Destaque
+- **Decisão**: Implementar a bola de futebol e as auras luminosas diretamente em instruções vetoriais do Canvas 2D (createRadialGradient, ellipse, shadowBlur, clip).
+- **Justificação**: Elimina a necessidade de assets de imagem externos ou requisições HTTP adicionais, assegurando renderização nítida em qualquer resolução e escala sem artefactos de compressão.
+
+
+## Atalhos de Teclado Universais: Desfazer (Ctrl+Z) e Refazer (Ctrl+Y / Ctrl+Shift+Z)
+
+### 1. Implementação Técnica
+- Adicionado intercetor de eventos de teclado no TacticalBoard.tsx:
+  - (e.ctrlKey || e.metaKey) && e.key === "z" && !e.shiftKey: Executa undo(), revertendo para o snapshot de estado anterior na pilha de histórico.
+  - (e.ctrlKey || e.metaKey) && e.key === "y" ou Ctrl+Shift+Z: Executa edo(), avançando para o estado seguinte na pilha.
+  - Proteção contextual: Se o foco estiver num input, 	extarea, select ou campo editável, os atalhos não interferem com a edição nativa de texto.
+
+
+## Atalhos de Teclado Universais: Copiar (Ctrl+C) e Colar (Ctrl+V) de Desenhos e Elementos
+
+### 1. Implementação Técnica do Clipboard
+- Adicionada a referência em memória clipboardRef no TacticalBoard.tsx.
+- **Copiar (Ctrl+C / Cmd+C)**:
+  - Se estiver selecionada uma forma ou linha (selectedDrawingIdxRef.current), clona em profundidade as propriedades geométricas e de estilo (points, color, illColor, size, opacity, lineStyle).
+  - Se estiver selecionado um jogador, cone ou bola (selectedElementIdRef.current), clona as propriedades do elemento.
+- **Colar (Ctrl+V / Cmd+V)**:
+  - **Para Desenhos/Formas**: Aplica um ligeiro deslocamento (*offset*) de +25px nas coordenadas X e Y (para que a cópia não fique perfeitamente sobreposta e seja imediatamente visível), insere na lista de desenhos, seleciona a nova cópia e grava no histórico (*Undo*).
+  - **Para Jogadores/Peças**: Cria um novo identificador único (id), atribui o próximo dorsal vago (se for jogador da Equipa A ou B), aplica o deslocamento de +25px, insere no quadro e seleciona a nova peça.
+## Relvado Tático, Balizas Móveis (Mini, Fut 7, Fut 11) e Jogadores Customizáveis
+
+### 1. 3 Modos de Relvado (Full | Half | Free)
+- **Full**: Campo completo com 2 balizas e áreas regulamentares.
+- **Half**: Meio-campo tático com grande área, pequena área, penálti e meia-lua à esquerda, e linha de meio-campo com meio-círculo central à direita.
+- **Free**: Relvado limpo sem marcações interiores, concebido para rondos e jogos em espaço reduzido.
+
+### 2. Balizas Móveis com Dimensões Reais
+- **Mini**: 36x18px para jogos de precisão e transição rápida.
+- **Fut 7**: 56x24px com proporções de futebol de 7 (6x2m).
+- **Fut 11**: 82x32px com proporções regulamentares de futebol de 11 (7.32x2.44m).
+- **Rotação**: Suporte a 360° através da barra contextual e da tecla 'R'.
+
+### 3. Personalização de Jogadores (Tamanho, Cores e Siglas)
+- **3 Escalas**: Pequeno (sm - 11px), Médio (md - 15px), Grande (lg - 19px).
+- **Cores & Coletes**: 7 cores predefinidas + seletor livre para equipas adicionais, neutros e coringas.
+- **Siglas & Nomes**: Suporte a texto arbitrário ('GR', 'C', 'MC', '7') com tipografia vetorial auto-escalável e cálculo automático de contraste (fundo claro vs escuro).
+
+### 4. Robustez de Interação (Pointer Capture)
+- Implementação de setPointerCapture no <canvas> para evitar interrupções de arrasto quando o cursor cruza os limites das barras de ferramentas flutuantes.
