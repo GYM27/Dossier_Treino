@@ -1259,8 +1259,8 @@ export default function TacticalBoard({ initialTacticData, onSave }: { initialTa
               return (
                 <div
                   className={cn(
-                    "absolute z-30",
-                    isDraggingNow ? "pointer-events-none opacity-30" : "pointer-events-auto opacity-100"
+                    "absolute z-30 transition-opacity duration-200",
+                    isDraggingNow ? "opacity-0 pointer-events-none" : "opacity-100 pointer-events-auto"
                   )}
                   style={{
                     left: `${leftPct}%`,
@@ -1292,8 +1292,8 @@ export default function TacticalBoard({ initialTacticData, onSave }: { initialTa
             return (
               <div
                 className={cn(
-                  "absolute z-30",
-                  isDraggingNow ? "pointer-events-none opacity-30" : "pointer-events-auto opacity-100"
+                  "absolute z-30 transition-opacity duration-200",
+                  isDraggingNow ? "opacity-0 pointer-events-none" : "opacity-100 pointer-events-auto"
                 )}
                 style={{
                   left: `${leftPct}%`,
@@ -1352,8 +1352,8 @@ export default function TacticalBoard({ initialTacticData, onSave }: { initialTa
             return (
               <div
                 className={cn(
-                  "absolute z-30",
-                  isDraggingNow ? "pointer-events-none opacity-30" : "pointer-events-auto opacity-100"
+                  "absolute z-30 transition-opacity duration-200",
+                  isDraggingNow ? "opacity-0 pointer-events-none" : "opacity-100 pointer-events-auto"
                 )}
                 style={{
                   left: `${leftPct}%`,
