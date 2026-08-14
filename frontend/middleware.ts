@@ -5,10 +5,8 @@ export function middleware(request: NextRequest) {
   const jwt = request.cookies.get('jwt')
   const { pathname } = request.nextUrl
 
-  // Se o utilizador já tem o token e tenta aceder ao login, redireciona para a raiz
-  if (pathname === '/login' && jwt) {
-    return NextResponse.redirect(new URL('/', request.url))
-  }
+  // Removido: O redirecionamento de /login para / causava um loop infinito se o JWT fosse inválido.
+  // Se o utilizador tiver um JWT inválido, ele vai para /login e DEVE FICAR LÁ para poder fazer login novamente.
 
   // Se o utilizador NÃO tem token e tenta aceder a qualquer rota protegida
   // (neste caso protegemos tudo exceto o /login, _next, favicon etc)

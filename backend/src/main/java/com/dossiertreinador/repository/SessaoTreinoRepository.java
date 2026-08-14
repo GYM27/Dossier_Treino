@@ -11,5 +11,11 @@ import java.util.UUID;
 public interface SessaoTreinoRepository extends JpaRepository<SessaoTreino, UUID> {
 
     // Encontrar todos os treinos de uma equipa
-    List<SessaoTreino> findByEquipaIdOrderByDataDesc(UUID equipaId);
+    List<SessaoTreino> findByEquipaIdOrderByEventoCalendario_DataHoraInicioDesc(UUID equipaId);
+
+    // Encontrar SessaoTreino pelo ID do evento calendário associado
+    java.util.Optional<SessaoTreino> findByEventoCalendarioId(UUID eventoId);
+
+    // Apagar SessaoTreino pelo ID do evento calendário associado (necessário para eliminar um Evento)
+    void deleteByEventoCalendarioId(UUID eventoId);
 }

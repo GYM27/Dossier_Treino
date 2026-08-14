@@ -51,6 +51,12 @@ public class SessaoTreinoController {
         return ResponseEntity.ok(resposta);
     }
 
+    @GetMapping("/evento/{eventoId}")
+    public ResponseEntity<SessaoTreinoResponseDTO> buscarSessaoPorEvento(@PathVariable UUID eventoId) {
+        SessaoTreino sessao = sessaoTreinoService.buscarPorEventoId(eventoId);
+        return ResponseEntity.ok(sessaoTreinoMapper.toResponseDTO(sessao));
+    }
+
     @PostMapping("/{sessaoId}/exercicios")
     public ResponseEntity<SessaoTreinoResponseDTO> adicionarExercicioAoTreino(
             @PathVariable UUID sessaoId,

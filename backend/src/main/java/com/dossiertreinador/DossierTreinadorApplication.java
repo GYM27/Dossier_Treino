@@ -30,9 +30,14 @@ public class DossierTreinadorApplication {
         return args -> {
             try {
                 jdbcTemplate.execute("ALTER TABLE registo_assiduidade DROP CONSTRAINT IF EXISTS registo_assiduidade_tipo_assiduidade_check");
-                System.out.println("✅ Constraint de TipoAssiduidade limpa com sucesso!");
+                jdbcTemplate.execute("ALTER TABLE sessao_treino DROP COLUMN IF EXISTS data");
+                jdbcTemplate.execute("ALTER TABLE sessao_treino DROP COLUMN IF EXISTS hora");
+                jdbcTemplate.execute("ALTER TABLE sessao_treino DROP COLUMN IF EXISTS microciclo");
+                jdbcTemplate.execute("ALTER TABLE sessao_treino DROP COLUMN IF EXISTS morfociclo");
+                jdbcTemplate.execute("ALTER TABLE sessao_treino DROP COLUMN IF EXISTS fase");
+                System.out.println("✅ Constraint de TipoAssiduidade e colunas antigas limpas com sucesso!");
             } catch (Exception e) {
-                System.out.println("Aviso ao limpar constraint: " + e.getMessage());
+                System.out.println("Aviso ao limpar DB: " + e.getMessage());
             }
         };
     }
