@@ -17,11 +17,6 @@ public class SessaoTreinoMapper {
         if (dto == null) return null;
         
         return SessaoTreino.builder()
-                .data(dto.getData())
-                .hora(dto.getHora())
-                .morfociclo(dto.getMorfociclo())
-                .microciclo(dto.getMicrociclo())
-                .fase(dto.getFase())
                 .numeroJogadores(dto.getNumeroJogadores())
                 .material(dto.getMaterial())
                 .objetivo(dto.getObjetivo())
@@ -35,11 +30,14 @@ public class SessaoTreinoMapper {
         
         return SessaoTreinoResponseDTO.builder()
                 .id(entity.getId())
-                .data(entity.getData())
-                .hora(entity.getHora())
-                .morfociclo(entity.getMorfociclo())
-                .microciclo(entity.getMicrociclo())
-                .fase(entity.getFase())
+                .eventoId(entity.getEventoCalendario() != null ? entity.getEventoCalendario().getId() : null)
+                .data(entity.getEventoCalendario() != null ? entity.getEventoCalendario().getDataHoraInicio().toLocalDate() : null)
+                .hora(entity.getEventoCalendario() != null ? entity.getEventoCalendario().getDataHoraInicio().toLocalTime() : null)
+                .morfociclo(entity.getEventoCalendario() != null && entity.getEventoCalendario().getMicrocicloPlaneamento() != null 
+                    ? entity.getEventoCalendario().getMicrocicloPlaneamento().getMorfociclo() : null)
+                .microciclo(entity.getEventoCalendario() != null ? entity.getEventoCalendario().getNumeroTreino() : null)
+                .fase(entity.getEventoCalendario() != null && entity.getEventoCalendario().getMicrocicloPlaneamento() != null 
+                    ? entity.getEventoCalendario().getMicrocicloPlaneamento().getFase() : null)
                 .numeroJogadores(entity.getNumeroJogadores())
                 .material(entity.getMaterial())
                 .objetivo(entity.getObjetivo())

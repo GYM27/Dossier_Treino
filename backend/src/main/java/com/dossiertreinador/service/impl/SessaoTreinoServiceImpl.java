@@ -63,7 +63,7 @@ public class SessaoTreinoServiceImpl implements SessaoTreinoService {
     @Override
     @Transactional(readOnly = true)
     public List<SessaoTreino> listarPorEquipa(UUID equipaId) {
-        return sessaoTreinoRepository.findByEquipaIdOrderByDataDesc(equipaId);
+        return sessaoTreinoRepository.findByEquipaIdOrderByEventoCalendario_DataHoraInicioDesc(equipaId);
     }
 
     @Override
@@ -71,5 +71,12 @@ public class SessaoTreinoServiceImpl implements SessaoTreinoService {
     public SessaoTreino buscarPorId(UUID id) {
         return sessaoTreinoRepository.findById(id)
                 .orElseThrow(() -> new RuntimeException("Sessão de Treino não encontrada."));
+    }
+
+    @Override
+    @Transactional(readOnly = true)
+    public SessaoTreino buscarPorEventoId(UUID eventoId) {
+        return sessaoTreinoRepository.findByEventoCalendarioId(eventoId)
+                .orElseThrow(() -> new RuntimeException("Sessão de Treino não encontrada para este evento."));
     }
 }

@@ -1,4 +1,4 @@
-const API_BASE_URL = process.env.NEXT_PUBLIC_API_URL || "http://localhost:8080/api";
+const API_BASE_URL = process.env.NEXT_PUBLIC_API_URL || "/api";
 
 export async function apiFetch(endpoint: string, options: RequestInit = {}) {
   // Prepara os cabeçalhos padrão
@@ -38,8 +38,8 @@ export async function apiFetch(endpoint: string, options: RequestInit = {}) {
       // Falha a fazer parse do JSON de erro
     }
     
-    // Se receber 401 Unauthorized, a sessão expirou
-    if (response.status === 401 && typeof window !== "undefined") {
+    // Se receber 401 Unauthorized ou 403 Forbidden, a sessão expirou ou é inválida
+    if ((response.status === 401 || response.status === 403) && typeof window !== "undefined") {
       // Prevenir loop infinito se já estivermos na página de login
       if (window.location.pathname !== "/login" && window.location.pathname !== "/register") {
         window.location.href = "/login";

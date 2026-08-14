@@ -12,11 +12,15 @@ import java.util.UUID;
 @Builder
 public class SessaoTreinoResponseDTO {
     private UUID id;
+    private UUID eventoId;
+    
+    // Dados que vêm do calendário (Read-only no Treino Builder, ou atualizados via evento)
     private LocalDate data;
     private LocalTime hora;
     private Integer morfociclo;
     private Integer microciclo;
     private String fase;
+    
     private Integer numeroJogadores;
     private String material;
     private String objetivo;

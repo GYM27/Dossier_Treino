@@ -60,6 +60,10 @@ export default function Page() {
       }
     } catch (err) {
       console.error("Erro ao carregar dados iniciais", err);
+      // Se deu erro a carregar a conta (ex: token inválido e a API deu 500), redirecionar forçadamente
+      if (typeof window !== "undefined") {
+         window.location.href = "/login";
+      }
     } finally {
       setLoading(false);
     }

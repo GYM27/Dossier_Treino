@@ -16,4 +16,5 @@ public interface SessaoTreinoService {
     List<SessaoTreino> listarPorEquipa(UUID equipaId);
     
     SessaoTreino buscarPorId(UUID id);
+    SessaoTreino buscarPorEventoId(UUID eventoId);
 }

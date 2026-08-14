@@ -7,6 +7,9 @@ import com.dossiertreinador.domain.enums.TipoAssiduidade;
 import com.dossiertreinador.repository.AtletaRepository;
 import com.dossiertreinador.repository.EventoCalendarioRepository;
 import com.dossiertreinador.repository.RegistoAssiduidadeRepository;
+import com.dossiertreinador.repository.SessaoTreinoRepository;
+import com.dossiertreinador.domain.entities.SessaoTreino;
+import com.dossiertreinador.domain.enums.TipoEvento;
 import com.dossiertreinador.service.EventoCalendarioService;
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
@@ -25,6 +28,7 @@ public class EventoCalendarioServiceImpl implements EventoCalendarioService {
     private final EventoCalendarioRepository eventoRepository;
     private final AtletaRepository atletaRepository;
     private final RegistoAssiduidadeRepository registoRepository;
+    private final SessaoTreinoRepository sessaoTreinoRepository;
 
     @Override
     @Transactional // Diz ao Spring: "Faz todas as gravações na BD juntas. Se alguma falhar, anula tudo!"
@@ -48,7 +52,18 @@ public class EventoCalendarioServiceImpl implements EventoCalendarioService {
         // 4. Batch Insert! Grava a grelha toda de uma vez só na base de dados
         registoRepository.saveAll(grelhaDeAssiduidade);
 
-        // 5. Devolve o evento
+        // 5. Criar Sessão de Treino Vazia se for um Treino
+        if (eventoGravado.getTipoEvento() == TipoEvento.TREINO) {
+            SessaoTreino novaSessao = SessaoTreino.builder()
+                    .eventoCalendario(eventoGravado)
+                    .equipa(eventoGravado.getEquipa())
+                    .numeroJogadores(atletasDaEquipa.size()) // Pré-preencher com base na convocatória geral (assiduidade)
+                    .duracaoTotalMinutos(0)
+                    .build();
+            sessaoTreinoRepository.save(novaSessao);
+        }
+
+        // 6. Devolve o evento
         return eventoGravado;
     }
     
@@ -82,10 +97,13 @@ public class EventoCalendarioServiceImpl implements EventoCalendarioService {
             throw new EntityNotFoundException("Evento não encontrado");
         }
         
-        // Remove child records (RegistoAssiduidade) first
+        // 1. Remove child records (RegistoAssiduidade) first
         registoRepository.deleteByEventoId(eventoId);
+
+        // 2. Remove associated SessaoTreino (se existir) to prevent Foreign Key Violation
+        sessaoTreinoRepository.deleteByEventoCalendarioId(eventoId);
         
-        // Remove parent
+        // 3. Remove parent EventoCalendario
         eventoRepository.deleteById(eventoId);
     }
     

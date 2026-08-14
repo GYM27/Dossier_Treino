@@ -12,13 +12,9 @@ import java.util.UUID;
 @Data
 public class SessaoTreinoRequestDTO {
     
-    @NotNull(message = "A data é obrigatória.")
-    private LocalDate data;
-    
-    private LocalTime hora;
-    private Integer morfociclo;
-    private Integer microciclo;
-    private String fase;
+    @NotNull(message = "O ID do evento é obrigatório.")
+    private UUID eventoId;
+
     private Integer numeroJogadores;
     private String material;
 
