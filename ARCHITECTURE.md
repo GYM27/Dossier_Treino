@@ -96,3 +96,115 @@ oster-view.tsx foi migrado para ler do backend os Atletas criados na Base de Dad
 
 ## M�dulo de Treinos (Treino Builder)
 O design de ecr� inteiro exigiu que a arquitetura do Frontend isolasse o TreinoBuilderStitch dos layouts gen�ricos. O Backend foi flexibilizado para incluir colunas da Periodiza��o T�tica (morfociclo, microciclo, ase). A separa��o entre o Orquestrador (TreinosOrchestrator) e a visualiza��o (TreinoBuilderStitch) mant�m a componente de apresenta��o (UI rica com Tailwind custom colors) desligada da mec�nica de fetching das listas base.
+
+ # # #   I n t e g r a � � o   d a   P r a n c h e t a   T � t i c a 
+ A   a r q u i t e t u r a   d o   T r e i n o   B u i l d e r   f o i   e x p a n d i d a   p a r a   s u p o r t a r   c r i a � � o   e   a s s o c i a � � o   d i r e t a   d e   e x e r c � c i o s . 
+ A   e n t i d a d e   \ E x e r c i c i o \   u t i l i z a   \ @ J d b c T y p e C o d e ( S q l T y p e s . J S O N ) \   n o   c a m p o   \ d a d o s T a t i c o s \   p a r a   p e r s i s t i r   o   e s t a d o   d o   C a n v a s   ( p o s i � � e s   X , Y   e   l i n h a s )   d e   f o r m a   s c h e m a - l e s s ,   g a r a n t i n d o   f l e x i b i l i d a d e   c a s o   o s   r e q u i s i t o s   d o   d e s e n h o   t � t i c o   e v o l u a m .   A   c o m u n i c a � � o   �   f e i t a   v i a   \ P O S T   / a p i / e x e r c i c i o s \   ( C r i a � � o   g l o b a l )   s e g u i d o   d e   \ P O S T   / a p i / t r e i n o s / { s e s s a o I d } / e x e r c i c i o s \   ( A s s o c i a � � o   a o   T r e i n o   A t u a l ) .  
+ 
+
+
+## Prancheta Tática (Tactical Board) - Arquitetura e Decisões de Engenharia
+
+### 1. Separação de Responsabilidades e Componentização
+- **Padrão Orquestrador / Apresentação**:
+  - TacticalBoard.tsx gere o motor Canvas, render loop a 60fps e sincronização de eventos de ponteiro/teclado.
+  - TacticalBottomBar.tsx é responsável pelas ferramentas globais e controlos de modo.
+  - TacticalSidebar.tsx gere os metadados do exercício e operações de persistência e histórico.
+  - TacticalShapeFloatingBar.tsx fornece edição contextual direta (in-place) sobre os objetos no campo.
+
+### 2. Sincronização entre Ciclo React e Canvas Loop (Prevenção de Stale Closures)
+- **Problema**: O render loop do Canvas executado em equestAnimationFrame dentro de um useEffect com dependências vazias mantinha referências antigas (*stale closures*) a variáveis de estado do React como selectedDrawingIdx.
+- **Solução Arquitetural**: Implementado o padrão de estado emparelhado com referências (selectedDrawingIdxRef e selectedElementIdRef). Todas as mutações de seleção atualizam simultaneamente a referência síncrona e o estado do React, permitindo que o loop gráfico leia em tempo real as seleções sem exigir a reinicialização do loop do canvas.
+
+### 3. Floating Toolbar com Dimensões Constantes (UX Invariante)
+- **Decisão**: A barra de edição flutuante foi dimensionada para uma largura fixa de 380px com uma grelha de duas linhas invariante.
+- **Justificação**: Evita o fenómeno de *layout shift* (salto visual brusco) quando o utilizador transita a seleção entre formas geométricas (com preenchimento e opacidade) e linhas/setas táticas.
+
+### 4. Renderização Vetorial 3D da Bola e Auras de Destaque
+- **Decisão**: Implementar a bola de futebol e as auras luminosas diretamente em instruções vetoriais do Canvas 2D (createRadialGradient, ellipse, shadowBlur, clip).
+- **Justificação**: Elimina a necessidade de assets de imagem externos ou requisições HTTP adicionais, assegurando renderização nítida em qualquer resolução e escala sem artefactos de compressão.
+
+
+## Atalhos de Teclado Universais: Desfazer (Ctrl+Z) e Refazer (Ctrl+Y / Ctrl+Shift+Z)
+
+### 1. Implementação Técnica
+- Adicionado intercetor de eventos de teclado no TacticalBoard.tsx:
+  - (e.ctrlKey || e.metaKey) && e.key === "z" && !e.shiftKey: Executa undo(), revertendo para o snapshot de estado anterior na pilha de histórico.
+  - (e.ctrlKey || e.metaKey) && e.key === "y" ou Ctrl+Shift+Z: Executa edo(), avançando para o estado seguinte na pilha.
+  - Proteção contextual: Se o foco estiver num input, 	extarea, select ou campo editável, os atalhos não interferem com a edição nativa de texto.
+
+
+## Atalhos de Teclado Universais: Copiar (Ctrl+C) e Colar (Ctrl+V) de Desenhos e Elementos
+
+### 1. Implementação Técnica do Clipboard
+- Adicionada a referência em memória clipboardRef no TacticalBoard.tsx.
+- **Copiar (Ctrl+C / Cmd+C)**:
+  - Se estiver selecionada uma forma ou linha (selectedDrawingIdxRef.current), clona em profundidade as propriedades geométricas e de estilo (points, color, illColor, size, opacity, lineStyle).
+  - Se estiver selecionado um jogador, cone ou bola (selectedElementIdRef.current), clona as propriedades do elemento.
+- **Colar (Ctrl+V / Cmd+V)**:
+  - **Para Desenhos/Formas**: Aplica um ligeiro deslocamento (*offset*) de +25px nas coordenadas X e Y (para que a cópia não fique perfeitamente sobreposta e seja imediatamente visível), insere na lista de desenhos, seleciona a nova cópia e grava no histórico (*Undo*).
+  - **Para Jogadores/Peças**: Cria um novo identificador único (id), atribui o próximo dorsal vago (se for jogador da Equipa A ou B), aplica o deslocamento de +25px, insere no quadro e seleciona a nova peça.
+## Relvado Tático, Balizas Móveis (Mini, Fut 7, Fut 11) e Jogadores Customizáveis
+
+### 1. 3 Modos de Relvado (Full | Half | Free)
+- **Full**: Campo completo com 2 balizas e áreas regulamentares.
+- **Half**: Meio-campo tático com grande área, pequena área, penálti e meia-lua à esquerda, e linha de meio-campo com meio-círculo central à direita.
+- **Free**: Relvado limpo sem marcações interiores, concebido para rondos e jogos em espaço reduzido.
+
+### 2. Balizas Móveis com Dimensões Reais
+- **Mini**: 36x18px para jogos de precisão e transição rápida.
+- **Fut 7**: 56x24px com proporções de futebol de 7 (6x2m).
+- **Fut 11**: 82x32px com proporções regulamentares de futebol de 11 (7.32x2.44m).
+- **Rotação**: Suporte a 360° através da barra contextual e da tecla 'R'.
+
+### 3. Personalização de Jogadores (Tamanho, Cores e Siglas)
+- **3 Escalas**: Pequeno (sm - 11px), Médio (md - 15px), Grande (lg - 19px).
+- **Cores & Coletes**: 7 cores predefinidas + seletor livre para equipas adicionais, neutros e coringas.
+- **Siglas & Nomes**: Suporte a texto arbitrário ('GR', 'C', 'MC', '7') com tipografia vetorial auto-escalável e cálculo automático de contraste (fundo claro vs escuro).
+
+### 4. Robustez de Interação (Pointer Capture)
+- Implementação de setPointerCapture no <canvas> para evitar interrupções de arrasto quando o cursor cruza os limites das barras de ferramentas flutuantes.
+
+### 5. Melhorias de UI/UX no Tactical Builder
+- **Hit Testing Híbrido para Formas**: Implementou-se um algoritmo simplificado de deteção 2D no TacticalBoard.tsx que permite agarrar formas (retângulos, círculos, triângulos) clicando em qualquer parte do interior ou nos bordos da linha.
+- **Auto-Foco**: A injeção da propriedade utoFocus em barras de propriedades dinâmicas otimiza o fluxo de edição rápido sem necessidade de re-focar o rato.
+
+### 8. Rotação Universal em Geometrias e Balizas
+- **Hit-Testing com Matrizes Inversas**: A deteção de clique (isHit) e colisão com as *bounding boxes* das formas geométricas (Retângulo, Círculo, etc.) e das balizas foi atualizada. Agora, antes do teste matemático, aplicamos uma matriz de translação e rotação inversa (Math.cos(-rotation)) às coordenadas brutas do rato para o mapear para o espaço local (*unrotated space*) do objeto. Isto permite selecionar, arrastar e redimensionar objetos com ângulos complexos sem falhas na precisão.
+- **Rendering Otimizado**: As formas passam a ser desenhadas no centro da sua *bounding box* através de uma combinação de ctx.translate e ctx.rotate, em vez de recalcular matematicamente os vértices poligonais de cada forma.
+
+### 9. Módulo de Treinos - Arquitetura Estúdio / Master-Detail
+- **Separação de Responsabilidades (Master-Detail)**: A página de Treinos foi refatorizada para o padrão Master-Detail. O componente TreinosOrchestrator coordena o estado entre a barra lateral (TreinosSidebarList), o estúdio de edição (TreinoDetailStudio) e o modal de criação rápida (NovoTreinoModal).
+- **Sincronização Atómica de DTOs (Calendário \u0026 Treinos)**: Ao criar um treino, são criadas sequencialmente as entidades EventoCalendario (através de POST /api/eventos/equipa/{equipaId}) e SessaoTreino vinculada (através de POST /api/treinos), garantindo que o planeamento semanal no calendário e o caderno de exercícios partilham uma única fonte da verdade.
+- **Integração Bidirecional de Exercícios**: O utilizador pode anexar exercícios ao treino de duas formas:
+  1. Catálogo Existente (CatalogoExerciciosModal via /api/exercicios).
+  2. Criação Imediata via Prancheta (NovoExercicioPranchetaModal via TacticalBoard), que regista o exercício no catálogo global e anexa-o instantaneamente à timeline da sessão (POST /api/treinos/{sessaoId}/exercicios).
+
+### 10. Gestão do Catálogo de Exercícios - Edição, Duplicação e Eliminação
+- **Endpoints RESTful para Exercícios**: Foram adicionados os endpoints PUT /api/exercicios/{id} para atualização de dados/prancheta e DELETE /api/exercicios/{id} para remoção segura de exercícios obsoletos.
+- **Padrão Clone-on-Edit (Duplicação Segura)**: A interface de edição (NovoExercicioPranchetaModal) deteta se o utilizador alterou o nome do exercício em relação ao original. Se o nome for alterado ou o utilizador clicar explicitamente em **"Gravar como Novo"**, o frontend efetua um POST /api/exercicios criando uma nova entrada no catálogo e preservando o exercício original intacto. Se mantiver o nome original e clicar em **"Atualizar Original"**, o sistema executa um PUT /api/exercicios/{id}.
+
+### P�gina de Treinos e Biblioteca (Update)
+- **Read/Edit Mode Toggle**: O componente \TreinoDetailStudio\ implementa um padr�o de visualiza��o dual (Read/Edit). Isto melhora a legibilidade durante a sess�o e protege os dados contra edi��es acidentais.
+- **Smart Duplication (Biblioteca)**: O \NovoExercicioPranchetaModal\ verifica o \hasNameChanged\. Se alterado durante a edi��o, encaminha o request para um POST (novo) em vez de PUT (update), preservando o exerc�cio original.
+- **Transactional Boundary**: Adicionada a anota��o \@Transactional\ na classe \SessaoTreinoController\ (Backend). Isto evita a \LazyInitializationException\ durante a serializa��o do DTO de resposta da API na cria��o do Treino.
+
+
+## Padronização Visual e Design System Frontend (Fase 1)
+
+### 1. Camada de UI Primitiva (components/ui/)
+- Centralização de componentes atómicos reutilizáveis (Button, Input, Badge, Card, Textarea).
+- Utilização de class-variance-authority (CVA) para variantes declarativas e tipadas.
+- Aplicação de cn() (clsx + tailwind-merge) para resolução determinística de estilos e eliminação de duplicação de classes Tailwind hardcoded.
+
+### 2. Refatoração e Padronização por Módulos
+- **Treinos**: Formulários de criação (NovoTreinoModal), estúdio detalhado (TreinoDetailStudio) e cartões de exercícios da timeline (TreinoExercicioCard) usam exclusivamente o Design System.
+- **Plantel**: AtletaFormModal migrado para Input e Button padronizados.
+- **Calendário**: EventoFormModal alinhado com validação robusta de datas e inputs controlados.
+
+### 6. Geometria Anal�tica para Rota��o de Linhas
+- **Rotate Handle Offset**: Implementa��o de um manipulador de rota��o espacial puro para linhas retas. O c�lculo do pivot usa trigonometria (Math.atan2 com offset perpendicular de Math.PI / 2) para projetar o *handle* e atualizar a inclina��o mantendo Math.hypot e o centro geom�trico (cx, cy) imut�veis.
+
+### 7. Normaliza��o de Espa�amentos da UI
+- **Global Y-Offset**: A margem de respiro vertical para todos os menus contextuais flutuantes (Jogadores, Balizas, Formas Geom�tricas, Linhas) foi uniformizada globalmente atrav�s da propriedade CSS 	ranslateY(-40px). Esta abordagem garante uma folga visual consistente em toda a plataforma, sem afetar o c�lculo subjacente dos *bounding boxes* para sele��o.
+

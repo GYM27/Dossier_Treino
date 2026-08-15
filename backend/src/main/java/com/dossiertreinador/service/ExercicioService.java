@@ -11,4 +11,6 @@ public interface ExercicioService {
     List<Exercicio> listarTodos();
     List<Exercicio> listarPorCategoria(CategoriaExercicio categoria);
     Exercicio buscarPorId(UUID id);
+    Exercicio atualizarExercicio(UUID id, Exercicio exercicioAtualizado);
+    void eliminarExercicio(UUID id);
 }

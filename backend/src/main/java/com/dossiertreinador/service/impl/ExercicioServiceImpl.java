@@ -41,4 +41,26 @@ public class ExercicioServiceImpl implements ExercicioService {
         return exercicioRepository.findById(id)
                 .orElseThrow(() -> new RuntimeException("Exercício não encontrado."));
     }
+
+    @Override
+    @Transactional
+    public Exercicio atualizarExercicio(UUID id, Exercicio exercicioAtualizado) {
+        Exercicio existente = buscarPorId(id);
+        existente.setNome(exercicioAtualizado.getNome());
+        existente.setDescricao(exercicioAtualizado.getDescricao());
+        existente.setCategoria(exercicioAtualizado.getCategoria());
+        existente.setNivelDificuldade(exercicioAtualizado.getNivelDificuldade());
+        existente.setObjetivosEspecificos(exercicioAtualizado.getObjetivosEspecificos());
+        existente.setEspaco(exercicioAtualizado.getEspaco());
+        existente.setJogadoresEnvolvidos(exercicioAtualizado.getJogadoresEnvolvidos());
+        existente.setDadosTaticos(exercicioAtualizado.getDadosTaticos());
+        return exercicioRepository.save(existente);
+    }
+
+    @Override
+    @Transactional
+    public void eliminarExercicio(UUID id) {
+        Exercicio existente = buscarPorId(id);
+        exercicioRepository.delete(existente);
+    }
 }

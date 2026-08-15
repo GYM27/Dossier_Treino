@@ -15,6 +15,7 @@ export function TopHeader({
   me,
   onTeamChange,
   onOpenMobileNav,
+  onRefreshMe,
 }: {
   teams?: Team[]
   activeTeam: Team | null

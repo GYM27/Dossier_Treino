@@ -3,6 +3,7 @@ package com.dossiertreinador.service.impl;
 import com.dossiertreinador.domain.entities.Exercicio;
 import com.dossiertreinador.domain.entities.SessaoTreino;
 import com.dossiertreinador.domain.entities.SessaoTreinoExercicio;
+import com.dossiertreinador.repository.SessaoTreinoExercicioRepository;
 import com.dossiertreinador.repository.SessaoTreinoRepository;
 import com.dossiertreinador.service.ExercicioService;
 import com.dossiertreinador.service.SessaoTreinoService;
@@ -18,6 +19,7 @@ import java.util.UUID;
 public class SessaoTreinoServiceImpl implements SessaoTreinoService {
 
     private final SessaoTreinoRepository sessaoTreinoRepository;
+    private final SessaoTreinoExercicioRepository sessaoTreinoExercicioRepository;
     private final ExercicioService exercicioService;
 
     @Override
@@ -49,6 +51,7 @@ public class SessaoTreinoServiceImpl implements SessaoTreinoService {
                 .observacoesDoTreinador(observacoes)
                 .build();
 
+        sessaoTreinoExercicioRepository.save(assoc);
         sessao.getExercicios().add(assoc);
         
         // Recalcular duração total
@@ -78,5 +81,63 @@ public class SessaoTreinoServiceImpl implements SessaoTreinoService {
     public SessaoTreino buscarPorEventoId(UUID eventoId) {
         return sessaoTreinoRepository.findByEventoCalendarioId(eventoId)
                 .orElseThrow(() -> new RuntimeException("Sessão de Treino não encontrada para este evento."));
+    }
+
+    @Override
+    @Transactional
+    public SessaoTreino atualizarSessao(UUID id, String objetivo, String material, Integer numeroJogadores, Integer intensidadeGeral) {
+        SessaoTreino sessao = buscarPorId(id);
+        
+        if (objetivo != null) sessao.setObjetivo(objetivo);
+        if (material != null) sessao.setMaterial(material);
+        if (numeroJogadores != null) sessao.setNumeroJogadores(numeroJogadores);
+        if (intensidadeGeral != null) sessao.setIntensidadeGeral(intensidadeGeral);
+        
+        return sessaoTreinoRepository.save(sessao);
+    }
+
+    @Override
+    @Transactional
+    public void removerExercicio(UUID sessaoId, UUID exercicioAssocId) {
+        SessaoTreino sessao = buscarPorId(sessaoId);
+        
+        boolean removido = sessao.getExercicios().removeIf(assoc -> assoc.getId().equals(exercicioAssocId));
+        
+        if (!removido) {
+            throw new RuntimeException("Exercício não encontrado nesta sessão.");
+        }
+        
+        // Recalcular duração total
+        int duracaoTotal = sessao.getExercicios().stream()
+                .mapToInt(SessaoTreinoExercicio::getDuracaoMinutos)
+                .sum();
+        sessao.setDuracaoTotalMinutos(duracaoTotal);
+        
+        sessaoTreinoRepository.save(sessao);
+    }
+
+    @Override
+    @Transactional
+    public SessaoTreino atualizarExercicioNaSessao(UUID sessaoId, UUID exercicioAssocId, Integer ordem, Integer duracaoMinutos, String observacoes) {
+        SessaoTreino sessao = buscarPorId(sessaoId);
+        
+        SessaoTreinoExercicio assoc = sessao.getExercicios().stream()
+                .filter(e -> e.getId().equals(exercicioAssocId))
+                .findFirst()
+                .orElseThrow(() -> new RuntimeException("Associação de exercício não encontrada nesta sessão."));
+        
+        if (ordem != null) assoc.setOrdem(ordem);
+        if (duracaoMinutos != null) assoc.setDuracaoMinutos(duracaoMinutos);
+        if (observacoes != null) assoc.setObservacoesDoTreinador(observacoes);
+        
+        sessaoTreinoExercicioRepository.save(assoc);
+        
+        // Recalcular duração total
+        int duracaoTotal = sessao.getExercicios().stream()
+                .mapToInt(SessaoTreinoExercicio::getDuracaoMinutos)
+                .sum();
+        sessao.setDuracaoTotalMinutos(duracaoTotal);
+        
+        return sessaoTreinoRepository.save(sessao);
     }
 }

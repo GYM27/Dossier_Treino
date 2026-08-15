@@ -67,4 +67,36 @@ class ExercicioControllerTest {
                 .andExpect(status().isCreated())
                 .andExpect(jsonPath("$.nome").value("Sprints"));
     }
+
+    @Test
+    @WithMockUser(username = "treinador@equipa.pt", roles = {"TREINADOR"})
+    void testAtualizarExercicio() throws Exception {
+        java.util.UUID id = java.util.UUID.randomUUID();
+        ExercicioDTO request = ExercicioDTO.builder()
+                .id(id)
+                .nome("Rondo 4v4 + 3")
+                .categoria(CategoriaExercicio.TATICO)
+                .build();
+
+        Exercicio entidade = Exercicio.builder().id(id).nome("Rondo 4v4 + 3").build();
+
+        when(exercicioMapper.toEntity(any())).thenReturn(entidade);
+        when(exercicioService.atualizarExercicio(any(), any())).thenReturn(entidade);
+        when(exercicioMapper.toDTO(any())).thenReturn(request);
+
+        mockMvc.perform(org.springframework.test.web.servlet.request.MockMvcRequestBuilders.put("/api/exercicios/" + id)
+                .contentType(MediaType.APPLICATION_JSON)
+                .content(objectMapper.writeValueAsString(request)))
+                .andExpect(status().isOk())
+                .andExpect(jsonPath("$.nome").value("Rondo 4v4 + 3"));
+    }
+
+    @Test
+    @WithMockUser(username = "treinador@equipa.pt", roles = {"TREINADOR"})
+    void testEliminarExercicio() throws Exception {
+        java.util.UUID id = java.util.UUID.randomUUID();
+
+        mockMvc.perform(org.springframework.test.web.servlet.request.MockMvcRequestBuilders.delete("/api/exercicios/" + id))
+                .andExpect(status().isNoContent());
+    }
 }

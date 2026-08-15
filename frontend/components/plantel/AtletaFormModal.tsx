@@ -8,6 +8,7 @@
 "use client"
 
 import { Button } from "@/components/ui/button"
+import { Input } from "@/components/ui/input"
 import { X } from "lucide-react"
 import { OPCOES_POSICAO, OPCOES_PE } from "./constants"
 import type { AtletaFormData } from "./constants"
@@ -22,9 +23,7 @@ interface AtletaFormModalProps {
   isEditing: boolean                               // Flag: Modo Editar vs Criar?
 }
 
-// ── Estilos reutilizáveis ───────────────────────────────────────────────────
-// Extraímos a classe CSS do input para uma constante, evitando repetição brutal.
-const INPUT_STYLE = "w-full bg-[#0a0f1c] border border-slate-700 rounded-lg p-2.5 text-white focus:border-emerald-500 outline-none"
+const SELECT_STYLE = "h-8 w-full min-w-0 rounded-lg border border-input bg-transparent px-2.5 py-1 text-sm text-foreground focus:border-ring focus:outline-none dark:bg-input/30"
 
 export function AtletaFormModal({
   formData,
@@ -42,9 +41,9 @@ export function AtletaFormModal({
           <h2 className="text-lg font-bold text-white">
             {isEditing ? "Editar Atleta" : "Criar Novo Atleta"}
           </h2>
-          <button onClick={onClose} className="text-slate-400 hover:text-white transition">
+          <Button variant="ghost" size="icon" onClick={onClose} className="text-slate-400 hover:text-white">
             <X className="w-5 h-5" />
-          </button>
+          </Button>
         </div>
 
         {/* Corpo do Formulário */}
@@ -71,49 +70,46 @@ export function AtletaFormModal({
             {/* Nome Completo (ocupa 2 colunas) */}
             <div className="space-y-1 col-span-2">
               <label className="text-xs font-semibold text-slate-400">Nome Completo</label>
-              <input
+              <Input
                 required
                 value={formData.nome}
                 onChange={e => onChange({ ...formData, nome: e.target.value })}
-                className={INPUT_STYLE}
               />
             </div>
 
             {/* Fotografia (URL) (ocupa 2 colunas) */}
             <div className="space-y-1 col-span-2">
               <label className="text-xs font-semibold text-slate-400">URL da Fotografia (Opcional)</label>
-              <input
+              <Input
                 type="url"
                 placeholder="https://exemplo.com/foto.jpg"
                 value={formData.fotoUrl || ""}
                 onChange={e => onChange({ ...formData, fotoUrl: e.target.value })}
-                className={INPUT_STYLE}
               />
             </div>
 
             {/* Data de Nascimento */}
             <div className="space-y-1">
               <label className="text-xs font-semibold text-slate-400">Data de Nascimento</label>
-              <input
+              <Input
                 type="date"
                 value={formData.dataNascimento || ""}
                 onChange={e => onChange({ ...formData, dataNascimento: e.target.value })}
-                className={INPUT_STYLE}
               />
-              <p className="text-xs text-slate-500 mt-1">Opcional - Caso não tenha, pode deixar em branco</p>
+              <p className="text-[11px] text-slate-500 mt-0.5">Opcional</p>
             </div>
 
             {/* Nº Camisola */}
             <div className="space-y-1">
               <label className="text-xs font-semibold text-slate-400">Nº Camisola</label>
-              <input
+              <Input
                 required
                 type="number"
-                min="1"
-                max="99"
+                min={1}
+                max={99}
                 value={formData.numeroCamisola}
-                onChange={e => onChange({ ...formData, numeroCamisola: parseInt(e.target.value) })}
-                className={INPUT_STYLE}
+                onChange={e => onChange({ ...formData, numeroCamisola: parseInt(e.target.value) || 0 })}
+                className="font-mono"
               />
             </div>
 
@@ -123,7 +119,7 @@ export function AtletaFormModal({
               <select
                 value={formData.posicaoPrincipal}
                 onChange={e => onChange({ ...formData, posicaoPrincipal: e.target.value })}
-                className={INPUT_STYLE}
+                className={SELECT_STYLE}
               >
                 {OPCOES_POSICAO.map(op => (
                   <option key={op.valor} value={op.valor}>{op.etiqueta}</option>
@@ -137,7 +133,7 @@ export function AtletaFormModal({
               <select
                 value={formData.pePreferido}
                 onChange={e => onChange({ ...formData, pePreferido: e.target.value })}
-                className={INPUT_STYLE}
+                className={SELECT_STYLE}
               >
                 {OPCOES_PE.map(op => (
                   <option key={op.valor} value={op.valor}>{op.etiqueta}</option>
@@ -148,37 +144,37 @@ export function AtletaFormModal({
             {/* Altura */}
             <div className="space-y-1">
               <label className="text-xs font-semibold text-slate-400">Altura (cm)</label>
-              <input
+              <Input
                 type="number"
-                min="100"
-                max="250"
+                min={100}
+                max={250}
                 value={formData.alturaCm || ""}
                 onChange={e => onChange({ ...formData, alturaCm: parseInt(e.target.value) || 0 })}
-                className={INPUT_STYLE}
+                className="font-mono"
               />
             </div>
 
             {/* Peso */}
             <div className="space-y-1">
               <label className="text-xs font-semibold text-slate-400">Peso (kg)</label>
-              <input
+              <Input
                 type="number"
                 step="0.1"
-                min="30"
-                max="150"
+                min={30}
+                max={150}
                 value={formData.pesoKg || ""}
                 onChange={e => onChange({ ...formData, pesoKg: parseFloat(e.target.value) || 0 })}
-                className={INPUT_STYLE}
+                className="font-mono"
               />
             </div>
           </div>
 
           {/* Rodapé: Botões de Ação */}
           <div className="mt-4 flex justify-end gap-3">
-            <Button type="button" variant="outline" onClick={onClose} className="border-slate-700 text-slate-300 hover:text-white">
+            <Button type="button" variant="outline" onClick={onClose}>
               Cancelar
             </Button>
-            <Button type="submit" disabled={isSubmitting} className="bg-emerald-600 hover:bg-emerald-500 text-white">
+            <Button type="submit" variant="emerald" disabled={isSubmitting}>
               {isSubmitting ? "A guardar..." : (isEditing ? "Atualizar Atleta" : "Guardar Atleta")}
             </Button>
           </div>

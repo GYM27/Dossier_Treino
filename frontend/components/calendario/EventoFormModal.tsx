@@ -3,6 +3,8 @@
 import { useState, useEffect } from "react";
 import { EventoCalendario } from "@/models/planeamento";
 import { X } from "lucide-react";
+import { Button } from "@/components/ui/button";
+import { Input } from "@/components/ui/input";
 
 interface EventoFormModalProps {
   isOpen: boolean;
@@ -10,6 +12,7 @@ interface EventoFormModalProps {
   onSave: (evento: Omit<EventoCalendario, "id">) => void;
   defaultDate?: Date;
   eventoEdit?: EventoCalendario | null;
+  defaultNumeroTreino?: number;
 }
 
 export function EventoFormModal({
@@ -18,6 +21,7 @@ export function EventoFormModal({
   onSave,
   defaultDate,
   eventoEdit,
+  defaultNumeroTreino,
 }: EventoFormModalProps) {
   const [formData, setFormData] = useState<
     Omit<EventoCalendario, "id" | "dataHoraFim">
@@ -72,7 +76,7 @@ export function EventoFormModal({
           dataHoraInicio: formatDateTime(start),
           descricao: "",
           local: "Arregaça",
-          numeroTreino: 1,
+          numeroTreino: defaultNumeroTreino || 1,
           equipaCasa: "União 1919",
           equipaFora: "",
         });
@@ -86,7 +90,16 @@ export function EventoFormModal({
   if (!isOpen) return null;
 
   const handleSave = () => {
+    if (!formData.dataHoraInicio) {
+      alert("Por favor, preencha a data e hora de início.");
+      return;
+    }
     const start = new Date(formData.dataHoraInicio);
+    if (isNaN(start.getTime())) {
+      alert("Data de início inválida.");
+      return;
+    }
+
     const end = new Date(start.getTime() + duracao * 60000);
 
     const formatDateTime = (d: Date) => {
@@ -131,14 +144,14 @@ export function EventoFormModal({
               <label className="text-xs font-semibold uppercase tracking-wider text-muted-foreground">
                 Nº do Treino (Microciclo)
               </label>
-              <input
+              <Input
                 type="number"
-                min="1"
+                min={1}
                 value={formData.numeroTreino || 1}
                 onChange={(e) =>
                   setFormData({ ...formData, numeroTreino: parseInt(e.target.value) || 1 })
                 }
-                className="mt-1 w-full rounded-md border border-border bg-background px-3 py-2 text-sm text-foreground focus:border-primary focus:outline-none"
+                className="mt-1 font-mono"
               />
             </div>
           )}
@@ -168,17 +181,16 @@ export function EventoFormModal({
                   </select>
                 ) : (
                   <div className="flex items-center gap-2 mt-1">
-                    <input
+                    <Input
                       type="text"
                       value={formData.equipaCasa || ""}
                       onChange={(e) => setFormData({ ...formData, equipaCasa: e.target.value })}
-                      className="w-full rounded-md border border-border bg-background px-3 py-2 text-sm text-foreground focus:border-primary focus:outline-none"
                       placeholder="Nome da equipa"
                       autoFocus
                     />
-                    <button type="button" onClick={() => setIsCustomCasa(false)} className="p-2 text-muted-foreground hover:text-foreground">
+                    <Button type="button" variant="ghost" size="icon" onClick={() => setIsCustomCasa(false)} className="text-muted-foreground hover:text-foreground">
                       <X className="w-4 h-4" />
-                    </button>
+                    </Button>
                   </div>
                 )}
               </div>
@@ -205,17 +217,16 @@ export function EventoFormModal({
                   </select>
                 ) : (
                   <div className="flex items-center gap-2 mt-1">
-                    <input
+                    <Input
                       type="text"
                       value={formData.equipaFora || ""}
                       onChange={(e) => setFormData({ ...formData, equipaFora: e.target.value })}
-                      className="w-full rounded-md border border-border bg-background px-3 py-2 text-sm text-foreground focus:border-primary focus:outline-none"
                       placeholder="Nome da equipa"
                       autoFocus
                     />
-                    <button type="button" onClick={() => setIsCustomFora(false)} className="p-2 text-muted-foreground hover:text-foreground">
+                    <Button type="button" variant="ghost" size="icon" onClick={() => setIsCustomFora(false)} className="text-muted-foreground hover:text-foreground">
                       <X className="w-4 h-4" />
-                    </button>
+                    </Button>
                   </div>
                 )}
               </div>
@@ -227,26 +238,26 @@ export function EventoFormModal({
               <label className="text-xs font-semibold uppercase tracking-wider text-muted-foreground">
                 Início
               </label>
-              <input
+              <Input
                 type="datetime-local"
                 value={formData.dataHoraInicio}
                 onChange={(e) =>
                   setFormData({ ...formData, dataHoraInicio: e.target.value })
                 }
-                className="mt-1 w-full rounded-md border border-border bg-background px-3 py-2 text-sm text-foreground focus:border-primary focus:outline-none"
+                className="mt-1 font-mono"
               />
             </div>
             <div>
               <label className="text-xs font-semibold uppercase tracking-wider text-muted-foreground">
                 Duração (minutos)
               </label>
-              <input
+              <Input
                 type="number"
-                min="0"
-                step="5"
+                min={0}
+                step={5}
                 value={duracao}
                 onChange={(e) => setDuracao(parseInt(e.target.value) || 0)}
-                className="mt-1 w-full rounded-md border border-border bg-background px-3 py-2 text-sm text-foreground focus:border-primary focus:outline-none"
+                className="mt-1 font-mono"
               />
             </div>
           </div>
@@ -255,14 +266,14 @@ export function EventoFormModal({
             <label className="text-xs font-semibold uppercase tracking-wider text-muted-foreground">
               Título / Descrição
             </label>
-            <input
+            <Input
               type="text"
-              value={formData.descricao}
+              value={formData.descricao || ""}
               onChange={(e) =>
                 setFormData({ ...formData, descricao: e.target.value })
               }
-              placeholder="Ex: Treino Tático MD-2"
-              className="mt-1 w-full rounded-md border border-border bg-background px-3 py-2 text-sm text-foreground focus:border-primary focus:outline-none"
+              className="mt-1"
+              placeholder="Ex: Treino de Finalização"
             />
           </div>
 
@@ -290,12 +301,11 @@ export function EventoFormModal({
               </select>
               
               {localOption === "Outro" && (
-                <input
+                <Input
                   type="text"
                   value={formData.local}
                   onChange={(e) => setFormData({ ...formData, local: e.target.value })}
                   placeholder="Nome do local (ex: Estádio)"
-                  className="w-full rounded-md border border-border bg-background px-3 py-2 text-sm text-foreground focus:border-primary focus:outline-none"
                 />
               )}
             </div>
@@ -303,18 +313,20 @@ export function EventoFormModal({
         </div>
 
         <div className="mt-6 flex justify-end gap-3">
-          <button
+          <Button
+            type="button"
+            variant="ghost"
             onClick={onClose}
-            className="rounded-md px-4 py-2 text-sm font-medium text-muted-foreground hover:bg-muted/50 hover:text-foreground"
           >
             Cancelar
-          </button>
-          <button
+          </Button>
+          <Button
+            type="button"
+            variant="default"
             onClick={handleSave}
-            className="rounded-md bg-primary px-4 py-2 text-sm font-medium text-primary-foreground hover:bg-primary/90"
           >
             Guardar Evento
-          </button>
+          </Button>
         </div>
       </div>
     </div>

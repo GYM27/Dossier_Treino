@@ -14,4 +14,5 @@ public class SessaoTreinoExercicioDTO {
     private Integer ordem;
     private Integer duracaoMinutos;
     private String observacoesDoTreinador;
+    private Object dadosTaticos;
 }

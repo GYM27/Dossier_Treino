@@ -33,6 +33,9 @@ class EventoCalendarioServiceTest {
     @Mock
     private RegistoAssiduidadeRepository registoRepository;
 
+    @Mock
+    private SessaoTreinoRepository sessaoTreinoRepository;
+
     // INJEÇÃO DOS MOCKS NO CÉREBRO
     @InjectMocks
     private EventoCalendarioServiceImpl eventoService;

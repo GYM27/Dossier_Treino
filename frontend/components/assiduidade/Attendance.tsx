@@ -107,7 +107,7 @@ export function Attendance({ activeTeam }: AttendanceProps) {
       setRegistos(prev => prev.map(r => r.id === existente.id ? updated : r));
     } else {
       // Fake optimista para não haver lag (id será sobreposto no fetch seguinte)
-      const fakeNew: RegistoAssiduidade = { id: 'temp-' + Date.now(), eventoId, atletaId, tipoAssiduidade: tipo, justificacao: null, minutosAtraso: null };
+      const fakeNew: RegistoAssiduidade = { id: 'temp-' + Date.now(), eventoId, atletaId, tipoAssiduidade: tipo };
       setRegistos(prev => [...prev, fakeNew]);
     }
 
@@ -245,17 +245,19 @@ export function Attendance({ activeTeam }: AttendanceProps) {
                   </td>
                   {eventosRender.length === 0 && <td className="bg-transparent" />}
                   {eventosRender.map((evento) => {
-                    const registo = getRegisto(evento.id, atleta.id);
-                    const isSelected = selectedCellModal?.atletaId === atleta.id && selectedCellModal?.eventoId === evento.id;
+                    if (!evento.id) return null;
+                    const currentEventoId = evento.id;
+                    const registo = getRegisto(currentEventoId, atleta.id);
+                    const isSelected = selectedCellModal?.atletaId === atleta.id && selectedCellModal?.eventoId === currentEventoId;
 
                     return (
                       <td 
-                        key={evento.id} 
+                        key={currentEventoId} 
                         className={cn(
                           "p-2 border-l border-border/30 text-center relative cursor-pointer interactive-cell border",
                           isSelected ? "border-primary/50 bg-foreground/5" : "border-transparent"
                         )}
-                        onClick={() => setSelectedCellModal({ atletaId: atleta.id, eventoId: evento.id })}
+                        onClick={() => setSelectedCellModal({ atletaId: atleta.id, eventoId: currentEventoId })}
                       >
                         {registo ? renderRegistoIcon(registo.tipoAssiduidade) : (
                           <div className="w-8 h-8 mx-auto rounded-full border border-dashed border-border flex items-center justify-center text-muted-foreground text-[10px]">

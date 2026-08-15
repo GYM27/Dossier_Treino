@@ -4,6 +4,7 @@ import com.dossiertreinador.domain.dtos.SessaoTreinoExercicioDTO;
 import com.dossiertreinador.domain.dtos.SessaoTreinoRequestDTO;
 import com.dossiertreinador.domain.dtos.SessaoTreinoResponseDTO;
 import com.dossiertreinador.domain.entities.Equipa;
+import com.dossiertreinador.domain.entities.EventoCalendario;
 import com.dossiertreinador.domain.entities.SessaoTreino;
 import com.dossiertreinador.domain.entities.SessaoTreinoExercicio;
 import org.springframework.stereotype.Component;
@@ -14,9 +15,14 @@ import java.util.stream.Collectors;
 public class SessaoTreinoMapper {
 
     public SessaoTreino toEntity(SessaoTreinoRequestDTO dto, Equipa equipa) {
+        return toEntity(dto, equipa, null);
+    }
+
+    public SessaoTreino toEntity(SessaoTreinoRequestDTO dto, Equipa equipa, EventoCalendario evento) {
         if (dto == null) return null;
         
         return SessaoTreino.builder()
+                .eventoCalendario(evento)
                 .numeroJogadores(dto.getNumeroJogadores())
                 .material(dto.getMaterial())
                 .objetivo(dto.getObjetivo())
@@ -33,11 +39,9 @@ public class SessaoTreinoMapper {
                 .eventoId(entity.getEventoCalendario() != null ? entity.getEventoCalendario().getId() : null)
                 .data(entity.getEventoCalendario() != null ? entity.getEventoCalendario().getDataHoraInicio().toLocalDate() : null)
                 .hora(entity.getEventoCalendario() != null ? entity.getEventoCalendario().getDataHoraInicio().toLocalTime() : null)
-                .morfociclo(entity.getEventoCalendario() != null && entity.getEventoCalendario().getMicrocicloPlaneamento() != null 
-                    ? entity.getEventoCalendario().getMicrocicloPlaneamento().getMorfociclo() : null)
+                .morfociclo(null) // TODO: Implementar mapeamento correto de Morfociclo
                 .microciclo(entity.getEventoCalendario() != null ? entity.getEventoCalendario().getNumeroTreino() : null)
-                .fase(entity.getEventoCalendario() != null && entity.getEventoCalendario().getMicrocicloPlaneamento() != null 
-                    ? entity.getEventoCalendario().getMicrocicloPlaneamento().getFase() : null)
+                .fase(null) // TODO: Implementar mapeamento correto de Fase
                 .numeroJogadores(entity.getNumeroJogadores())
                 .material(entity.getMaterial())
                 .objetivo(entity.getObjetivo())
@@ -58,6 +62,7 @@ public class SessaoTreinoMapper {
                 .ordem(assoc.getOrdem())
                 .duracaoMinutos(assoc.getDuracaoMinutos())
                 .observacoesDoTreinador(assoc.getObservacoesDoTreinador())
+                .dadosTaticos(assoc.getExercicio().getDadosTaticos())
                 .build();
     }
 }

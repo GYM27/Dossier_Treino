@@ -7,6 +7,8 @@ export interface EventoCalendario {
   descricao: string;
   local?: string;
   numeroTreino?: number;
+  equipaCasa?: string;
+  equipaFora?: string;
 }
 
 export interface PlaneamentoMicrociclo {

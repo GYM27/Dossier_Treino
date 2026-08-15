@@ -5,6 +5,7 @@ import org.springframework.data.jpa.repository.JpaRepository;
 import org.springframework.stereotype.Repository;
 
 import java.util.List;
+import java.util.Optional;
 import java.util.UUID;
 
 @Repository
@@ -14,7 +15,7 @@ public interface SessaoTreinoRepository extends JpaRepository<SessaoTreino, UUID
     List<SessaoTreino> findByEquipaIdOrderByEventoCalendario_DataHoraInicioDesc(UUID equipaId);
 
     // Encontrar SessaoTreino pelo ID do evento calendário associado
-    java.util.Optional<SessaoTreino> findByEventoCalendarioId(UUID eventoId);
+    Optional<SessaoTreino> findByEventoCalendarioId(UUID eventoId);
 
     // Apagar SessaoTreino pelo ID do evento calendário associado (necessário para eliminar um Evento)
     void deleteByEventoCalendarioId(UUID eventoId);
