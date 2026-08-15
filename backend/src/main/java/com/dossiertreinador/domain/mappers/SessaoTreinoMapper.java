@@ -4,6 +4,7 @@ import com.dossiertreinador.domain.dtos.SessaoTreinoExercicioDTO;
 import com.dossiertreinador.domain.dtos.SessaoTreinoRequestDTO;
 import com.dossiertreinador.domain.dtos.SessaoTreinoResponseDTO;
 import com.dossiertreinador.domain.entities.Equipa;
+import com.dossiertreinador.domain.entities.EventoCalendario;
 import com.dossiertreinador.domain.entities.SessaoTreino;
 import com.dossiertreinador.domain.entities.SessaoTreinoExercicio;
 import org.springframework.stereotype.Component;
@@ -14,9 +15,14 @@ import java.util.stream.Collectors;
 public class SessaoTreinoMapper {
 
     public SessaoTreino toEntity(SessaoTreinoRequestDTO dto, Equipa equipa) {
+        return toEntity(dto, equipa, null);
+    }
+
+    public SessaoTreino toEntity(SessaoTreinoRequestDTO dto, Equipa equipa, EventoCalendario evento) {
         if (dto == null) return null;
         
         return SessaoTreino.builder()
+                .eventoCalendario(evento)
                 .numeroJogadores(dto.getNumeroJogadores())
                 .material(dto.getMaterial())
                 .objetivo(dto.getObjetivo())

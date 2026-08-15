@@ -212,3 +212,59 @@ Se desceres a p·gina, vÍs o separador 'Exercise Flow'. Ao clicares em **IMPORT L
   - **Dimens√£o**: Escolhe entre **Pequeno**, **M√©dio** ou **Grande**.
   - **Nome / Sigla**: Escreve 'GR', 'C' (Coringa), '10', 'MC', etc.
   - **Cores**: Escolhe entre as 7 cores de coletes (amarelo, azul, vermelho, verde, laranja, branco, preto) ou escolhe uma cor livre no gradiente.
+
+### 5. Usabilidade e Edi√ß√£o R√°pida
+- **Sele√ß√£o de √Åreas e Zonas**: Ao desenhar Quadrados ou C√≠rculos, agora pode arrast√°-los clicando diretamente no seu interior ou confortavelmente sobre a linha, tornando o reposicionamento da t√°tica mais org√¢nico.
+- **Edi√ß√£o Imediata de Jogador**: Ao selecionar qualquer Jogador, a barra de op√ß√µes surge e o campo do Nome/N√∫mero fica automaticamente ativo para come√ßar logo a digitar.
+
+### Ajuste de Cursor no Tactical Builder
+- **Cursor Contextual**: Na prancheta t√°tica, o rato agora apresenta uma seta normal (cursor-default) sempre que o modo ativo for "Selecionar", revertendo para a mira (cursor-crosshair) apenas durante a√ß√µes de desenho de formas ou linhas.
+
+### Rota√ß√£o Universal
+Agora pode rodar livremente **todas as Formas Geom√©tricas** (Quadrados, C√≠rculos, etc.) e as **Balizas**, tal como fazia com as linhas!
+1. Selecione a forma ou a baliza.
+2. Vai notar um **Ponto Azul** luminoso no topo da caixa de sele√ß√£o.
+3. Clique e arraste esse ponto para inclinar o objeto como preferir.
+- *Nota:* Mesmo depois de inclinar um objeto, pode continuar a usar os quatro cantos para o esticar ou encolher, e a f√≠sica acompanhar√° perfeitamente a inclina√ß√£o!
+
+### Gest√£o e Cria√ß√£o de Treinos (Novo Est√∫dio de Treinos)
+1. **Navegar pelo Hist√≥rico**: Na barra lateral esquerda encontra todos os treinos registados para a equipa ativa, ordenados por microciclo/data, com contagem de exerc√≠cios e dura√ß√£o.
+2. **Criar Novo Treino**: Clique no bot√£o **"+ Novo"** no topo da barra lateral para abrir o assistente. Preencha a data, hora, local e objetivo. O treino ser√° agendado automaticamente no Calend√°rio!
+3. **Adicionar Exerc√≠cios**:
+   - Clique em **"Biblioteca"** para escolher um exerc√≠cio j√° existente no cat√°logo.
+   - Clique em **"Novo Exerc√≠cio (Prancheta)"** para desenhar um exerc√≠cio de raiz na Prancheta T√°tica e associ√°-lo de imediato √† sess√£o.
+4. **Editar e Guardar**: Altere o n√∫mero de jogadores, o material ou os objetivos e clique em **"Guardar Treino"**.
+
+### Gerir, Editar e Duplicar Exerc√≠cios na Biblioteca
+1. **Abrir a Biblioteca**: No ecr√£ de treino, clique em **"Biblioteca"**.
+2. **Editar / Clonar um Exerc√≠cio**:
+   - Clique no √≠cone de **L√°pis** no cart√£o do exerc√≠cio pretendido.
+   - A Prancheta T√°tica abrir√° com o desenho e os dados desse exerc√≠cio pr√©-carregados.
+   - Se alterar o nome (ex: de "Rondo 4v4" para "Rondo 4v4 + 2 Apoios"), o bot√£o muda para **"Gravar como Novo"**. Ao gravar, o sistema cria o novo exerc√≠cio e mant√©m o original!
+   - Se quiser apenas corrigir o exerc√≠cio original, mantenha o nome e clique em **"Atualizar Original"**.
+3. **Eliminar Exerc√≠cio**: Clique no √≠cone do **Caixote do Lixo** para remover o exerc√≠cio da biblioteca.
+
+### Como Utilizar a Nova P·gina de Treinos e Biblioteca
+
+1. **P·gina de Treinos:**
+   - A p·gina apresenta, do lado esquerdo, uma lista (sidebar) de todos os teus treinos e, do lado direito, o detalhe do treino selecionado.
+   - Ao abrir um treino, este apresenta-se em **Modo de Leitura**. Neste modo, as informaÁıes est„o preparadas para uma leitura f·cil (por exemplo, num tablet no campo).
+   - Para fazer modificaÁıes, clica no bot„o **'Modo EdiÁ„o'** (Ìcone do l·pis) no topo. Podes ent„o modificar o objetivo, a data, o n˙mero de jogadores, e tambÈm adicionar, editar ou remover os exercÌcios do treino. No final, clica em **'Guardar AlteraÁıes'.
+
+2. **Biblioteca de ExercÌcios:**
+   - Ao clicares em 'Biblioteca' podes agora ver os teus exercÌcios listados com uma pequena prÈ-visualizaÁ„o (miniatura).
+   - Em cada cart„o de exercÌcio, encontras botıes r·pidos para **Editar** ou **Eliminar**.
+   - **Funcionalidade M·gica:** Se estiveres a editar um exercÌcio (por exemplo: 'Rondo 4x4') e lhe mudares o nome para 'Rondo 5x5' ao gravar, o Dossier Treinador percebe imediatamente a intenÁ„o e **duplica o exercÌcio**, gravando-o como um novo no cat·logo, mantendo o original intacto!
+
+
+## Interface Padronizada e Consistente (Fase 1)
+
+### Experi√™ncia de Utiliza√ß√£o Uniforme
+- **Bot√µes e Controlos**: Todos os bot√µes de a√ß√£o principal (Criar Treino, Guardar, Modos Leitura/Edi√ß√£o, Exportar PDF) agora possuem feedback t√°til consistente (anima√ß√µes de clique e foco vis√≠vel).
+- **Campos de Formul√°rio**: Os campos num√©ricos, seletores de data/hora e caixas de texto mant√™m a mesma tipografia e contraste, quer esteja a agendar um treino, a desenhar uma prancheta ou a registar um atleta no plantel.
+- **Etiquetas e Badges**: Indicadores visuais de microciclo, dura√ß√£o em minutos e categorias de exerc√≠cios destacam-se com cores sem√¢nticas (ciano para microciclos, √¢mbar para intensidade e verde para confirma√ß√µes).
+
+### Funcionalidade: Linhas Simples e RotaÁ„o Pelo Centro
+- **Linha Sem Seta**: Adicionada a opÁ„o de desenhar uma 'Linha Simples' na barra de ferramentas inferior (e no menu de ediÁ„o flutuante), permitindo criar traÁos diretos sem a seta direcional (ideal para delimitar espaÁos ou desenhar obst·culos planos).
+- **Handle de RotaÁ„o CÍntrica**: Ao selecionar qualquer tipo de linha (Simples, Deslocamento, ou Passe), agora surge um terceiro ponto de controlo (ponto azul) posicionado ligeiramente acima do meio da linha. Ao clicar e arrastar este ponto, a linha roda perfeitamente em torno do seu eixo central sem alterar o seu comprimento.
+

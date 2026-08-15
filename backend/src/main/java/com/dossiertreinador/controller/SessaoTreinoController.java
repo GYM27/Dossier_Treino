@@ -4,9 +4,12 @@ import com.dossiertreinador.domain.dtos.SessaoTreinoExercicioDTO;
 import com.dossiertreinador.domain.dtos.SessaoTreinoRequestDTO;
 import com.dossiertreinador.domain.dtos.SessaoTreinoResponseDTO;
 import com.dossiertreinador.domain.entities.Equipa;
+import com.dossiertreinador.domain.entities.EventoCalendario;
 import com.dossiertreinador.domain.entities.SessaoTreino;
 import com.dossiertreinador.domain.mappers.SessaoTreinoMapper;
 import com.dossiertreinador.repository.EquipaRepository;
+import com.dossiertreinador.repository.EventoCalendarioRepository;
+import com.dossiertreinador.repository.SessaoTreinoRepository;
 import com.dossiertreinador.service.SessaoTreinoService;
 import jakarta.validation.Valid;
 import lombok.RequiredArgsConstructor;
@@ -15,24 +18,49 @@ import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 
 import java.util.List;
+import java.util.Optional;
 import java.util.UUID;
 import java.util.stream.Collectors;
+import org.springframework.transaction.annotation.Transactional;
 
 @RestController
 @RequestMapping("/api/treinos")
 @RequiredArgsConstructor
+@Transactional
 public class SessaoTreinoController {
 
     private final SessaoTreinoService sessaoTreinoService;
     private final SessaoTreinoMapper sessaoTreinoMapper;
-    private final EquipaRepository equipaRepository; // Num cenário mais complexo teríamos um EquipaService
+    private final EquipaRepository equipaRepository;
+    private final EventoCalendarioRepository eventoCalendarioRepository;
+    private final SessaoTreinoRepository sessaoTreinoRepository;
 
     @PostMapping
+    @Transactional
     public ResponseEntity<SessaoTreinoResponseDTO> criarSessaoVazia(@Valid @RequestBody SessaoTreinoRequestDTO dto) {
         Equipa equipa = equipaRepository.findById(dto.getEquipaId())
                 .orElseThrow(() -> new RuntimeException("Equipa não encontrada."));
                 
-        SessaoTreino entidade = sessaoTreinoMapper.toEntity(dto, equipa);
+        EventoCalendario evento = null;
+        if (dto.getEventoId() != null) {
+            evento = eventoCalendarioRepository.findById(dto.getEventoId())
+                    .orElseThrow(() -> new RuntimeException("Evento de calendário não encontrado."));
+
+            // Se o evento já criou automaticamente a sessão de treino, atualizamos os dados preenchidos pelo utilizador
+            Optional<SessaoTreino> sessaoExistente = sessaoTreinoRepository.findByEventoCalendarioId(dto.getEventoId());
+            if (sessaoExistente.isPresent()) {
+                SessaoTreino atualizada = sessaoTreinoService.atualizarSessao(
+                        sessaoExistente.get().getId(),
+                        dto.getObjetivo(),
+                        dto.getMaterial(),
+                        dto.getNumeroJogadores(),
+                        dto.getIntensidadeGeral()
+                );
+                return new ResponseEntity<>(sessaoTreinoMapper.toResponseDTO(atualizada), HttpStatus.CREATED);
+            }
+        }
+                
+        SessaoTreino entidade = sessaoTreinoMapper.toEntity(dto, equipa, evento);
         SessaoTreino salvo = sessaoTreinoService.criarSessao(entidade);
         
         return new ResponseEntity<>(sessaoTreinoMapper.toResponseDTO(salvo), HttpStatus.CREATED);
@@ -96,5 +124,22 @@ public class SessaoTreinoController {
         
         sessaoTreinoService.removerExercicio(sessaoId, assocId);
         return ResponseEntity.noContent().build();
+    }
+
+    @PutMapping("/{sessaoId}/exercicios/{assocId}")
+    public ResponseEntity<SessaoTreinoResponseDTO> atualizarExercicioNaSessao(
+            @PathVariable UUID sessaoId,
+            @PathVariable UUID assocId,
+            @RequestBody SessaoTreinoExercicioDTO dto) {
+            
+        SessaoTreino atualizada = sessaoTreinoService.atualizarExercicioNaSessao(
+                sessaoId, 
+                assocId,
+                dto.getOrdem(), 
+                dto.getDuracaoMinutos(), 
+                dto.getObservacoesDoTreinador()
+        );
+        
+        return ResponseEntity.ok(sessaoTreinoMapper.toResponseDTO(atualizada));
     }
 }

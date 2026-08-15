@@ -47,6 +47,7 @@ export function TacticalPlayerFloatingBar({
           </span>
           <input
             type="text"
+            autoFocus
             value={currentLabel}
             onChange={(e) => {
               const val = e.target.value;

@@ -164,3 +164,47 @@ O design de ecr� inteiro exigiu que a arquitetura do Frontend isolasse o TreinoB
 
 ### 4. Robustez de Interação (Pointer Capture)
 - Implementação de setPointerCapture no <canvas> para evitar interrupções de arrasto quando o cursor cruza os limites das barras de ferramentas flutuantes.
+
+### 5. Melhorias de UI/UX no Tactical Builder
+- **Hit Testing Híbrido para Formas**: Implementou-se um algoritmo simplificado de deteção 2D no TacticalBoard.tsx que permite agarrar formas (retângulos, círculos, triângulos) clicando em qualquer parte do interior ou nos bordos da linha.
+- **Auto-Foco**: A injeção da propriedade utoFocus em barras de propriedades dinâmicas otimiza o fluxo de edição rápido sem necessidade de re-focar o rato.
+
+### 8. Rotação Universal em Geometrias e Balizas
+- **Hit-Testing com Matrizes Inversas**: A deteção de clique (isHit) e colisão com as *bounding boxes* das formas geométricas (Retângulo, Círculo, etc.) e das balizas foi atualizada. Agora, antes do teste matemático, aplicamos uma matriz de translação e rotação inversa (Math.cos(-rotation)) às coordenadas brutas do rato para o mapear para o espaço local (*unrotated space*) do objeto. Isto permite selecionar, arrastar e redimensionar objetos com ângulos complexos sem falhas na precisão.
+- **Rendering Otimizado**: As formas passam a ser desenhadas no centro da sua *bounding box* através de uma combinação de ctx.translate e ctx.rotate, em vez de recalcular matematicamente os vértices poligonais de cada forma.
+
+### 9. Módulo de Treinos - Arquitetura Estúdio / Master-Detail
+- **Separação de Responsabilidades (Master-Detail)**: A página de Treinos foi refatorizada para o padrão Master-Detail. O componente TreinosOrchestrator coordena o estado entre a barra lateral (TreinosSidebarList), o estúdio de edição (TreinoDetailStudio) e o modal de criação rápida (NovoTreinoModal).
+- **Sincronização Atómica de DTOs (Calendário \u0026 Treinos)**: Ao criar um treino, são criadas sequencialmente as entidades EventoCalendario (através de POST /api/eventos/equipa/{equipaId}) e SessaoTreino vinculada (através de POST /api/treinos), garantindo que o planeamento semanal no calendário e o caderno de exercícios partilham uma única fonte da verdade.
+- **Integração Bidirecional de Exercícios**: O utilizador pode anexar exercícios ao treino de duas formas:
+  1. Catálogo Existente (CatalogoExerciciosModal via /api/exercicios).
+  2. Criação Imediata via Prancheta (NovoExercicioPranchetaModal via TacticalBoard), que regista o exercício no catálogo global e anexa-o instantaneamente à timeline da sessão (POST /api/treinos/{sessaoId}/exercicios).
+
+### 10. Gestão do Catálogo de Exercícios - Edição, Duplicação e Eliminação
+- **Endpoints RESTful para Exercícios**: Foram adicionados os endpoints PUT /api/exercicios/{id} para atualização de dados/prancheta e DELETE /api/exercicios/{id} para remoção segura de exercícios obsoletos.
+- **Padrão Clone-on-Edit (Duplicação Segura)**: A interface de edição (NovoExercicioPranchetaModal) deteta se o utilizador alterou o nome do exercício em relação ao original. Se o nome for alterado ou o utilizador clicar explicitamente em **"Gravar como Novo"**, o frontend efetua um POST /api/exercicios criando uma nova entrada no catálogo e preservando o exercício original intacto. Se mantiver o nome original e clicar em **"Atualizar Original"**, o sistema executa um PUT /api/exercicios/{id}.
+
+### P�gina de Treinos e Biblioteca (Update)
+- **Read/Edit Mode Toggle**: O componente \TreinoDetailStudio\ implementa um padr�o de visualiza��o dual (Read/Edit). Isto melhora a legibilidade durante a sess�o e protege os dados contra edi��es acidentais.
+- **Smart Duplication (Biblioteca)**: O \NovoExercicioPranchetaModal\ verifica o \hasNameChanged\. Se alterado durante a edi��o, encaminha o request para um POST (novo) em vez de PUT (update), preservando o exerc�cio original.
+- **Transactional Boundary**: Adicionada a anota��o \@Transactional\ na classe \SessaoTreinoController\ (Backend). Isto evita a \LazyInitializationException\ durante a serializa��o do DTO de resposta da API na cria��o do Treino.
+
+
+## Padronização Visual e Design System Frontend (Fase 1)
+
+### 1. Camada de UI Primitiva (components/ui/)
+- Centralização de componentes atómicos reutilizáveis (Button, Input, Badge, Card, Textarea).
+- Utilização de class-variance-authority (CVA) para variantes declarativas e tipadas.
+- Aplicação de cn() (clsx + tailwind-merge) para resolução determinística de estilos e eliminação de duplicação de classes Tailwind hardcoded.
+
+### 2. Refatoração e Padronização por Módulos
+- **Treinos**: Formulários de criação (NovoTreinoModal), estúdio detalhado (TreinoDetailStudio) e cartões de exercícios da timeline (TreinoExercicioCard) usam exclusivamente o Design System.
+- **Plantel**: AtletaFormModal migrado para Input e Button padronizados.
+- **Calendário**: EventoFormModal alinhado com validação robusta de datas e inputs controlados.
+
+### 6. Geometria Anal�tica para Rota��o de Linhas
+- **Rotate Handle Offset**: Implementa��o de um manipulador de rota��o espacial puro para linhas retas. O c�lculo do pivot usa trigonometria (Math.atan2 com offset perpendicular de Math.PI / 2) para projetar o *handle* e atualizar a inclina��o mantendo Math.hypot e o centro geom�trico (cx, cy) imut�veis.
+
+### 7. Normaliza��o de Espa�amentos da UI
+- **Global Y-Offset**: A margem de respiro vertical para todos os menus contextuais flutuantes (Jogadores, Balizas, Formas Geom�tricas, Linhas) foi uniformizada globalmente atrav�s da propriedade CSS 	ranslateY(-40px). Esta abordagem garante uma folga visual consistente em toda a plataforma, sem afetar o c�lculo subjacente dos *bounding boxes* para sele��o.
+

@@ -497,3 +497,58 @@ Para eliminar o espaço morto e tornar a interface harmoniosa e equilibrada:
  -   * * C o m o   F u n c i o n a * * :   A g o r a ,   a s   b a r r a s   d e   e d i � � o   d e s a p a r e c e m   c o m p l e t a m e n t e   ( f i c a m   o c u l t a s   c o m   o p a c i t y - 0   e   p o i n t e r - e v e n t s - n o n e )   n o   p r e c i s o   m o m e n t o   e m   q u e   o   u t i l i z a d o r   c l i c a   e   c o m e � a   a   a r r a s t a r   u m   e l e m e n t o   n a   t e l a . 
  -   * * P o r q u � * * :   A n t e r i o r m e n t e   a s   b a r r a s   f i c a v a m   a p e n a s   p a r c i a l m e n t e   o p a c a s ,   o   q u e   p o r   v e z e s   d i f i c u l t a v a   a   p e r c e � � o   v i s u a l   d o   u t i l i z a d o r .   C o m   e s t a   a l t e r a � � o   a s   b a r r a s   o c u l t a m - s e   c o m   u m a   a n i m a � � o   s u a v e   d e   2 0 0 m s   ( 	 r a n s i t i o n - o p a c i t y   d u r a t i o n - 2 0 0 )   g a r a n t i n d o   t o t a l   f o c a g e m   n o   r e p o s i c i o n a m e n t o   d o   e l e m e n t o .   A s s i m   q u e   o   b o t � o   d o   r a t o   �   l i b e r t a d o ,   a   b a r r a   d e   e d i � � o   v o l t a   a   a p a r e c e r   n o   l o c a l   c o r r e t o   d o   e l e m e n t o   s e l e c i o n a d o .  
  
+# # Funcionalidade: Seleção de Formas Geométricas (Bounding Box) e Foco Automático
+Para garantir que as formas geométricas (com ou sem preenchimento) sejam facilmente selecionadas e que a edição de jogadores seja imediata, foram feitas duas alterações na prancheta:
+- **Como Funciona (Formas)**: A lógica de colisão (hit test) no TacticalBoard.tsx agora avalia explicitamente a área interior (isInside) e a proximidade da borda (isNearBorder). Se o clique for dentro da caixa delimitadora ou perto da linha limite, a forma é selecionada.
+- **Como Funciona (Jogador)**: No TacticalPlayerFloatingBar.tsx, adicionou-se a propriedade React utoFocus ao campo de input. Mal o componente é montado aquando da seleção de um jogador, o campo de texto fica focado no browser.
+- **Porquê**: Melhorar significativamente a experiência de utilizador (UX) na edição contínua, poupando ao treinador cliques extra e frustração a selecionar áreas.
+
+## Rotação Livre em Desenhos e Balizas
+- **O Problema**: Rodar livremente figuras bidimensionais num Canvas (ex: retângulos e círculos) implica que as suas caixas de colisão (*Bounding Boxes*) deixam de ser perfeitamente alinhadas aos eixos (AABB - Axis-Aligned Bounding Box) e passam a ser orientadas (OBB - Oriented Bounding Box).
+- **A Solução "Matriz Inversa"**: Em vez de fazermos matemática complexa de interseção de OBBs com o ponto do rato, aplicamos o conceito matemático do vetor inverso. Quando clicamos na prancheta, rodamos virtualmente a coordenada X e Y do rato "para trás" usando o ângulo exato do desenho, tendo como pivô o centro. Isto coloca o rato no "Eixo Local" do desenho. A partir daí, o código que já tínhamos para testar caixas não-rodadas funciona a 100%!
+- **UI de Controlo**: Injetámos um novo otate_shape nas Shapes e otate_element nas Balizas. O ângulo é calculado com Math.atan2 entre o rato e o pivô, adicionando Math.PI / 2 para manter o manípulo perfeitamente ao norte (Topo) por defeito.
+
+## Reorganização do Módulo de Treinos (Estúdio de Treinador)
+- **O Desafio**: Anteriormente, a interface abria diretamente o construtor sem permitir consultar o histórico cronológico de sessões nem escolher facilmente entre sessões passadas.
+- **A Solução Modular**:
+  - TreinosSidebarList: Carrega a lista de sessões da equipa ativa, permitindo filtragem por pesquisa de objetivos e seleção rápida.
+  - NovoTreinoModal: Cria o evento de calendário e a sessão de treino de forma transparente num único formulário amigável.
+  - TreinoDetailStudio: Área de trabalho onde o treinador ajusta os metadados (jogadores, intensidade, material) e gere a timeline de exercícios.
+  - NovoExercicioPranchetaModal: Permite abrir a prancheta interativa em modo de desenho de exercício, criando e anexando o exercício à sessão num único clique.
+
+## Biblioteca de Exercícios Inteligente (Edição e Duplicação)
+- **O Desafio**: O treinador quer reutilizar exercícios existentes fazendo pequenas variantes táticas sem perder o exercício original de referência.
+- **A Solução Implementada**:
+  - CatalogoExerciciosModal: Ganhou botões diretos de ação por exercício (Editar com lápis e Eliminar com caixote do lixo), além de filtros por categoria.
+  - NovoExercicioPranchetaModal: Agora aceita um initialExercicio opcional. Ao carregar um exercício existente, a Prancheta Tática e todos os parâmetros (jogadores, espaço, dificuldade) são pré-preenchidos.
+  - Se mudar o nome do exercício, o sistema ativa automaticamente o modo de cópia ("Gravar como Novo"), gerando um novo exercício independente no catálogo.
+
+### P�gina de Treinos e Biblioteca
+- **TreinoDetailStudio.tsx**: Implementado toggle de 'Modo Leitura' e 'Modo Edi��o'. O 'Modo Leitura' converte todos os inputs em texto est�tico e esconde bot�es desnecess�rios, enquanto o 'Modo Edi��o' mostra o formul�rio e permite altera��es de metadados e exerc�cios.
+- **CatalogoExerciciosModal.tsx** e **NovoExercicioPranchetaModal.tsx**: Melhorada a biblioteca para permitir editar exerc�cios usando a Prancheta. Caso o nome seja alterado durante a edi��o, o exerc�cio � guardado como um NOVO exerc�cio em vez de sobrescrever o original.
+- **SessaoTreinoController.java**: Adicionada a anota��o @Transactional � classe. Isto resolveu o erro 500 (LazyInitializationException) no mapper, que tentava aceder a entidades Lazy (EventoCalendario) fora da transa��o de grava��o.
+
+
+## Fase 1: Padronização Visual & Componentes UI (Design System)
+
+### 1. O Problema da Duplicação de UI
+- **Sintoma**: Em vários componentes (NovoTreinoModal, TreinoDetailStudio, AtletaFormModal, EventoFormModal), existiam elementos nativos button e input com longas cadeias de classes Tailwind repetidas.
+- **Consequências**: 
+  1. Qualquer alteração de design exigia editar dezenas de ficheiros.
+  2. Inconsistência visual (espaçamentos, tamanhos de letra, cores de foco e estados disabled diferentes).
+  3. Dificuldade de manutenção e risco de bugs.
+
+### 2. A Solução: Componentes Reutilizáveis em components/ui/
+- **Button (components/ui/button.tsx)**:
+  - Utiliza class-variance-authority (cva) para gerir variantes (default, outline, secondary, ghost, destructive, cyan, emerald, amber, dark) e tamanhos (default, xs, sm, lg, icon).
+  - Garante automaticamente estados de foco acessíveis (focus-visible:ring-3), estados desativados (disabled:opacity-50) e animações de clique (active:scale-95).
+- **Input (components/ui/input.tsx)**:
+  - Encapsula o estilo base moderno com bordas dinâmicas, suporte a temas claros e escuros, e foco estilizado.
+- **Badge (components/ui/badge.tsx)**:
+  - Componente padronizado para etiquetas de microciclo, tempo de exercício, estatuto de jogador e categorias.
+- **Textarea (components/ui/textarea.tsx)**:
+  - Área de texto estilizada e padronizada para observações de treino e notas táticas.
+
+### 3. O que acontece Por Detrás dos Panos
+- **Class Variance Authority (CVA)**: O CVA compila dinamicamente as classes de Tailwind baseadas nas propriedades passadas ao componente.
+- **Função cn() (clsx + tailwind-merge)**: Ao combinar as classes do componente base com qualquer className adicional passada via props, o tailwind-merge resolve conflitos de classes de forma inteligente.

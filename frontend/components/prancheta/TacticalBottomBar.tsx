@@ -14,9 +14,10 @@ interface TacticalBottomBarProps {
   setState: React.Dispatch<React.SetStateAction<TacticalState>>;
   uiTick: number;
   setUiTick: React.Dispatch<React.SetStateAction<number>>;
+  onSaveHistory?: () => void;
 }
 
-export function TacticalBottomBar({ state, setState, uiTick, setUiTick }: TacticalBottomBarProps) {
+export function TacticalBottomBar({ state, setState, uiTick, setUiTick, onSaveHistory }: TacticalBottomBarProps) {
   const CANVAS_WIDTH = 1000;
   const CANVAS_HEIGHT = 625;
 
@@ -39,6 +40,7 @@ export function TacticalBottomBar({ state, setState, uiTick, setUiTick }: Tactic
       };
     });
     setUiTick(t => t + 1);
+    if (onSaveHistory) onSaveHistory();
   };
 
   const updateDrawingConfig = (key: keyof DrawingConfig, value: any) => {
@@ -73,12 +75,11 @@ export function TacticalBottomBar({ state, setState, uiTick, setUiTick }: Tactic
 
   const addBall = () => {
     const elements = [...getActiveElements()];
-    if (elements.some(e => e.type === "ball")) return;
     elements.push({
       id: "B" + Date.now(),
       type: "ball",
-      x: CANVAS_WIDTH / 2,
-      y: CANVAS_HEIGHT / 2
+      x: CANVAS_WIDTH / 2 + (Math.random() * 40 - 20),
+      y: CANVAS_HEIGHT / 2 + (Math.random() * 40 - 20)
     });
     
     updateCurrentFrameElements(elements);
@@ -108,7 +109,7 @@ export function TacticalBottomBar({ state, setState, uiTick, setUiTick }: Tactic
     updateCurrentFrameElements(elements);
   };
 
-  const setDrawingMode = (mode: "select" | "run" | "pass" | "pen" | "rect" | "circle" | "triangle") => {
+  const setDrawingMode = (mode: TacticalState["drawingMode"]) => {
     setState(prev => ({ ...prev, drawingMode: mode }));
     setUiTick(t => t + 1);
   };
@@ -130,6 +131,7 @@ export function TacticalBottomBar({ state, setState, uiTick, setUiTick }: Tactic
       };
     });
     setUiTick(t => t + 1);
+    if (onSaveHistory) onSaveHistory();
   };
 
   const activeMode = state.drawingMode;
@@ -222,11 +224,11 @@ export function TacticalBottomBar({ state, setState, uiTick, setUiTick }: Tactic
         <div className="flex items-center gap-1">
           <span className="text-[11px] font-semibold text-slate-400 mr-0.5">Linha</span>
           <button 
-            onClick={() => setDrawingMode("run")} 
-            title="Linha Contínua (Deslocamento)"
+            onClick={() => setDrawingMode("line")} 
+            title="Linha Simples"
             className={cn(
               "w-7 h-7 flex items-center justify-center rounded-lg transition-all", 
-              activeMode === "run" 
+              activeMode === "line" 
                 ? "bg-cyan-500 text-white shadow-sm" 
                 : "hover:bg-slate-800 text-slate-400"
             )}
@@ -234,8 +236,22 @@ export function TacticalBottomBar({ state, setState, uiTick, setUiTick }: Tactic
             <div className="w-3.5 h-0 border-t-2 border-solid border-current"></div>
           </button>
           <button 
+            onClick={() => setDrawingMode("run")} 
+            title="Linha com Seta (Deslocamento)"
+            className={cn(
+              "w-7 h-7 flex items-center justify-center rounded-lg transition-all", 
+              activeMode === "run" 
+                ? "bg-cyan-500 text-white shadow-sm" 
+                : "hover:bg-slate-800 text-slate-400"
+            )}
+          >
+            <div className="w-4 h-0 border-t-2 border-solid border-current relative">
+              <div className="absolute -right-0.5 -top-1 w-2 h-2 border-t-2 border-r-2 border-current rotate-45"></div>
+            </div>
+          </button>
+          <button 
             onClick={() => setDrawingMode("pass")} 
-            title="Linha Tracejada (Passe)"
+            title="Linha Tracejada com Seta (Passe)"
             className={cn(
               "w-7 h-7 flex items-center justify-center rounded-lg transition-all", 
               activeMode === "pass" 
@@ -243,7 +259,9 @@ export function TacticalBottomBar({ state, setState, uiTick, setUiTick }: Tactic
                 : "hover:bg-slate-800 text-slate-400"
             )}
           >
-            <div className="w-3.5 h-0 border-t-2 border-dashed border-current"></div>
+            <div className="w-4 h-0 border-t-2 border-dashed border-current relative">
+              <div className="absolute -right-0.5 -top-1 w-2 h-2 border-t-2 border-r-2 border-solid border-current rotate-45"></div>
+            </div>
           </button>
         </div>
       </div>

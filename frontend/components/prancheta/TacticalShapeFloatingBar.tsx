@@ -57,7 +57,7 @@ export function TacticalShapeFloatingBar({
   const currentType = drawing.type;
   const lineStyle = config.lineStyle || "solid";
 
-  const isLine = currentType === "run" || currentType === "pass" || currentType === "pen";
+  const isLine = currentType === "run" || currentType === "pass" || currentType === "pen" || currentType === "line";
 
   return (
     <div className="relative w-[380px] bg-[#1e293b] text-slate-200 border border-slate-700/80 rounded-2xl shadow-2xl p-2.5 px-3 flex flex-col gap-2 text-xs select-none backdrop-blur-md animate-in fade-in zoom-in-95 duration-150">
@@ -79,6 +79,24 @@ export function TacticalShapeFloatingBar({
                   onClick={() => {
                     onUpdate(drawingIndex, {
                       ...drawing,
+                      type: "line",
+                      config: { ...(drawing.config || {}), lineStyle: "solid" },
+                    });
+                  }}
+                  className={cn(
+                    "px-2 h-6 flex items-center justify-center rounded transition-colors text-[11px] font-medium",
+                    currentType === "line"
+                      ? "bg-cyan-500 text-white shadow-sm"
+                      : "hover:bg-slate-700 text-slate-400"
+                  )}
+                  title="Linha Simples"
+                >
+                  Simples
+                </button>
+                <button
+                  onClick={() => {
+                    onUpdate(drawingIndex, {
+                      ...drawing,
                       type: "run",
                       config: { ...(drawing.config || {}), lineStyle: "solid" },
                     });
@@ -91,7 +109,7 @@ export function TacticalShapeFloatingBar({
                   )}
                   title="Deslocamento com Seta"
                 >
-                  Corrida
+                  Seta
                 </button>
                 <button
                   onClick={() => {

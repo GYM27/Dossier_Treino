@@ -23,4 +23,7 @@ public interface SessaoTreinoService {
     
     // Remover um exercício associado a uma sessão
     void removerExercicio(UUID sessaoId, UUID exercicioAssocId);
+    
+    // Atualizar um exercício associado a uma sessão
+    SessaoTreino atualizarExercicioNaSessao(UUID sessaoId, UUID exercicioAssocId, Integer ordem, Integer duracaoMinutos, String observacoes);
 }

@@ -26,8 +26,9 @@ public class DossierTreinadorApplication {
     }
 
     @Bean
-    public CommandLineRunner fixDbConstraints(JdbcTemplate jdbcTemplate) {
+    public CommandLineRunner fixDbConstraints(@org.springframework.beans.factory.annotation.Autowired(required = false) JdbcTemplate jdbcTemplate) {
         return args -> {
+            if (jdbcTemplate == null) return;
             try {
                 jdbcTemplate.execute("ALTER TABLE registo_assiduidade DROP CONSTRAINT IF EXISTS registo_assiduidade_tipo_assiduidade_check");
                 jdbcTemplate.execute("ALTER TABLE sessao_treino DROP COLUMN IF EXISTS data");

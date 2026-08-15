@@ -3,6 +3,7 @@ package com.dossiertreinador.service;
 import com.dossiertreinador.domain.entities.Exercicio;
 import com.dossiertreinador.domain.entities.SessaoTreino;
 import com.dossiertreinador.domain.entities.SessaoTreinoExercicio;
+import com.dossiertreinador.repository.SessaoTreinoExercicioRepository;
 import com.dossiertreinador.repository.SessaoTreinoRepository;
 import com.dossiertreinador.service.impl.SessaoTreinoServiceImpl;
 import org.junit.jupiter.api.BeforeEach;
@@ -25,6 +26,9 @@ class SessaoTreinoServiceTest {
 
     @Mock
     private SessaoTreinoRepository sessaoTreinoRepository;
+
+    @Mock
+    private SessaoTreinoExercicioRepository sessaoTreinoExercicioRepository;
 
     @Mock
     private ExercicioService exercicioService;

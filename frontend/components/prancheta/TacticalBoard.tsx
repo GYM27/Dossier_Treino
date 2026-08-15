@@ -11,13 +11,16 @@ import { TacticalPlayerFloatingBar } from "./TacticalPlayerFloatingBar";
 import { Clock, Users, Maximize2, LayoutDashboard } from "lucide-react";
 import { cn } from "@/lib/utils";
 
-type DrawingHandleType = "tl" | "tr" | "bl" | "br" | "radius" | "p0" | "p1";
+type DrawingHandleType = "tl" | "tr" | "bl" | "br" | "radius" | "p0" | "p1" | "rotate_line" | "rotate_shape";
 
 interface DrawingBounds {
   minX: number;
   maxX: number;
   minY: number;
   maxY: number;
+  cx?: number;
+  cy?: number;
+  rotation?: number;
   handles: { type: DrawingHandleType; x: number; y: number }[];
 }
 
@@ -31,16 +34,22 @@ const getDrawingBounds = (d: TacticalDrawing): DrawingBounds | null => {
     const maxX = Math.max(p0.x, p1.x);
     const minY = Math.min(p0.y, p1.y);
     const maxY = Math.max(p0.y, p1.y);
+    const cx = (minX + maxX) / 2;
+    const cy = (minY + maxY) / 2;
     return {
       minX,
       maxX,
-      minY,
+      minY: minY - 24, // extra space for rotate handle in bounding rect
       maxY,
+      cx,
+      cy,
+      rotation: d.rotation || 0,
       handles: [
         { type: "tl", x: minX, y: minY },
         { type: "tr", x: maxX, y: minY },
         { type: "bl", x: minX, y: maxY },
         { type: "br", x: maxX, y: maxY },
+        { type: "rotate_shape", x: cx, y: minY - 24 },
       ],
     };
   } else if (d.type === "circle") {
@@ -52,25 +61,39 @@ const getDrawingBounds = (d: TacticalDrawing): DrawingBounds | null => {
     return {
       minX,
       maxX,
-      minY,
+      minY: minY - 24, // extra space for rotate handle
       maxY,
+      cx: p0.x,
+      cy: p0.y,
+      rotation: d.rotation || 0,
       handles: [
         { type: "tl", x: minX, y: minY },
         { type: "tr", x: maxX, y: minY },
         { type: "bl", x: minX, y: maxY },
         { type: "br", x: maxX, y: maxY },
         { type: "radius", x: p0.x + radius, y: p0.y },
+        { type: "rotate_shape", x: p0.x, y: minY - 24 },
       ],
     };
-  } else if (d.type === "run" || d.type === "pass") {
+  } else if (d.type === "run" || d.type === "pass" || d.type === "line") {
+    const cx = (p0.x + p1.x) / 2;
+    const cy = (p0.y + p1.y) / 2;
+    const angle = Math.atan2(p1.y - p0.y, p1.x - p0.x);
+    // Offset the rotation handle by 24 pixels perpendicular to the line
+    const rotX = cx + 24 * Math.cos(angle - Math.PI / 2);
+    const rotY = cy + 24 * Math.sin(angle - Math.PI / 2);
+    
     return {
-      minX: Math.min(p0.x, p1.x),
-      maxX: Math.max(p0.x, p1.x),
-      minY: Math.min(p0.y, p1.y),
-      maxY: Math.max(p0.y, p1.y),
+      minX: Math.min(p0.x, p1.x, rotX - 16),
+      maxX: Math.max(p0.x, p1.x, rotX + 16),
+      // Sempre damos um espaço extra (- 36) no minY para garantir que a barra flutuante 
+      // Sem espaço extra fixo aqui, usamos translateY(-40px) no rendering para todas as formas
+      minY: Math.min(p0.y, p1.y, rotY),
+      maxY: Math.max(p0.y, p1.y, rotY),
       handles: [
         { type: "p0", x: p0.x, y: p0.y },
         { type: "p1", x: p1.x, y: p1.y },
+        { type: "rotate_line", x: rotX, y: rotY },
       ],
     };
   } else if (d.type === "pen") {
@@ -97,7 +120,7 @@ const getDrawingBounds = (d: TacticalDrawing): DrawingBounds | null => {
   return null;
 };
 
-export default function TacticalBoard({ initialTacticData, onSave }: { initialTacticData?: any, onSave?: (data: any) => void }) {
+export default function TacticalBoard({ initialTacticData, onSave, readOnly = false, thumbnail = false }: { initialTacticData?: any, onSave?: (data: any) => void, readOnly?: boolean, thumbnail?: boolean }) {
   const canvasRef = useRef<HTMLCanvasElement>(null);
   const stateRef = useRef<TacticalState>(initialTacticData ? { ...INITIAL_STATE, ...initialTacticData } : JSON.parse(JSON.stringify(INITIAL_STATE)));
   const [uiTick, setUiTick] = useState(0);
@@ -152,14 +175,14 @@ export default function TacticalBoard({ initialTacticData, onSave }: { initialTa
       drawings: JSON.parse(JSON.stringify(s.drawings || [])),
     };
     
-    if (s.historyIndex < s.history.length - 1) {
+    if (s.history.length > 0 && s.historyIndex < s.history.length - 1) {
       s.history = s.history.slice(0, s.historyIndex + 1);
     }
     s.history.push(snapshot);
     if (s.history.length > 50) {
       s.history.shift();
     }
-    s.historyIndex++;
+    s.historyIndex = s.history.length - 1;
     setUiTick((t) => t + 1); 
   };
 
@@ -357,10 +380,43 @@ export default function TacticalBoard({ initialTacticData, onSave }: { initialTa
   };
 
   const handlePointerDown = (e: React.PointerEvent<HTMLCanvasElement>) => {
+    if (readOnly) return;
     const s = stateRef.current;
     const coords = getCanvasCoords(e);
     if (s.isPlaying || !s.isEditMode) return;
 
+    // 0. Check if clicking on Element rotation handle
+    const activeElementId = selectedElementIdRef.current;
+    if (activeElementId) {
+      const activeEl = getActiveElements().find(el => el.id === activeElementId);
+      if (activeEl && activeEl.type === "mini_goal") {
+        const selectRadius = (activeEl.goalSize === "fut11" ? 48 : activeEl.goalSize === "fut7" ? 36 : 26);
+        let handleLocal = { x: activeEl.x, y: activeEl.y - selectRadius - 16 };
+        
+        let localCoords = { ...coords };
+        if (activeEl.rotation) {
+          const dx = coords.x - activeEl.x;
+          const dy = coords.y - activeEl.y;
+          const cos = Math.cos(-activeEl.rotation);
+          const sin = Math.sin(-activeEl.rotation);
+          localCoords.x = activeEl.x + dx * cos - dy * sin;
+          localCoords.y = activeEl.y + dx * sin + dy * cos;
+        }
+
+        if (Math.hypot(localCoords.x - handleLocal.x, localCoords.y - handleLocal.y) <= 24) {
+          drawingDragRef.current = {
+            active: true,
+            mode: "rotate_element" as DrawingHandleType,
+            drawingIndex: -1,
+            startCoords: coords,
+            initialPoints: [{ x: activeEl.x, y: activeEl.y }]
+          };
+          return;
+        }
+      }
+    }
+
+    // 1. Check if clicking on an Element (Player, Cone, Ball)
     try {
       e.currentTarget.setPointerCapture(e.pointerId);
     } catch (_) {}
@@ -400,8 +456,18 @@ export default function TacticalBoard({ initialTacticData, onSave }: { initialTa
     if (activeDrawing !== null && s.drawings[activeDrawing]) {
       const bounds = getDrawingBounds(s.drawings[activeDrawing]);
       if (bounds) {
+        let localCoords = { ...coords };
+        if (bounds.cx !== undefined && bounds.cy !== undefined && bounds.rotation) {
+          const dx = coords.x - bounds.cx;
+          const dy = coords.y - bounds.cy;
+          const cos = Math.cos(-bounds.rotation);
+          const sin = Math.sin(-bounds.rotation);
+          localCoords.x = bounds.cx + dx * cos - dy * sin;
+          localCoords.y = bounds.cy + dx * sin + dy * cos;
+        }
+
         for (const h of bounds.handles) {
-          if (Math.hypot(coords.x - h.x, coords.y - h.y) <= 12) {
+          if (Math.hypot(localCoords.x - h.x, localCoords.y - h.y) <= 24) {
             drawingDragRef.current = {
               active: true,
               mode: h.type,
@@ -423,17 +489,39 @@ export default function TacticalBoard({ initialTacticData, onSave }: { initialTa
       const pLast = d.points[d.points.length - 1];
 
       let isHit = false;
+      const strokeWidth = d.config?.size || 2;
+      const fillOpacity = d.config?.opacity !== undefined ? d.config.opacity : 100;
+      
+      let shapeCoords = { ...coords };
+      if (d.rotation && (d.type === "rect" || d.type === "circle" || d.type === "triangle" || d.type === "pentagon" || d.type === "hexagon")) {
+        const b = getDrawingBounds(d);
+        if (b && b.cx !== undefined && b.cy !== undefined) {
+          const dx = coords.x - b.cx;
+          const dy = coords.y - b.cy;
+          const cos = Math.cos(-d.rotation);
+          const sin = Math.sin(-d.rotation);
+          shapeCoords.x = b.cx + dx * cos - dy * sin;
+          shapeCoords.y = b.cy + dx * sin + dy * cos;
+        }
+      }
+
       if (d.type === "rect" || d.type === "triangle" || d.type === "pentagon" || d.type === "hexagon") {
         const minX = Math.min(p0.x, pLast.x);
         const maxX = Math.max(p0.x, pLast.x);
         const minY = Math.min(p0.y, pLast.y);
         const maxY = Math.max(p0.y, pLast.y);
-        if (coords.x >= minX - 6 && coords.x <= maxX + 6 && coords.y >= minY - 6 && coords.y <= maxY + 6) {
+        
+        const isInside = shapeCoords.x >= minX && shapeCoords.x <= maxX && shapeCoords.y >= minY && shapeCoords.y <= maxY;
+        const isNearBorder = shapeCoords.x >= minX - 8 && shapeCoords.x <= maxX + 8 && shapeCoords.y >= minY - 8 && shapeCoords.y <= maxY + 8;
+        
+        // Se tiver preenchimento, clicar em qualquer lugar dentro funciona.
+        // Se não tiver, clicar perto da borda funciona, OU dentro (o utilizador pediu para funcionar sempre)
+        if (isInside || isNearBorder) {
           isHit = true;
         }
       } else if (d.type === "circle") {
         const radius = Math.hypot(pLast.x - p0.x, pLast.y - p0.y);
-        const dist = Math.hypot(coords.x - p0.x, coords.y - p0.y);
+        const dist = Math.hypot(shapeCoords.x - p0.x, shapeCoords.y - p0.y);
         if (dist <= radius + 8) {
           isHit = true;
         }
@@ -476,6 +564,7 @@ export default function TacticalBoard({ initialTacticData, onSave }: { initialTa
   };
 
   const handlePointerMove = (e: React.PointerEvent<HTMLCanvasElement>) => {
+    if (readOnly) return;
     const coords = getCanvasCoords(e);
     const s = stateRef.current;
 
@@ -504,30 +593,94 @@ export default function TacticalBoard({ initialTacticData, onSave }: { initialTa
       } else if (mode === "radius") {
         d.points[1] = coords;
       } else if (mode === "p0") {
-        d.points[0] = coords;
+        // Line ends (support lines with more than 2 initial points by squashing to 2)
+        d.points = [coords, initialPoints[initialPoints.length - 1]];
       } else if (mode === "p1") {
-        d.points[1] = coords;
+        d.points = [initialPoints[0], coords];
       } else if (mode === "tl" || mode === "tr" || mode === "bl" || mode === "br") {
+        let localCoords = { ...coords };
+        if (d.rotation) {
+          let cx = 0, cy = 0;
+          if (d.type === "circle") {
+             cx = initialPoints[0].x; cy = initialPoints[0].y;
+          } else {
+             cx = (initialPoints[0].x + initialPoints[initialPoints.length - 1].x) / 2;
+             cy = (initialPoints[0].y + initialPoints[initialPoints.length - 1].y) / 2;
+          }
+          const drx = coords.x - cx;
+          const dry = coords.y - cy;
+          const cos = Math.cos(-d.rotation);
+          const sin = Math.sin(-d.rotation);
+          localCoords.x = cx + drx * cos - dry * sin;
+          localCoords.y = cy + drx * sin + dry * cos;
+        }
+
         if (d.type === "circle") {
           const center = initialPoints[0];
-          const newRadius = Math.hypot(coords.x - center.x, coords.y - center.y);
+          const newRadius = Math.hypot(localCoords.x - center.x, localCoords.y - center.y);
           d.points[1] = { x: center.x + newRadius, y: center.y };
-        } else if (d.type === "rect" || d.type === "triangle") {
+        } else if (d.type === "rect" || d.type === "triangle" || d.type === "pentagon" || d.type === "hexagon") {
           const p0 = initialPoints[0];
-          const p1 = initialPoints[1];
+          const p1 = initialPoints[initialPoints.length - 1];
           const minX = Math.min(p0.x, p1.x);
           const maxX = Math.max(p0.x, p1.x);
           const minY = Math.min(p0.y, p1.y);
           const maxY = Math.max(p0.y, p1.y);
 
           if (mode === "tl") {
-            d.points = [{ x: coords.x, y: coords.y }, { x: maxX, y: maxY }];
+            d.points = [{ x: localCoords.x, y: localCoords.y }, { x: maxX, y: maxY }];
           } else if (mode === "tr") {
-            d.points = [{ x: minX, y: coords.y }, { x: coords.x, y: maxY }];
+            d.points = [{ x: minX, y: localCoords.y }, { x: localCoords.x, y: maxY }];
           } else if (mode === "bl") {
-            d.points = [{ x: coords.x, y: minY }, { x: maxX, y: coords.y }];
+            d.points = [{ x: localCoords.x, y: minY }, { x: maxX, y: localCoords.y }];
           } else if (mode === "br") {
-            d.points = [{ x: minX, y: minY }, { x: coords.x, y: coords.y }];
+            d.points = [{ x: minX, y: minY }, { x: localCoords.x, y: localCoords.y }];
+          }
+        }
+      } else if (mode === "rotate_shape") {
+        let cx = 0, cy = 0;
+        if (d.type === "circle") {
+          cx = initialPoints[0].x;
+          cy = initialPoints[0].y;
+        } else {
+          const minX = Math.min(initialPoints[0].x, initialPoints[initialPoints.length - 1].x);
+          const maxX = Math.max(initialPoints[0].x, initialPoints[initialPoints.length - 1].x);
+          const minY = Math.min(initialPoints[0].y, initialPoints[initialPoints.length - 1].y);
+          const maxY = Math.max(initialPoints[0].y, initialPoints[initialPoints.length - 1].y);
+          cx = (minX + maxX) / 2;
+          cy = (minY + maxY) / 2;
+        }
+        const pointerAngle = Math.atan2(coords.y - cy, coords.x - cx);
+        d.rotation = pointerAngle + Math.PI / 2;
+      } else if (mode === "rotate_line") {
+        const p0 = initialPoints[0];
+        const p1 = initialPoints[initialPoints.length - 1];
+        const cx = (p0.x + p1.x) / 2;
+        const cy = (p0.y + p1.y) / 2;
+        const length = Math.hypot(p1.x - p0.x, p1.y - p0.y);
+        
+        // Pointer angle relative to center
+        const pointerAngle = Math.atan2(coords.y - cy, coords.x - cx);
+        // The line should be perpendicular to the pointer angle, so we add PI/2
+        const lineAngle = pointerAngle + Math.PI / 2;
+        
+        const dx = (length / 2) * Math.cos(lineAngle);
+        const dy = (length / 2) * Math.sin(lineAngle);
+        
+        d.points = [
+          { x: cx - dx, y: cy - dy },
+          { x: cx + dx, y: cy + dy }
+        ];
+      } else if (mode === "rotate_element") {
+        const activeElementId = selectedElementIdRef.current;
+        if (activeElementId) {
+          const elements = getActiveElements();
+          const activeEl = elements.find(el => el.id === activeElementId);
+          if (activeEl) {
+            const cx = initialPoints[0].x;
+            const cy = initialPoints[0].y;
+            const pointerAngle = Math.atan2(coords.y - cy, coords.x - cx);
+            activeEl.rotation = pointerAngle + Math.PI / 2;
           }
         }
       }
@@ -535,6 +688,7 @@ export default function TacticalBoard({ initialTacticData, onSave }: { initialTa
   };
 
   const handlePointerUp = (e: React.PointerEvent<HTMLCanvasElement>) => {
+    if (readOnly) return;
     const s = stateRef.current;
 
     if (s.isDrawing) {
@@ -660,6 +814,19 @@ export default function TacticalBoard({ initialTacticData, onSave }: { initialTa
         ctx.beginPath();
         ctx.arc(CANVAS_WIDTH - padding - 88, CANVAS_HEIGHT / 2, 73, Math.PI - arcAngle, Math.PI + arcAngle);
         ctx.stroke();
+        
+        ctx.beginPath();
+        ctx.arc(padding, padding, 15, 0, Math.PI / 2);
+        ctx.stroke();
+        ctx.beginPath();
+        ctx.arc(CANVAS_WIDTH - padding, padding, 15, Math.PI / 2, Math.PI);
+        ctx.stroke();
+        ctx.beginPath();
+        ctx.arc(CANVAS_WIDTH - padding, CANVAS_HEIGHT - padding, 15, Math.PI, Math.PI * 1.5);
+        ctx.stroke();
+        ctx.beginPath();
+        ctx.arc(padding, CANVAS_HEIGHT - padding, 15, Math.PI * 1.5, Math.PI * 2);
+        ctx.stroke();
       } else if (stateRef.current.pitchStyle === "half") {
         // Half Pitch: Baliza, Grande Área, Pequena Área, Penálti e Meia-Lua (Esquerda) + Linha de Meio Campo e Meio Círculo (Direita)
         const penW = 220;
@@ -703,7 +870,7 @@ export default function TacticalBoard({ initialTacticData, onSave }: { initialTa
     };
 
     const drawSingleDrawing = (drawing: TacticalDrawing) => {
-      const { type, points, config } = drawing;
+      const { type, points, config, rotation } = drawing;
       if (!points || points.length < 2) return;
 
       const strokeColor = config?.color || "#00e5ff";
@@ -713,6 +880,17 @@ export default function TacticalBoard({ initialTacticData, onSave }: { initialTa
 
       const p0 = points[0];
       const pLast = points[points.length - 1];
+
+      ctx.save();
+      
+      if (rotation && (type === "rect" || type === "circle" || type === "triangle" || type === "pentagon" || type === "hexagon")) {
+        const bounds = getDrawingBounds(drawing);
+        if (bounds && bounds.cx !== undefined && bounds.cy !== undefined) {
+          ctx.translate(bounds.cx, bounds.cy);
+          ctx.rotate(rotation);
+          ctx.translate(-bounds.cx, -bounds.cy);
+        }
+      }
 
       if (type === "rect") {
         const x = Math.min(p0.x, pLast.x);
@@ -848,7 +1026,7 @@ export default function TacticalBoard({ initialTacticData, onSave }: { initialTa
         }
         ctx.stroke();
         ctx.restore();
-      } else if (type === "run" || type === "pass") {
+      } else if (type === "run" || type === "pass" || type === "line") {
         ctx.save();
         ctx.strokeStyle = strokeColor;
         ctx.lineWidth = strokeWidth;
@@ -863,25 +1041,29 @@ export default function TacticalBoard({ initialTacticData, onSave }: { initialTa
         ctx.lineTo(pLast.x, pLast.y);
         ctx.stroke();
 
-        // Arrow head
-        ctx.setLineDash([]);
-        const angle = Math.atan2(pLast.y - p0.y, pLast.x - p0.x);
-        const arrowLength = Math.max(10, strokeWidth * 4);
-        ctx.beginPath();
-        ctx.moveTo(pLast.x, pLast.y);
-        ctx.lineTo(
-          pLast.x - arrowLength * Math.cos(angle - Math.PI / 6),
-          pLast.y - arrowLength * Math.sin(angle - Math.PI / 6)
-        );
-        ctx.lineTo(
-          pLast.x - arrowLength * Math.cos(angle + Math.PI / 6),
-          pLast.y - arrowLength * Math.sin(angle + Math.PI / 6)
-        );
-        ctx.closePath();
-        ctx.fillStyle = strokeColor;
-        ctx.fill();
+        if (type !== "line") {
+          // Arrow head for run and pass
+          ctx.setLineDash([]);
+          const angle = Math.atan2(pLast.y - p0.y, pLast.x - p0.x);
+          const arrowLength = Math.max(10, strokeWidth * 4);
+          ctx.beginPath();
+          ctx.moveTo(pLast.x, pLast.y);
+          ctx.lineTo(
+            pLast.x - arrowLength * Math.cos(angle - Math.PI / 6),
+            pLast.y - arrowLength * Math.sin(angle - Math.PI / 6)
+          );
+          ctx.lineTo(
+            pLast.x - arrowLength * Math.cos(angle + Math.PI / 6),
+            pLast.y - arrowLength * Math.sin(angle + Math.PI / 6)
+          );
+          ctx.closePath();
+          ctx.fillStyle = strokeColor;
+          ctx.fill();
+        }
         ctx.restore();
       }
+      
+      ctx.restore(); // Restore the rotation transform
     };
 
     const renderLoop = (timestamp: number) => {
@@ -897,9 +1079,15 @@ export default function TacticalBoard({ initialTacticData, onSave }: { initialTa
         const selDrawing = s.drawings[activeDrawingIdx];
         const bounds = getDrawingBounds(selDrawing);
         if (bounds) {
-          const isLine = selDrawing.type === "run" || selDrawing.type === "pass" || selDrawing.type === "pen";
+          const isLine = selDrawing.type === "run" || selDrawing.type === "pass" || selDrawing.type === "pen" || selDrawing.type === "line";
 
           ctx.save();
+          if (bounds.cx !== undefined && bounds.cy !== undefined && bounds.rotation) {
+            ctx.translate(bounds.cx, bounds.cy);
+            ctx.rotate(bounds.rotation);
+            ctx.translate(-bounds.cx, -bounds.cy);
+          }
+
           if (isLine) {
             // Strong neon cyan glowing aura contour along the line itself
             ctx.save();
@@ -1055,7 +1243,7 @@ export default function TacticalBoard({ initialTacticData, onSave }: { initialTa
           ctx.restore();
         } else if (el.type === "ball") {
           // Professional 3D Vector Soccer Ball
-          const r = 12.5;
+          const r = 7.5;
           ctx.save();
 
           // 1. Soft realistic shadow
@@ -1215,6 +1403,25 @@ export default function TacticalBoard({ initialTacticData, onSave }: { initialTa
           ctx.arc(el.x, el.y, selectRadius, 0, Math.PI * 2);
           ctx.stroke();
           ctx.restore();
+
+          if (el.type === "mini_goal") {
+            ctx.save();
+            if (el.rotation) {
+              ctx.translate(el.x, el.y);
+              ctx.rotate(el.rotation);
+              ctx.translate(-el.x, -el.y);
+            }
+            ctx.beginPath();
+            ctx.arc(el.x, el.y - selectRadius - 16, 6.5, 0, Math.PI * 2);
+            ctx.fillStyle = "#0284c7";
+            ctx.shadowColor = "#00e5ff";
+            ctx.shadowBlur = 12;
+            ctx.fill();
+            ctx.lineWidth = 2.5;
+            ctx.strokeStyle = "#ffffff";
+            ctx.stroke();
+            ctx.restore();
+          }
         }
       });
 
@@ -1240,11 +1447,14 @@ export default function TacticalBoard({ initialTacticData, onSave }: { initialTa
             onPointerDown={handlePointerDown}
             onPointerMove={handlePointerMove}
             onPointerUp={handlePointerUp}
-            className="touch-none w-full h-full object-contain cursor-crosshair"
+            className={cn(
+              "touch-none w-full h-full object-contain",
+              s.drawingMode === "select" ? "cursor-default" : "cursor-crosshair"
+            )}
           />
 
           {/* Floating Contextual Toolbar for Selected Shape */}
-          {selectedDrawingIdx !== null && s.drawingMode === "select" && s.drawings[selectedDrawingIdx] && (
+          {selectedDrawingIdx !== null && s.drawingMode === "select" && s.drawings[selectedDrawingIdx] && !readOnly && (
             (() => {
               const bounds = getDrawingBounds(s.drawings[selectedDrawingIdx]);
               if (!bounds) return null;
@@ -1265,7 +1475,7 @@ export default function TacticalBoard({ initialTacticData, onSave }: { initialTa
                   style={{
                     left: `${leftPct}%`,
                     top: `${topPct}%`,
-                    transform: "translate(-50%, -100%) translateY(-14px)",
+                    transform: "translate(-50%, -100%) translateY(-40px)",
                   }}
                 >
                   <TacticalShapeFloatingBar
@@ -1280,7 +1490,7 @@ export default function TacticalBoard({ initialTacticData, onSave }: { initialTa
           )}
 
           {/* Floating Contextual Toolbar for Selected Mini Goal */}
-          {selectedElementId !== null && s.drawingMode === "select" && (() => {
+          {selectedElementId !== null && s.drawingMode === "select" && !readOnly && (() => {
             const elements = getActiveElements();
             const selectedGoal = elements.find(el => el.id === selectedElementId && el.type === "mini_goal");
             if (!selectedGoal) return null;
@@ -1298,7 +1508,7 @@ export default function TacticalBoard({ initialTacticData, onSave }: { initialTa
                 style={{
                   left: `${leftPct}%`,
                   top: `${topPct}%`,
-                  transform: "translate(-50%, -100%) translateY(-14px)",
+                  transform: "translate(-50%, -100%) translateY(-40px)",
                 }}
               >
                 <TacticalGoalFloatingBar
@@ -1339,8 +1549,8 @@ export default function TacticalBoard({ initialTacticData, onSave }: { initialTa
             );
           })()}
 
-          {/* Floating Contextual Toolbar for Selected Player */}
-          {selectedElementId !== null && s.drawingMode === "select" && (() => {
+        {/* Floating Contextual Toolbar for Selected Player */}
+          {selectedElementId !== null && s.drawingMode === "select" && !readOnly && (() => {
             const elements = getActiveElements();
             const selectedPlayer = elements.find(el => el.id === selectedElementId && (el.type === "home" || el.type === "away"));
             if (!selectedPlayer) return null;
@@ -1358,7 +1568,7 @@ export default function TacticalBoard({ initialTacticData, onSave }: { initialTa
                 style={{
                   left: `${leftPct}%`,
                   top: `${topPct}%`,
-                  transform: "translate(-50%, -100%) translateY(-14px)",
+                  transform: "translate(-50%, -100%) translateY(-40px)",
                 }}
               >
                 <TacticalPlayerFloatingBar
@@ -1395,22 +1605,27 @@ export default function TacticalBoard({ initialTacticData, onSave }: { initialTa
           })()}
         </div>
         
-        <TacticalBottomBar 
+        {!readOnly && (
+          <TacticalBottomBar 
+            state={s} 
+            setState={(val) => { stateRef.current = typeof val === 'function' ? val(stateRef.current) : val; setUiTick(t => t + 1); }} 
+            uiTick={uiTick} 
+            setUiTick={setUiTick}
+            onSaveHistory={saveStateToHistory}
+          />
+        )}
+      </div>
+
+      {/* Sidebar Area */}
+      {!readOnly && (
+        <TacticalSidebar 
           state={s} 
           setState={(val) => { stateRef.current = typeof val === 'function' ? val(stateRef.current) : val; setUiTick(t => t + 1); }} 
           uiTick={uiTick} 
           setUiTick={setUiTick} 
+          onSave={onSave}
         />
-      </div>
-
-      {/* Sidebar Area */}
-      <TacticalSidebar 
-        state={s} 
-        setState={(val) => { stateRef.current = typeof val === 'function' ? val(stateRef.current) : val; setUiTick(t => t + 1); }} 
-        uiTick={uiTick} 
-        setUiTick={setUiTick} 
-        onSave={onSave}
-      />
+      )}
 
     </div>
   );

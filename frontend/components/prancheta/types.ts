@@ -25,9 +25,10 @@ export interface DrawingConfig {
 }
 
 export interface TacticalDrawing {
-  type: "select" | "run" | "pass" | "pen" | "rect" | "circle" | "triangle" | "pentagon" | "hexagon";
+  type: "select" | "run" | "pass" | "pen" | "rect" | "circle" | "triangle" | "pentagon" | "hexagon" | "line";
   points: Point[];
   config?: DrawingConfig;
+  rotation?: number;
 }
 
 export interface FrameNode {
@@ -50,7 +51,7 @@ export interface TacticalState {
   framesMap: Record<string, FrameNode>;
   activePath: string[];
   currentFrameIdx: number;
-  drawingMode: "select" | "run" | "pass" | "pen" | "rect" | "circle" | "triangle";
+  drawingMode: "select" | "run" | "pass" | "pen" | "rect" | "circle" | "triangle" | "line";
   drawings: TacticalDrawing[];
   isPlaying: boolean;
   transitionSpeed: number;

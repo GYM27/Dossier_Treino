@@ -12,6 +12,7 @@ import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 
 import java.util.List;
+import java.util.UUID;
 import java.util.stream.Collectors;
 
 @RestController
@@ -43,5 +44,20 @@ public class ExercicioController {
                 .collect(Collectors.toList());
                 
         return ResponseEntity.ok(resposta);
+    }
+
+    @PutMapping("/{id}")
+    public ResponseEntity<ExercicioDTO> atualizarExercicio(
+            @PathVariable UUID id,
+            @Valid @RequestBody ExercicioDTO dto) {
+        Exercicio entidade = exercicioMapper.toEntity(dto);
+        Exercicio atualizado = exercicioService.atualizarExercicio(id, entidade);
+        return ResponseEntity.ok(exercicioMapper.toDTO(atualizado));
+    }
+
+    @DeleteMapping("/{id}")
+    public ResponseEntity<Void> eliminarExercicio(@PathVariable UUID id) {
+        exercicioService.eliminarExercicio(id);
+        return ResponseEntity.noContent().build();
     }
 }

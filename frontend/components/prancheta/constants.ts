@@ -33,14 +33,6 @@ export const getInitialElements = (): TacticalElement[] => {
     });
   }
 
-  // Bola no centro
-  elements.push({
-    id: "B_init",
-    type: "ball",
-    x: CANVAS_WIDTH / 2,
-    y: CANVAS_HEIGHT / 2,
-  });
-
   return elements;
 };
 

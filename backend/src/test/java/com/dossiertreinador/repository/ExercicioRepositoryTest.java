@@ -5,12 +5,18 @@ import com.dossiertreinador.domain.enums.CategoriaExercicio;
 import org.junit.jupiter.api.Test;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.autoconfigure.orm.jpa.DataJpaTest;
+import org.springframework.test.context.ActiveProfiles;
 
+import java.util.ArrayList;
+import java.util.HashMap;
 import java.util.List;
+import java.util.Map;
+import java.util.Optional;
 
 import static org.assertj.core.api.Assertions.assertThat;
 
 @DataJpaTest
+@ActiveProfiles("test")
 class ExercicioRepositoryTest {
 
     @Autowired
@@ -34,17 +40,16 @@ class ExercicioRepositoryTest {
         // Assert
         assertThat(aquecimentos).hasSize(1);
         assertThat(aquecimentos.get(0).getNome()).isEqualTo("Meínhos 4x1");
-        // Nota: getDataCriacao() seria null aqui porque o @DataJpaTest não carrega configurações extra de Auditoria por omissão.
     }
 
     @Test
     void testSalvarEBuscarComJsonb() {
         // Arrange
-        java.util.Map<String, Object> dadosTaticos = new java.util.HashMap<>();
+        Map<String, Object> dadosTaticos = new HashMap<>();
         dadosTaticos.put("pitchStyle", "full");
         dadosTaticos.put("isPlaying", false);
         
-        java.util.List<String> activePath = new java.util.ArrayList<>();
+        List<String> activePath = new ArrayList<>();
         activePath.add("root");
         dadosTaticos.put("activePath", activePath);
 
@@ -59,7 +64,7 @@ class ExercicioRepositoryTest {
         ex = exercicioRepository.saveAndFlush(ex);
 
         // Act
-        java.util.Optional<Exercicio> carregado = exercicioRepository.findById(ex.getId());
+        Optional<Exercicio> carregado = exercicioRepository.findById(ex.getId());
 
         // Assert
         assertThat(carregado).isPresent();
@@ -68,7 +73,7 @@ class ExercicioRepositoryTest {
         
         // Verifica se listas internas são preservadas
         @SuppressWarnings("unchecked")
-        java.util.List<String> pathRecuperado = (java.util.List<String>) carregado.get().getDadosTaticos().get("activePath");
+        List<String> pathRecuperado = (List<String>) carregado.get().getDadosTaticos().get("activePath");
         assertThat(pathRecuperado).contains("root");
     }
 }
