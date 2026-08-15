@@ -2,7 +2,7 @@
 
 import React, { useEffect, useState } from "react";
 import { Exercicio } from "@/models/exercicio";
-import { apiFetch } from "@/lib/api";
+import { exercicioService } from "@/services";
 import { 
   X, 
   Search, 
@@ -17,6 +17,8 @@ import {
 } from "lucide-react";
 import { NovoExercicioPranchetaModal } from "./NovoExercicioPranchetaModal";
 import { TacticalBoardThumbnail } from "../prancheta/TacticalBoardThumbnail";
+import { Button } from "@/components/ui/button";
+import { Input } from "@/components/ui/input";
 
 interface CatalogoExerciciosModalProps {
   onClose: () => void;
@@ -39,7 +41,7 @@ export function CatalogoExerciciosModal({
   const loadExercicios = async () => {
     setLoading(true);
     try {
-      const data = await apiFetch("/exercicios");
+      const data = await exercicioService.getExercicios();
       setExercicios(data || []);
     } catch (err) {
       console.error("Erro ao carregar exercícios", err);
@@ -59,9 +61,7 @@ export function CatalogoExerciciosModal({
     }
 
     try {
-      await apiFetch(`/exercicios/${id}`, {
-        method: "DELETE",
-      });
+      await exercicioService.eliminarExercicio(id);
       setExercicios((prev) => prev.filter((ex) => ex.id !== id));
     } catch (err) {
       console.error("Erro ao eliminar exercício:", err);

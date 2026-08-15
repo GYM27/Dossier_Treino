@@ -15,7 +15,7 @@
 "use client";
 
 import { useState, useEffect, useMemo, useCallback } from "react";
-import { apiFetch } from "@/lib/api";
+import { atletaService } from "@/services";
 import { ATLETA_VAZIO } from "./constants";
 import type { AtletaFormData } from "./constants";
 
@@ -58,19 +58,15 @@ function formatarAtletaDTO(dto: any): JogadorFormatado {
     number: dto.numeroCamisola || 0,
     positionGroup: dto.posicaoPrincipal.includes("GUARDA_REDES")
       ? "Guarda-Redes"
-      : dto.posicaoPrincipal.includes("DEFESA")
-        ? "Defesa"
+      : dto.posicaoPrincipal.includes("DEFESA") ||
+          dto.posicaoPrincipal.includes("LATERAL")
+        ? "Defesas"
         : dto.posicaoPrincipal.includes("MEDIO")
-          ? "Médio"
-          : "Avançado",
+          ? "Médios"
+          : "Avançados",
     position: dto.posicaoPrincipal.replace(/_/g, " "),
-    foot:
-      dto.pePreferido === "DESTRO"
-        ? "Direito"
-        : dto.pePreferido === "ESQUERDO"
-          ? "Esquerdo"
-          : "Ambidestro",
-    status: "active",
+    foot: dto.pePreferido,
+    status: "DISPONÍVEL",
     fotoUrl: dto.fotoUrl,
     dataNascimento: dto.dataNascimento,
     posicaoPrincipal: dto.posicaoPrincipal,
@@ -105,7 +101,7 @@ export function useAtletasCrud(equipaId: string) {
   const fetchJogadores = useCallback(async () => {
     try {
       setLoading(true);
-      const data = await apiFetch(`/atletas?equipaId=${equipaId}`);
+      const data = await atletaService.getAtletasByEquipa(equipaId);
       setJogadores(data.map(formatarAtletaDTO));
     } catch (err: any) {
       setError(err.message);
@@ -164,7 +160,6 @@ export function useAtletasCrud(equipaId: string) {
       setIsSubmitting(true);
       try {
         const payload = {
-          equipaId,
           nome: formData.nome,
           dataNascimento: formData.dataNascimento,
           nacionalidade: formData.nacionalidade,
@@ -177,15 +172,9 @@ export function useAtletasCrud(equipaId: string) {
         };
 
         if (editingPlayerId) {
-          await apiFetch(`/atletas/${editingPlayerId}`, {
-            method: "PUT",
-            body: JSON.stringify(payload),
-          });
+          await atletaService.atualizarAtleta(editingPlayerId, payload);
         } else {
-          await apiFetch("/atletas", {
-            method: "POST",
-            body: JSON.stringify(payload),
-          });
+          await atletaService.criarAtleta(equipaId, payload);
         }
 
         // ✅ Após submit bem-sucedido: MEMORIZAR os dados que foram enviados

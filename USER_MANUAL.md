@@ -268,3 +268,16 @@ Agora pode rodar livremente **todas as Formas Geométricas** (Quadrados, Círcul
 - **Linha Sem Seta**: Adicionada a op��o de desenhar uma 'Linha Simples' na barra de ferramentas inferior (e no menu de edi��o flutuante), permitindo criar tra�os diretos sem a seta direcional (ideal para delimitar espa�os ou desenhar obst�culos planos).
 - **Handle de Rota��o C�ntrica**: Ao selecionar qualquer tipo de linha (Simples, Deslocamento, ou Passe), agora surge um terceiro ponto de controlo (ponto azul) posicionado ligeiramente acima do meio da linha. Ao clicar e arrastar este ponto, a linha roda perfeitamente em torno do seu eixo central sem alterar o seu comprimento.
 
+
+## Fiabilidade e Robustez de Operações (Fase 2)
+
+### Sincronização e Resiliência
+- **Gravação Instantânea**: Todas as operações de criação de treinos, adição de exercícios da prancheta e marcação de faltas/presenças comunicam através de serviços otimizados com feedback imediato.
+- **Tratamento de Falhas**: Se ocorrer uma quebra de ligação durante a gravação de um exercício ou edição do plantel, o sistema apresenta mensagens de estado claras sem bloquear o ecrã do treinador.
+
+## Fluidez Visual e Performance do Estúdio (Fase 3)
+
+### Navegação Ultrarrápida e Sem Bloqueios
+- **Vistas do Calendário**: Transição instantânea e fluida entre vista de Mês, Semana e Dia sem atrasos de renderização.
+- **Estúdio de Treinos**: Edição rápida de objetivos e materiais com sincronização visual imediata entre os blocos de exercícios.
+- **Painel de Assiduidade**: Marcação de presenças com resposta tátil e salvaguarda automática de registos.

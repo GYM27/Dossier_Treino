@@ -552,3 +552,63 @@ Para garantir que as formas geométricas (com ou sem preenchimento) sejam facilm
 ### 3. O que acontece Por Detrás dos Panos
 - **Class Variance Authority (CVA)**: O CVA compila dinamicamente as classes de Tailwind baseadas nas propriedades passadas ao componente.
 - **Função cn() (clsx + tailwind-merge)**: Ao combinar as classes do componente base com qualquer className adicional passada via props, o tailwind-merge resolve conflitos de classes de forma inteligente.
+
+---
+
+# Fase 2: Camada de Serviços API (A Fundação)
+
+## 1. O Problema da Mistura de Responsabilidades (SoC)
+Antes desta fase, os componentes React chamavam diretamente a função de baixo nível piFetch(" /endpoint\, { method: \POST\, body: ... }) dentro de handlers de eventos como handleSubmit ou onClick.
+
+### Por que razão isto era uma má prática?
+1. **Acoplamento Forte**: Se a rota de um endpoint mudasse no backend (ex: de /exercicios para /api/v1/exercicios), tínhamos de procurar e alterar dezenas de ficheiros de componentes UI.
+2. **Duplicação de Lógica**: A formatação de payloads e tratamento de erros repetia-se em múltiplos ecrãs.
+3. **Dificuldade em Testar e Manter**: Componentes React devem focar-se exclusivamente na apresentação visual (serem \dumb components\), enquanto a comunicação com a API pertence a uma camada de serviços isolada.
+
+## 2. A Nova Arquitetura de Serviços (rontend/services/)
+Criámos uma pasta centralizada rontend/services/ com ficheiros dedicados por domínio:
+- reinoService.ts: Obter treinos da equipa, criar sessões, gerir metadados e adicionar/remover/atualizar exercícios.
+- exercicioService.ts: Gestão do catálogo tático (criação, edição e eliminação).
+- tletaService.ts: CRUD de atletas e consulta do plantel por equipa.
+- calendarioService.ts: Gestão de eventos, microciclos e sincronização de datas.
+- ssiduidadeService.ts: Matriz semanal e mensal de assiduidade de jogadores.
+- index.ts: Barrel export que permite importar qualquer serviço via @/services.
+
+## 3. O que Acontece \Por Detrás dos Panos\?
+Quando o utilizador clica em \Guardar Treino\:
+1. O componente React invoca reinoService.criarTreino(payload).
+2. O reinoService encapsula a rota /treinos, o método HTTP POST e a serialização JSON.
+3. A função piFetch anexa os cabeçalhos de segurança e o cookie de autenticação HttpOnly.
+4. A resposta tipada (Promise<SessaoTreino>) é devolvida ao componente de forma limpa e assíncrona.
+
+---
+
+# Fase 3: Extração de Lógica para Custom Hooks (O Motor)
+
+## 1. O Princípio de Separação de Responsabilidades (UI vs Lógica de Estado)
+Nesta fase, aplicámos o padrão de **Custom Hooks** para libertar os componentes gráficos de todo o estado complexo, cálculos de datas e submissões à API.
+
+### Ficheiros Monolíticos Refatorados:
+1. **Módulo de Calendário**:
+   - usePlaneamentoSemanal.ts: Gere o estado das vistas (month, week, day), a data base, os cálculos de intervalos de datas, e as ações CRUD via calendarioService.
+   - Subdivisão em componentes atómicos:
+     - CalendarioHeader.tsx: Controlos de navegação, troca de vista e morfociclos.
+     - CalendarioWeekView.tsx: Renderização da grelha de 7 dias com cards de eventos.
+     - CalendarioMonthView.tsx: Renderização mensal de 42 dias com scroll customizado.
+     - CalendarioDayView.tsx: Vista diária detalhada com horários.
+     - PlaneamentoSemanal.tsx: Componente orquestrador que reduziu de 628 linhas para ~120 linhas.
+
+2. **Módulo de Treinos**:
+   - useTreinoDetailStudio.ts: Absorveu o formulário de metadados, sincronização de estado, modais e ações na timeline de exercícios.
+   - TreinoStudioHeader.tsx e TreinoStudioMetadataForm.tsx: Subcomponentes visuais limpos e modulares.
+   - useNovoExercicioPrancheta.ts: Gere o formulário de criação/duplicação e integração com a prancheta tática.
+
+3. **Módulo de Assiduidade**:
+   - useAttendance.ts: Absorveu o cálculo de semanas, sincronização otimista e matriz de presenças.
+   - AttendanceHeader.tsx e AttendanceModal.tsx: Componentes especializados para o topo e modal em portal.
+
+## 2. O que Acontece " Por Detrás dos Panos\?
+1. **Memoização com useCallback e useMemo**:
+ - As funções de manipulação de dados e os arrays de dias visíveis são memoizados para evitar re-renderizações desnecessárias da árvore DOM quando o utilizador digita texto nos inputs.
+2. **Encapsulamento de Ciclo de Vida (useEffect)**:
+ - O carregamento assíncrono é gerido de forma segura dentro dos hooks customizados, garantindo que os componentes visuais apenas recebem os dados prontos para renderizar (eventos, loading, diasDaVista).
