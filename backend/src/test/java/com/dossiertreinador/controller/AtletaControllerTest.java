@@ -112,4 +112,18 @@ class AtletaControllerTest {
                 .andExpect(jsonPath("$.nome").value("Ronaldo"))
                 .andExpect(jsonPath("$.idade").value(41));
     }
+
+    @Test
+    void deveListarAtletasPorEquipaPathComSucesso() throws Exception {
+        UUID equipaId = UUID.randomUUID();
+        Atleta atleta = Atleta.builder().id(UUID.randomUUID()).nome("Messi").build();
+        AtletaResponseDTO dto = AtletaResponseDTO.builder().id(atleta.getId()).nome("Messi").build();
+
+        Mockito.when(atletaService.listarPorEquipa(equipaId)).thenReturn(java.util.List.of(atleta));
+        Mockito.when(atletaMapper.toResponseDTO(atleta)).thenReturn(dto);
+
+        mockMvc.perform(org.springframework.test.web.servlet.request.MockMvcRequestBuilders.get("/api/atletas/equipa/" + equipaId))
+                .andExpect(status().isOk())
+                .andExpect(jsonPath("$[0].nome").value("Messi"));
+    }
 }

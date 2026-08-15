@@ -1,10 +1,10 @@
 "use client";
 
-import { useState, useEffect } from "react";
 import { EventoCalendario } from "@/models/planeamento";
-import { X } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
+import { useEventoForm } from "./useEventoForm";
+import { EventoFormEquipas } from "./EventoFormEquipas";
 
 interface EventoFormModalProps {
   isOpen: boolean;
@@ -23,69 +23,19 @@ export function EventoFormModal({
   eventoEdit,
   defaultNumeroTreino,
 }: EventoFormModalProps) {
-  const [formData, setFormData] = useState<
-    Omit<EventoCalendario, "id" | "dataHoraFim">
-  >({
-    tipoEvento: "TREINO",
-    dataHoraInicio: "",
-    descricao: "",
-    local: "",
-    numeroTreino: 1,
-    equipaCasa: "União 1919",
-    equipaFora: "",
-  });
-  const [duracao, setDuracao] = useState(90);
-  const [localOption, setLocalOption] = useState<"Arregaça" | "Cernache" | "Outro">("Arregaça");
-
-  // Estado para opções de equipas no dropdown
-  const [availableTeams, setAvailableTeams] = useState<string[]>(["União 1919", "Académica OAF", "Naval 1893", "Marialvas", "Tourizense"]);
-  const [isCustomCasa, setIsCustomCasa] = useState(false);
-  const [isCustomFora, setIsCustomFora] = useState(false);
-
-  useEffect(() => {
-    if (isOpen) {
-      if (eventoEdit) {
-        const isPadrao = eventoEdit.local === "Arregaça" || eventoEdit.local === "Cernache";
-        setLocalOption(isPadrao ? (eventoEdit.local as any) : (eventoEdit.local ? "Outro" : "Arregaça"));
-        setFormData({
-          tipoEvento: eventoEdit.tipoEvento,
-          dataHoraInicio: eventoEdit.dataHoraInicio,
-          descricao: eventoEdit.descricao || "",
-          local: eventoEdit.local || "Arregaça",
-          numeroTreino: eventoEdit.numeroTreino || 1,
-          equipaCasa: eventoEdit.equipaCasa || "União 1919",
-          equipaFora: eventoEdit.equipaFora || "",
-        });
-        const ms =
-          new Date(eventoEdit.dataHoraFim).getTime() -
-          new Date(eventoEdit.dataHoraInicio).getTime();
-        setDuracao(Math.max(0, Math.floor(ms / 60000)));
-      } else {
-        const start = defaultDate ? new Date(defaultDate) : new Date();
-        start.setHours(10, 0, 0, 0);
-
-        // Format to YYYY-MM-DDTHH:mm
-        const formatDateTime = (d: Date) => {
-          const tzoffset = d.getTimezoneOffset() * 60000;
-          return new Date(d.getTime() - tzoffset).toISOString().slice(0, 16);
-        };
-
-        setLocalOption("Arregaça");
-        setFormData({
-          tipoEvento: "TREINO",
-          dataHoraInicio: formatDateTime(start),
-          descricao: "",
-          local: "Arregaça",
-          numeroTreino: defaultNumeroTreino || 1,
-          equipaCasa: "União 1919",
-          equipaFora: "",
-        });
-        setDuracao(90);
-        setIsCustomCasa(false);
-        setIsCustomFora(false);
-      }
-    }
-  }, [isOpen, defaultDate, eventoEdit]);
+  const {
+    formData,
+    setFormData,
+    duracao,
+    setDuracao,
+    localOption,
+    setLocalOption,
+    availableTeams,
+    isCustomCasa,
+    setIsCustomCasa,
+    isCustomFora,
+    setIsCustomFora,
+  } = useEventoForm(isOpen, defaultDate, eventoEdit, defaultNumeroTreino);
 
   if (!isOpen) return null;
 
@@ -157,80 +107,15 @@ export function EventoFormModal({
           )}
 
           {formData.tipoEvento === "JOGO" && (
-            <div className="grid grid-cols-2 gap-4">
-              <div>
-                <label className="text-xs font-semibold uppercase tracking-wider text-muted-foreground">
-                  Equipa da Casa
-                </label>
-                {!isCustomCasa ? (
-                  <select
-                    value={availableTeams.includes(formData.equipaCasa || "") ? formData.equipaCasa : (formData.equipaCasa ? "outro" : "")}
-                    onChange={(e) => {
-                      if (e.target.value === "outro") {
-                        setIsCustomCasa(true);
-                        setFormData({ ...formData, equipaCasa: "" });
-                      } else {
-                        setFormData({ ...formData, equipaCasa: e.target.value });
-                      }
-                    }}
-                    className="mt-1 w-full rounded-md border border-border bg-background px-3 py-2 text-sm text-foreground focus:border-primary focus:outline-none"
-                  >
-                    <option value="" disabled>Selecione...</option>
-                    {availableTeams.map(t => <option key={t} value={t}>{t}</option>)}
-                    <option value="outro">+ Nova Equipa...</option>
-                  </select>
-                ) : (
-                  <div className="flex items-center gap-2 mt-1">
-                    <Input
-                      type="text"
-                      value={formData.equipaCasa || ""}
-                      onChange={(e) => setFormData({ ...formData, equipaCasa: e.target.value })}
-                      placeholder="Nome da equipa"
-                      autoFocus
-                    />
-                    <Button type="button" variant="ghost" size="icon" onClick={() => setIsCustomCasa(false)} className="text-muted-foreground hover:text-foreground">
-                      <X className="w-4 h-4" />
-                    </Button>
-                  </div>
-                )}
-              </div>
-              <div>
-                <label className="text-xs font-semibold uppercase tracking-wider text-muted-foreground">
-                  Equipa de Fora
-                </label>
-                {!isCustomFora ? (
-                  <select
-                    value={availableTeams.includes(formData.equipaFora || "") ? formData.equipaFora : (formData.equipaFora ? "outro" : "")}
-                    onChange={(e) => {
-                      if (e.target.value === "outro") {
-                        setIsCustomFora(true);
-                        setFormData({ ...formData, equipaFora: "" });
-                      } else {
-                        setFormData({ ...formData, equipaFora: e.target.value });
-                      }
-                    }}
-                    className="mt-1 w-full rounded-md border border-border bg-background px-3 py-2 text-sm text-foreground focus:border-primary focus:outline-none"
-                  >
-                    <option value="" disabled>Selecione...</option>
-                    {availableTeams.map(t => <option key={t} value={t}>{t}</option>)}
-                    <option value="outro">+ Nova Equipa...</option>
-                  </select>
-                ) : (
-                  <div className="flex items-center gap-2 mt-1">
-                    <Input
-                      type="text"
-                      value={formData.equipaFora || ""}
-                      onChange={(e) => setFormData({ ...formData, equipaFora: e.target.value })}
-                      placeholder="Nome da equipa"
-                      autoFocus
-                    />
-                    <Button type="button" variant="ghost" size="icon" onClick={() => setIsCustomFora(false)} className="text-muted-foreground hover:text-foreground">
-                      <X className="w-4 h-4" />
-                    </Button>
-                  </div>
-                )}
-              </div>
-            </div>
+            <EventoFormEquipas
+              formData={formData}
+              setFormData={setFormData}
+              availableTeams={availableTeams}
+              isCustomCasa={isCustomCasa}
+              setIsCustomCasa={setIsCustomCasa}
+              isCustomFora={isCustomFora}
+              setIsCustomFora={setIsCustomFora}
+            />
           )}
 
           <div className="grid grid-cols-2 gap-4">

@@ -309,7 +309,7 @@ Nesta fase fechÃ¡mos o ciclo, pegando no ecrÃ£ de Dashboard (que tinha dados fix
 3. **DistribuiÃ§Ã£o do Plantel (MatemÃ¡tica)**: No ecrÃ£ da DistribuiÃ§Ã£o, apagÃ¡mos os nÃºmeros fixos e usÃ¡mos funÃ§Ãµes JavaScript de Arrays (`.filter(a => a.posicaoPrincipal === "DEFESA").length`) para recalcular a distribuiÃ§Ã£o dinamicamente com base nos dados que vieram do servidor, inclusive precavendo divisÃ£o por zero no cÃ¡lculo da largura das barras.
 
 ### Etapa 15.1: Limpeza de Nomenclatura (Clean Code Frontend)
-Nesta etapa, refatorámos os ficheiros gerados pelo v0 para respeitarem as regras de Clean Code e a semântica da linguagem. Apesar de mantermos o inglês para componentes estruturais (sidebar, 	op-header), os nomes genéricos como oster-view foram alterados para squad (jargão de futebol) e os sufixos desnecessários (-view) foram removidos. O pp/page.tsx foi limpo para usar <Squad />, <Dashboard />, e <Attendance /> diretamente.
+Nesta etapa, refatorï¿½mos os ficheiros gerados pelo v0 para respeitarem as regras de Clean Code e a semï¿½ntica da linguagem. Apesar de mantermos o inglï¿½s para componentes estruturais (sidebar, 	op-header), os nomes genï¿½ricos como oster-view foram alterados para squad (jargï¿½o de futebol) e os sufixos desnecessï¿½rios (-view) foram removidos. O pp/page.tsx foi limpo para usar <Squad />, <Dashboard />, e <Attendance /> diretamente.
 
 ---
 ## AtualizaÃ§Ã£o: O Meu Perfil (Frontend e Backend)
@@ -327,14 +327,14 @@ CriÃ¡mos a funcionalidade para o utilizador alterar o prÃ³prio nome e password.
 
 
 ### Como a API lida com as Assiduidades (Grelha Semanal)
-Quando abres a página de Assiduidade, o frontend faz 3 pedidos em paralelo:
+Quando abres a pï¿½gina de Assiduidade, o frontend faz 3 pedidos em paralelo:
 1. GET /api/atletas/equipa/{id} -> Todos os atletas (Y-Axis).
 2. GET /api/eventos/equipa/{id}/semana?start=X&end=Y -> Todos os eventos (X-Axis).
 3. GET /api/assiduidade/equipa/{id}/semana?start=X&end=Y -> Todos os registos.
 
-No backend, o método indByEquipaAndDateRange cruza as tabelas usando JPQL (.evento.equipa.id = :id) para ir buscar rapidamente todas as presenças dos eventos da semana.
+No backend, o mï¿½todo indByEquipaAndDateRange cruza as tabelas usando JPQL (.evento.equipa.id = :id) para ir buscar rapidamente todas as presenï¿½as dos eventos da semana.
 
-No frontend (Attendance.tsx), a grelha cruza tleta.id com evento.id. Se o registo existir (que é criado automaticamente no EventoCalendarioServiceImpl.registarEventoEGerarGrelha sempre que crias um evento), a célula é preenchida com o ícone do estado (PRESENTE, AUSENTE, etc). Ao clicares na célula, a UI envia um pedido PUT /api/assiduidade/{registoId} para atualizar apenas o TipoAssiduidade desse jogador naquele evento específico.
+No frontend (Attendance.tsx), a grelha cruza tleta.id com evento.id. Se o registo existir (que ï¿½ criado automaticamente no EventoCalendarioServiceImpl.registarEventoEGerarGrelha sempre que crias um evento), a cï¿½lula ï¿½ preenchida com o ï¿½cone do estado (PRESENTE, AUSENTE, etc). Ao clicares na cï¿½lula, a UI envia um pedido PUT /api/assiduidade/{registoId} para atualizar apenas o TipoAssiduidade desse jogador naquele evento especï¿½fico.
 
 
 ### SincronizaÃ§Ã£o de CalendÃ¡rio (iCal) - Fix de SeguranÃ§a e Conectividade
@@ -368,25 +368,25 @@ Adicionado o campo `fotoUrl` Ã  entidade Atleta, passando pelos DTOs e Mapper, a
 Em vez de montar um sistema complexo de armazenamento de ficheiros (S3, disco local), guardamos apenas o link (URL) da imagem. Na grelha de plantel e assiduidade, usamos o condicional JSX `{atleta.fotoUrl ? <img src... /> : <div... />}` para mostrar a foto ou um avatar com iniciais/nÃºmero como fallback.
 
 
-## Módulo de Treinos e Catálogo - Integração Stitch e Periodização Tática
-Nesta fase, recebemos um layout HTML em Dark Mode gerado pelo Google Stitch (Tactical Dossier - Training Session Builder). Para integrar este design complexo, ajustámos o Backend (SessaoTreino e Exercicio) para acomodar as nomenclaturas da Periodização Tática: Morfociclo, Microciclo, Fase, e outros detalhes operacionais como Número de Jogadores e Espaço. No Frontend, criámos o componente base TreinosOrchestrator que encaminha o utilizador para o TreinoBuilderStitch.tsx. Este último é uma reprodução rigorosa do design em React (Tailwind classes arbitrárias como g-[#181A20]), que orquestra também a listagem do Catálogo através do CatalogoExerciciosModal. A nível de dados, conectámos o modal à API piFetch('/exercicios') para ser possível selecionar exercícios globalmente criados.
+## Mï¿½dulo de Treinos e Catï¿½logo - Integraï¿½ï¿½o Stitch e Periodizaï¿½ï¿½o Tï¿½tica
+Nesta fase, recebemos um layout HTML em Dark Mode gerado pelo Google Stitch (Tactical Dossier - Training Session Builder). Para integrar este design complexo, ajustï¿½mos o Backend (SessaoTreino e Exercicio) para acomodar as nomenclaturas da Periodizaï¿½ï¿½o Tï¿½tica: Morfociclo, Microciclo, Fase, e outros detalhes operacionais como Nï¿½mero de Jogadores e Espaï¿½o. No Frontend, criï¿½mos o componente base TreinosOrchestrator que encaminha o utilizador para o TreinoBuilderStitch.tsx. Este ï¿½ltimo ï¿½ uma reproduï¿½ï¿½o rigorosa do design em React (Tailwind classes arbitrï¿½rias como g-[#181A20]), que orquestra tambï¿½m a listagem do Catï¿½logo atravï¿½s do CatalogoExerciciosModal. A nï¿½vel de dados, conectï¿½mos o modal ï¿½ API piFetch('/exercicios') para ser possï¿½vel selecionar exercï¿½cios globalmente criados.
 
 
-## Padronização Tática no Calendário
-Para garantir consistência em toda a aplicação, o termo 'Mesociclo' foi substituído por 'Morfociclo' no componente do Calendário (\PlaneamentoSemanal.tsx\), bem como em toda a cadeia de backend (Entidade \PlaneamentoMicrociclo\, DTOs, Mappers, Services e Controllers). Isto garante que a Periodização Tática é a linguagem base de toda a plataforma.
+## Padronizaï¿½ï¿½o Tï¿½tica no Calendï¿½rio
+Para garantir consistï¿½ncia em toda a aplicaï¿½ï¿½o, o termo 'Mesociclo' foi substituï¿½do por 'Morfociclo' no componente do Calendï¿½rio (\PlaneamentoSemanal.tsx\), bem como em toda a cadeia de backend (Entidade \PlaneamentoMicrociclo\, DTOs, Mappers, Services e Controllers). Isto garante que a Periodizaï¿½ï¿½o Tï¿½tica ï¿½ a linguagem base de toda a plataforma.
 
 
-## Associação do Número do Treino aos Eventos de Calendário
-Removido o controlo do Microciclo do topo do Calendário e transferida a responsabilidade do Número do Treino diretamente para a Entidade \EventoCalendario\. Agora, ao criar ou editar um evento do tipo TREINO, é possível introduzir o 'Nº do Treino (Microciclo)', que passa a ser gravado com o evento e é apresentado nas etiquetas renderizadas no Calendário.
+## Associaï¿½ï¿½o do Nï¿½mero do Treino aos Eventos de Calendï¿½rio
+Removido o controlo do Microciclo do topo do Calendï¿½rio e transferida a responsabilidade do Nï¿½mero do Treino diretamente para a Entidade \EventoCalendario\. Agora, ao criar ou editar um evento do tipo TREINO, ï¿½ possï¿½vel introduzir o 'Nï¿½ do Treino (Microciclo)', que passa a ser gravado com o evento e ï¿½ apresentado nas etiquetas renderizadas no Calendï¿½rio.
 
 
-## Incremento Automático do Número do Treino
-Para facilitar a vida ao utilizador, o backend passou a ter um endpoint (\/equipa/{equipaId}/ultimo-numero-treino\) que vai à base de dados buscar o último número de treino registado. O frontend chama este endpoint sempre que se clica para adicionar um novo evento e, se for do tipo Treino, incrementa esse valor automaticamente (N+1) no formulário.
-# #   I n t e g r a ç ã o   d a   P r a n c h e t a   T á t i c a 
- O   c o m p o n e n t e   T a c t i c a l B o a r d   f o i   i n t e g r a d o   n a   p á g i n a   d e   T r e i n o s . 
- -   A d i c i o n a d o   u m   b o t ã o   N O V O   E X E R C Í C I O   q u e   a b r e   u m   m o d a l   f u l l s c r e e n   c o m   a   p r a n c h e t a . 
- -   O   c o m p o n e n t e   T a c t i c a l B o a r d   d e v o l v e   u m   o b j e t o   J S O N   q u e   é   g r a v a d o   n o   b a c k e n d   ( d a d o s T a t i c o s ) . 
- -   O s   c a m p o s   O b j e t i v o s   e   M a t e r i a l   p a s s a r a m   a   s e r   e d i t á v e i s   l o c a l m e n t e   e   s ã o   g u a r d a d o s   n o   b a c k e n d   ( P U T   / a p i / t r e i n o s / { i d } ) .  
+## Incremento Automï¿½tico do Nï¿½mero do Treino
+Para facilitar a vida ao utilizador, o backend passou a ter um endpoint (\/equipa/{equipaId}/ultimo-numero-treino\) que vai ï¿½ base de dados buscar o ï¿½ltimo nï¿½mero de treino registado. O frontend chama este endpoint sempre que se clica para adicionar um novo evento e, se for do tipo Treino, incrementa esse valor automaticamente (N+1) no formulï¿½rio.
+# #   I n t e g r a ï¿½ ï¿½ o   d a   P r a n c h e t a   T ï¿½ t i c a 
+ O   c o m p o n e n t e   T a c t i c a l B o a r d   f o i   i n t e g r a d o   n a   p ï¿½ g i n a   d e   T r e i n o s . 
+ -   A d i c i o n a d o   u m   b o t ï¿½ o   N O V O   E X E R C ï¿½ C I O   q u e   a b r e   u m   m o d a l   f u l l s c r e e n   c o m   a   p r a n c h e t a . 
+ -   O   c o m p o n e n t e   T a c t i c a l B o a r d   d e v o l v e   u m   o b j e t o   J S O N   q u e   ï¿½   g r a v a d o   n o   b a c k e n d   ( d a d o s T a t i c o s ) . 
+ -   O s   c a m p o s   O b j e t i v o s   e   M a t e r i a l   p a s s a r a m   a   s e r   e d i t ï¿½ v e i s   l o c a l m e n t e   e   s ï¿½ o   g u a r d a d o s   n o   b a c k e n d   ( P U T   / a p i / t r e i n o s / { i d } ) .  
  
 
 
@@ -492,10 +492,10 @@ Para eliminar o espaÃ§o morto e tornar a interface harmoniosa e equilibrada:
    - A funÃ§Ã£o de renderizaÃ§Ã£o analisa o comprimento da sigla (ex: 'GR' vs '10' vs 'DC') e a escala do jogador ('sm', 'md', 'lg'), ajustando dinamicamente o tamanho da fonte entre 7px e 15px.
    - O contraste entre o texto interior e o fundo do colete Ã© calculado dinamicamente com base no valor hexadecimal da cor, garantindo legibilidade absoluta.
 
- # #   F u n c i o n a l i d a d e :   O c u l t a r   B a r r a s   d e   E d i ç ã o   d u r a n t e   A r r a s t a m e n t o 
- P a r a   g a r a n t i r   q u e   a   e x p e r i ê n c i a   d e   u s o   d a   p r a n c h e t a   é   f l u í d a   e   q u e   a s   b a r r a s   f l u t u a n t e s   d e   e d i ç ã o   ( S h a p e ,   G o a l ,   P l a y e r )   n ã o   i n t e r f e r e m   v i s u a l m e n t e   n e m   b l o q u e i a m   o s   m o v i m e n t o s   d e   " D r a g   &   D r o p " ,   o   s i s t e m a   f o i   m e l h o r a d o : 
- -   * * C o m o   F u n c i o n a * * :   A g o r a ,   a s   b a r r a s   d e   e d i ç ã o   d e s a p a r e c e m   c o m p l e t a m e n t e   ( f i c a m   o c u l t a s   c o m   o p a c i t y - 0   e   p o i n t e r - e v e n t s - n o n e )   n o   p r e c i s o   m o m e n t o   e m   q u e   o   u t i l i z a d o r   c l i c a   e   c o m e ç a   a   a r r a s t a r   u m   e l e m e n t o   n a   t e l a . 
- -   * * P o r q u ê * * :   A n t e r i o r m e n t e   a s   b a r r a s   f i c a v a m   a p e n a s   p a r c i a l m e n t e   o p a c a s ,   o   q u e   p o r   v e z e s   d i f i c u l t a v a   a   p e r c e ç ã o   v i s u a l   d o   u t i l i z a d o r .   C o m   e s t a   a l t e r a ç ã o   a s   b a r r a s   o c u l t a m - s e   c o m   u m a   a n i m a ç ã o   s u a v e   d e   2 0 0 m s   ( 	 r a n s i t i o n - o p a c i t y   d u r a t i o n - 2 0 0 )   g a r a n t i n d o   t o t a l   f o c a g e m   n o   r e p o s i c i o n a m e n t o   d o   e l e m e n t o .   A s s i m   q u e   o   b o t ã o   d o   r a t o   é   l i b e r t a d o ,   a   b a r r a   d e   e d i ç ã o   v o l t a   a   a p a r e c e r   n o   l o c a l   c o r r e t o   d o   e l e m e n t o   s e l e c i o n a d o .  
+ # #   F u n c i o n a l i d a d e :   O c u l t a r   B a r r a s   d e   E d i ï¿½ ï¿½ o   d u r a n t e   A r r a s t a m e n t o 
+ P a r a   g a r a n t i r   q u e   a   e x p e r i ï¿½ n c i a   d e   u s o   d a   p r a n c h e t a   ï¿½   f l u ï¿½ d a   e   q u e   a s   b a r r a s   f l u t u a n t e s   d e   e d i ï¿½ ï¿½ o   ( S h a p e ,   G o a l ,   P l a y e r )   n ï¿½ o   i n t e r f e r e m   v i s u a l m e n t e   n e m   b l o q u e i a m   o s   m o v i m e n t o s   d e   " D r a g   &   D r o p " ,   o   s i s t e m a   f o i   m e l h o r a d o : 
+ -   * * C o m o   F u n c i o n a * * :   A g o r a ,   a s   b a r r a s   d e   e d i ï¿½ ï¿½ o   d e s a p a r e c e m   c o m p l e t a m e n t e   ( f i c a m   o c u l t a s   c o m   o p a c i t y - 0   e   p o i n t e r - e v e n t s - n o n e )   n o   p r e c i s o   m o m e n t o   e m   q u e   o   u t i l i z a d o r   c l i c a   e   c o m e ï¿½ a   a   a r r a s t a r   u m   e l e m e n t o   n a   t e l a . 
+ -   * * P o r q u ï¿½ * * :   A n t e r i o r m e n t e   a s   b a r r a s   f i c a v a m   a p e n a s   p a r c i a l m e n t e   o p a c a s ,   o   q u e   p o r   v e z e s   d i f i c u l t a v a   a   p e r c e ï¿½ ï¿½ o   v i s u a l   d o   u t i l i z a d o r .   C o m   e s t a   a l t e r a ï¿½ ï¿½ o   a s   b a r r a s   o c u l t a m - s e   c o m   u m a   a n i m a ï¿½ ï¿½ o   s u a v e   d e   2 0 0 m s   ( 	 r a n s i t i o n - o p a c i t y   d u r a t i o n - 2 0 0 )   g a r a n t i n d o   t o t a l   f o c a g e m   n o   r e p o s i c i o n a m e n t o   d o   e l e m e n t o .   A s s i m   q u e   o   b o t ï¿½ o   d o   r a t o   ï¿½   l i b e r t a d o ,   a   b a r r a   d e   e d i ï¿½ ï¿½ o   v o l t a   a   a p a r e c e r   n o   l o c a l   c o r r e t o   d o   e l e m e n t o   s e l e c i o n a d o .  
  
 # # Funcionalidade: SeleÃ§Ã£o de Formas GeomÃ©tricas (Bounding Box) e Foco AutomÃ¡tico
 Para garantir que as formas geomÃ©tricas (com ou sem preenchimento) sejam facilmente selecionadas e que a ediÃ§Ã£o de jogadores seja imediata, foram feitas duas alteraÃ§Ãµes na prancheta:
@@ -523,10 +523,10 @@ Para garantir que as formas geomÃ©tricas (com ou sem preenchimento) sejam facilm
   - NovoExercicioPranchetaModal: Agora aceita um initialExercicio opcional. Ao carregar um exercÃ­cio existente, a Prancheta TÃ¡tica e todos os parÃ¢metros (jogadores, espaÃ§o, dificuldade) sÃ£o prÃ©-preenchidos.
   - Se mudar o nome do exercÃ­cio, o sistema ativa automaticamente o modo de cÃ³pia ("Gravar como Novo"), gerando um novo exercÃ­cio independente no catÃ¡logo.
 
-### Página de Treinos e Biblioteca
-- **TreinoDetailStudio.tsx**: Implementado toggle de 'Modo Leitura' e 'Modo Edição'. O 'Modo Leitura' converte todos os inputs em texto estático e esconde botões desnecessários, enquanto o 'Modo Edição' mostra o formulário e permite alterações de metadados e exercícios.
-- **CatalogoExerciciosModal.tsx** e **NovoExercicioPranchetaModal.tsx**: Melhorada a biblioteca para permitir editar exercícios usando a Prancheta. Caso o nome seja alterado durante a edição, o exercício é guardado como um NOVO exercício em vez de sobrescrever o original.
-- **SessaoTreinoController.java**: Adicionada a anotação @Transactional à classe. Isto resolveu o erro 500 (LazyInitializationException) no mapper, que tentava aceder a entidades Lazy (EventoCalendario) fora da transação de gravação.
+### Pï¿½gina de Treinos e Biblioteca
+- **TreinoDetailStudio.tsx**: Implementado toggle de 'Modo Leitura' e 'Modo Ediï¿½ï¿½o'. O 'Modo Leitura' converte todos os inputs em texto estï¿½tico e esconde botï¿½es desnecessï¿½rios, enquanto o 'Modo Ediï¿½ï¿½o' mostra o formulï¿½rio e permite alteraï¿½ï¿½es de metadados e exercï¿½cios.
+- **CatalogoExerciciosModal.tsx** e **NovoExercicioPranchetaModal.tsx**: Melhorada a biblioteca para permitir editar exercï¿½cios usando a Prancheta. Caso o nome seja alterado durante a ediï¿½ï¿½o, o exercï¿½cio ï¿½ guardado como um NOVO exercï¿½cio em vez de sobrescrever o original.
+- **SessaoTreinoController.java**: Adicionada a anotaï¿½ï¿½o @Transactional ï¿½ classe. Isto resolveu o erro 500 (LazyInitializationException) no mapper, que tentava aceder a entidades Lazy (EventoCalendario) fora da transaï¿½ï¿½o de gravaï¿½ï¿½o.
 
 
 ## Fase 1: PadronizaÃ§Ã£o Visual & Componentes UI (Design System)
@@ -606,9 +606,63 @@ Nesta fase, aplicÃ¡mos o padrÃ£o de **Custom Hooks** para libertar os componente
 3. **MÃ³dulo de Assiduidade**:
    - useAttendance.ts: Absorveu o cÃ¡lculo de semanas, sincronizaÃ§Ã£o otimista e matriz de presenÃ§as.
    - AttendanceHeader.tsx e AttendanceModal.tsx: Componentes especializados para o topo e modal em portal.
-
 ## 2. O que Acontece " Por DetrÃ¡s dos Panos\?
+
 1. **MemoizaÃ§Ã£o com useCallback e useMemo**:
  - As funÃ§Ãµes de manipulaÃ§Ã£o de dados e os arrays de dias visÃ­veis sÃ£o memoizados para evitar re-renderizaÃ§Ãµes desnecessÃ¡rias da Ã¡rvore DOM quando o utilizador digita texto nos inputs.
 2. **Encapsulamento de Ciclo de Vida (useEffect)**:
  - O carregamento assÃ­ncrono Ã© gerido de forma segura dentro dos hooks customizados, garantindo que os componentes visuais apenas recebem os dados prontos para renderizar (eventos, loading, diasDaVista).
+
+---
+
+# Fase 5: Refatoramento da Prancheta TÃ¡tica (O Desafio Final)
+
+## 1. Objetivo
+O `TacticalBoard.tsx` concentraria a renderizaÃ§Ã£o da Canvas, o histÃ³rico de aÃ§Ãµes e a gestÃ£o de atalhos de teclado num Ãºnico local. O objetivo era separar essas responsabilidades em hooks independentes para melhorar a manutenibilidade e testabilidade.
+
+## 2. Hooks Criados
+
+### `useTacticalCanvasRenderer.ts`
+Hook responsÃ¡vel por conter toda a lÃ³gica de renderizaÃ§Ã£o da Canvas API:
+- `drawField()`: Renderiza o campo de jogo (full/half pitch markings)
+- `drawSingleDrawing()`: Renderiza desenhos individuais (retÃ¢ngulos, cÃ­rculos, triÃ¢ngulos, setas, lÃ¡pis)
+- `getDrawingBounds()`: Calcula os bounds e handles de seleÃ§Ã£o para um drawing
+- Gerencia o contexto `ctx` e transformaÃ§Ãµes de rotaÃ§Ã£o
+
+### `useTacticalActions.ts`
+Hook responsÃ¡vel pela gestÃ£o de estado, histÃ³rico, atalhos de teclado e eventos de ponteiro:
+- **GestÃ£o de HistÃ³rico**: `saveStateToHistory()`, `undo()`, `redo()`, `restoreSnapshot()`
+- **Atalhos de Teclado**: Ctrl+Z (Undo), Ctrl+Y/Ctrl+Shift+Z (Redo), Ctrl+C (Copy), Ctrl+V (Paste), Delete/Backspace (Delete), tecla 'R' (Rotate)
+- **Events de Ponteiro**: `getCanvasCoords()` - converte coordenadas do mouse para coordenadas do canvas
+- **Ãrea de TransferÃªncia (Clipboard)**: `clipboardRef` para Ctrl+C/Ctrl+V
+
+### `useTacticalHistory.ts`
+Hook simplificado para gestÃ£o de histÃ³rico de estado (versÃ£o preliminar).
+
+## 3. Desafios de IntegraÃ§Ã£o
+A integraÃ§Ã£o completa desses hooks no `TacticalBoard.tsx` enfrentou limitaÃ§Ãµes com o bundler Turbopack na configuraÃ§Ã£o atual. Os principais problemas foram:
+- Conflitos de nomes entre variÃ¡veis do componente e do hook
+- ResoluÃ§Ã£o de mÃ³dulos com caminhos `@/components/prancheta/...`
+- O estado de renderizaÃ§Ã£o da Canvas precisa de gerenciamento cuidadoso dentro do ciclo `requestAnimationFrame`
+
+## 4. PrÃ³ximos Passos
+Para concluir a refatoraÃ§Ã£o da Fase 5, seria necessÃ¡rio:
+- Renomear funÃ§Ãµes/variÃ¡veis para evitar conflitos de nomenclatura entre o hook e o componente
+- Garantir que o `canvasRef` e o loop de renderizaÃ§Ã£o sejam corretamente passados do componente para o hook
+- Testar a integridade visual apÃ³s a extraÃ§Ã£o da lÃ³gica de desenho
+
+---
+
+# Fase 4: FragmentaÃ§Ã£o de Componentes (Dividir para Conquistar)
+
+## 1. Desmembramento de Modais e IsolaÃ§Ã£o de Hooks Form
+AprofundÃ¡mos a aplicaÃ§Ã£o do princÃ­pio de responsabilidade Ãºnica (SoC) na camada de modais do calendÃ¡rio:
+- **`useEventoForm.ts`**: ExtraÃ­do para absorver o estado interno do formulÃ¡rio de criaÃ§Ã£o/ediÃ§Ã£o de eventos (`formData`, `duracao`, `localOption`, `availableTeams`, seletores de equipas personalizadas).
+- **`EventoFormEquipas.tsx`**: Sub-componente dedicado exclusivamente Ã  renderizaÃ§Ã£o dos seletores e inputs alternativos de equipa da casa e fora no caso de eventos do tipo `JOGO`.
+- **`EventoFormModal.tsx`**: Reduzido significativamente, funcionando unicamente como um contentor de apresentaÃ§Ã£o (dumb modal) e orquestrador das secÃ§Ãµes do formulÃ¡rio.
+
+## 2. PadrÃ£o Orquestrador / Vistas Dedicadas no CalendÃ¡rio
+ConfirmÃ¡mos a arquitetura pura do `PlaneamentoSemanal.tsx`:
+- **Orquestrador**: Consome apenas o `usePlaneamentoSemanal` e delega toda a renderizaÃ§Ã£o para sub-mÃ³dulos autÃ³nomos: `<CalendarioHeader />`, `<CalendarioWeekView />`, `<CalendarioMonthView />`, `<CalendarioDayView />`, `<EventoFormModal />` e `<CalendarioSyncModal />`.
+- **ManutenÃ§Ã£o e Escalabilidade**: Nenhum ficheiro da Ã¡rea de calendÃ¡rio excede os limites de complexidade, garantindo facilidade de teste unitÃ¡rio e prevenÃ§Ã£o de regressÃµes visuais.
+

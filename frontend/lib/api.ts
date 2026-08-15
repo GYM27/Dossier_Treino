@@ -1,9 +1,10 @@
-const API_BASE_URL = process.env.NEXT_PUBLIC_API_URL || "/api";
+const API_BASE_URL =
+  process.env.NEXT_PUBLIC_API_URL || "/api";
 
 export async function apiFetch(endpoint: string, options: RequestInit = {}) {
   // Prepara os cabeçalhos padrão
   const headers = new Headers(options.headers);
-  
+
   if (!headers.has("Content-Type") && !(options.body instanceof FormData)) {
     headers.set("Content-Type", "application/json");
   }
@@ -21,7 +22,10 @@ export async function apiFetch(endpoint: string, options: RequestInit = {}) {
   } catch (error) {
     // Se o fetch falhar completamente (ex: servidor em baixo ou sem internet)
     if (typeof window !== "undefined") {
-      if (window.location.pathname !== "/login" && window.location.pathname !== "/register") {
+      if (
+        window.location.pathname !== "/login" &&
+        window.location.pathname !== "/register"
+      ) {
         alert("Ligação ao servidor perdida. A redirecionar para o Login...");
         window.location.href = "/login";
       }
@@ -33,20 +37,31 @@ export async function apiFetch(endpoint: string, options: RequestInit = {}) {
     let errorMessage = "Erro na chamada à API";
     try {
       const errorData = await response.json();
-      errorMessage = errorData.message || errorMessage;
+      console.error("API Error Response:", response.status, errorData);
+      errorMessage = errorData.message || errorData.error || errorMessage;
     } catch (e) {
-      // Falha a fazer parse do JSON de erro
+      console.error(
+        "API Error (Non-JSON):",
+        response.status,
+        response.statusText,
+      );
     }
-    
+
     // Se receber 401 Unauthorized ou 403 Forbidden, a sessão expirou ou é inválida
-    if ((response.status === 401 || response.status === 403) && typeof window !== "undefined") {
+    if (
+      (response.status === 401 || response.status === 403) &&
+      typeof window !== "undefined"
+    ) {
       // Prevenir loop infinito se já estivermos na página de login
-      if (window.location.pathname !== "/login" && window.location.pathname !== "/register") {
+      if (
+        window.location.pathname !== "/login" &&
+        window.location.pathname !== "/register"
+      ) {
         window.location.href = "/login";
       }
     }
 
-    throw new Error(errorMessage);
+    throw new Error(errorMessage + ` (status: ${response.status})`);
   }
 
   // Alguns endpoints podem não devolver JSON

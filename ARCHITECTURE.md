@@ -61,8 +61,8 @@ oster-view.tsx foi migrado para ler do backend os Atletas criados na Base de Dad
 - **Processamento no Cliente vs Servidor**: Em vez de pedir ao backend a "contagem de defesas", pedimos a lista de atletas inteira (um sÃ³ pedido REST) e fazemos cÃ¡lculos de filtragem in-memory no frontend usando `.filter()`. Ã‰ um *trade-off* adequado para listas pequenas (como plantÃ©is de 25-30 pessoas) reduzindo a carga do servidor de base de dados.
 
 ### Etapa 15.1: Clean Code no Frontend (Nomenclatura Descritiva)
-- **Convenções de Nomes:** Adotámos uma abordagem rigorosa onde os componentes de layout partilhados usam inglês estrutural técnico (sidebar, 	op-header), enquanto que os ecrãs que representam domínios de negócio são nomeados de forma identificativa e clara (squad, dashboard, ttendance).
-- **Remoção de Sufixos:** Foram removidos sufixos de contexto genéricos (como -view) gerados automaticamente, promovendo a simplicidade e evitando ruído visual no código.
+- **Convenï¿½ï¿½es de Nomes:** Adotï¿½mos uma abordagem rigorosa onde os componentes de layout partilhados usam inglï¿½s estrutural tï¿½cnico (sidebar, 	op-header), enquanto que os ecrï¿½s que representam domï¿½nios de negï¿½cio sï¿½o nomeados de forma identificativa e clara (squad, dashboard, ttendance).
+- **Remoï¿½ï¿½o de Sufixos:** Foram removidos sufixos de contexto genï¿½ricos (como -view) gerados automaticamente, promovendo a simplicidade e evitando ruï¿½do visual no cï¿½digo.
 
 ---
 ### AtualizaÃ§Ã£o: O Meu Perfil e ConfiguraÃ§Ãµes (Fase 2)
@@ -72,9 +72,9 @@ oster-view.tsx foi migrado para ler do backend os Atletas criados na Base de Dad
 
 ## Assiduidade e Centro de Controlo
 
-- **Design Pattern / UX**: Optou-se por uma **Matriz (Grelha Semanal)** em vez de uma visão isolada por evento. Isto permite ao treinador observar imediatamente os padrões da semana, ver lesões recorrentes ou gerir de forma mais holística.
-- **Eficiência de Rede**: O Backend devolve uma lista de DTOs achatada (flat) e o frontend agrupa os dados usando a estrutura da matriz e a memória (React useMemo).
-- **Update Otimista**: Na UI (Attendance.tsx), quando se clica num estado (ex: PRESENTE -> AUSENTE), a mudança é refletida imediatamente na vista (para ser rápida) e, em background, faz a chamada PUT à API. Se falhar, é feito o 'rollback' e é mostrado erro.
+- **Design Pattern / UX**: Optou-se por uma **Matriz (Grelha Semanal)** em vez de uma visï¿½o isolada por evento. Isto permite ao treinador observar imediatamente os padrï¿½es da semana, ver lesï¿½es recorrentes ou gerir de forma mais holï¿½stica.
+- **Eficiï¿½ncia de Rede**: O Backend devolve uma lista de DTOs achatada (flat) e o frontend agrupa os dados usando a estrutura da matriz e a memï¿½ria (React useMemo).
+- **Update Otimista**: Na UI (Attendance.tsx), quando se clica num estado (ex: PRESENTE -> AUSENTE), a mudanï¿½a ï¿½ refletida imediatamente na vista (para ser rï¿½pida) e, em background, faz a chamada PUT ï¿½ API. Se falhar, ï¿½ feito o 'rollback' e ï¿½ mostrado erro.
 
 
 ### Calendar Synchronization (iCal) - Security Bypass
@@ -94,12 +94,12 @@ oster-view.tsx foi migrado para ler do backend os Atletas criados na Base de Dad
 - **SoluÃ§Ã£o:** AdiÃ§Ã£o de propriedade `fotoUrl` (String) Ã  entidade Atleta. Optou-se por guardar o URL absoluto para simplificar a infraestrutura, mantendo o Frontend responsÃ¡vel por renderizar a tag `<img>` com fallbacks visuais adequados (Avatar com iniciais).
 
 
-## Módulo de Treinos (Treino Builder)
-O design de ecrã inteiro exigiu que a arquitetura do Frontend isolasse o TreinoBuilderStitch dos layouts genéricos. O Backend foi flexibilizado para incluir colunas da Periodização Tática (morfociclo, microciclo, ase). A separação entre o Orquestrador (TreinosOrchestrator) e a visualização (TreinoBuilderStitch) mantém a componente de apresentação (UI rica com Tailwind custom colors) desligada da mecânica de fetching das listas base.
+## Mï¿½dulo de Treinos (Treino Builder)
+O design de ecrï¿½ inteiro exigiu que a arquitetura do Frontend isolasse o TreinoBuilderStitch dos layouts genï¿½ricos. O Backend foi flexibilizado para incluir colunas da Periodizaï¿½ï¿½o Tï¿½tica (morfociclo, microciclo, ase). A separaï¿½ï¿½o entre o Orquestrador (TreinosOrchestrator) e a visualizaï¿½ï¿½o (TreinoBuilderStitch) mantï¿½m a componente de apresentaï¿½ï¿½o (UI rica com Tailwind custom colors) desligada da mecï¿½nica de fetching das listas base.
 
- # # #   I n t e g r a ç ã o   d a   P r a n c h e t a   T á t i c a 
- A   a r q u i t e t u r a   d o   T r e i n o   B u i l d e r   f o i   e x p a n d i d a   p a r a   s u p o r t a r   c r i a ç ã o   e   a s s o c i a ç ã o   d i r e t a   d e   e x e r c í c i o s . 
- A   e n t i d a d e   \ E x e r c i c i o \   u t i l i z a   \ @ J d b c T y p e C o d e ( S q l T y p e s . J S O N ) \   n o   c a m p o   \ d a d o s T a t i c o s \   p a r a   p e r s i s t i r   o   e s t a d o   d o   C a n v a s   ( p o s i ç õ e s   X , Y   e   l i n h a s )   d e   f o r m a   s c h e m a - l e s s ,   g a r a n t i n d o   f l e x i b i l i d a d e   c a s o   o s   r e q u i s i t o s   d o   d e s e n h o   t á t i c o   e v o l u a m .   A   c o m u n i c a ç ã o   é   f e i t a   v i a   \ P O S T   / a p i / e x e r c i c i o s \   ( C r i a ç ã o   g l o b a l )   s e g u i d o   d e   \ P O S T   / a p i / t r e i n o s / { s e s s a o I d } / e x e r c i c i o s \   ( A s s o c i a ç ã o   a o   T r e i n o   A t u a l ) .  
+ # # #   I n t e g r a ï¿½ ï¿½ o   d a   P r a n c h e t a   T ï¿½ t i c a 
+ A   a r q u i t e t u r a   d o   T r e i n o   B u i l d e r   f o i   e x p a n d i d a   p a r a   s u p o r t a r   c r i a ï¿½ ï¿½ o   e   a s s o c i a ï¿½ ï¿½ o   d i r e t a   d e   e x e r c ï¿½ c i o s . 
+ A   e n t i d a d e   \ E x e r c i c i o \   u t i l i z a   \ @ J d b c T y p e C o d e ( S q l T y p e s . J S O N ) \   n o   c a m p o   \ d a d o s T a t i c o s \   p a r a   p e r s i s t i r   o   e s t a d o   d o   C a n v a s   ( p o s i ï¿½ ï¿½ e s   X , Y   e   l i n h a s )   d e   f o r m a   s c h e m a - l e s s ,   g a r a n t i n d o   f l e x i b i l i d a d e   c a s o   o s   r e q u i s i t o s   d o   d e s e n h o   t ï¿½ t i c o   e v o l u a m .   A   c o m u n i c a ï¿½ ï¿½ o   ï¿½   f e i t a   v i a   \ P O S T   / a p i / e x e r c i c i o s \   ( C r i a ï¿½ ï¿½ o   g l o b a l )   s e g u i d o   d e   \ P O S T   / a p i / t r e i n o s / { s e s s a o I d } / e x e r c i c i o s \   ( A s s o c i a ï¿½ ï¿½ o   a o   T r e i n o   A t u a l ) .  
  
 
 
@@ -184,10 +184,10 @@ O design de ecrã inteiro exigiu que a arquitetura do Frontend isolasse o TreinoB
 - **Endpoints RESTful para ExercÃ­cios**: Foram adicionados os endpoints PUT /api/exercicios/{id} para atualizaÃ§Ã£o de dados/prancheta e DELETE /api/exercicios/{id} para remoÃ§Ã£o segura de exercÃ­cios obsoletos.
 - **PadrÃ£o Clone-on-Edit (DuplicaÃ§Ã£o Segura)**: A interface de ediÃ§Ã£o (NovoExercicioPranchetaModal) deteta se o utilizador alterou o nome do exercÃ­cio em relaÃ§Ã£o ao original. Se o nome for alterado ou o utilizador clicar explicitamente em **"Gravar como Novo"**, o frontend efetua um POST /api/exercicios criando uma nova entrada no catÃ¡logo e preservando o exercÃ­cio original intacto. Se mantiver o nome original e clicar em **"Atualizar Original"**, o sistema executa um PUT /api/exercicios/{id}.
 
-### Página de Treinos e Biblioteca (Update)
-- **Read/Edit Mode Toggle**: O componente \TreinoDetailStudio\ implementa um padrão de visualização dual (Read/Edit). Isto melhora a legibilidade durante a sessão e protege os dados contra edições acidentais.
-- **Smart Duplication (Biblioteca)**: O \NovoExercicioPranchetaModal\ verifica o \hasNameChanged\. Se alterado durante a edição, encaminha o request para um POST (novo) em vez de PUT (update), preservando o exercício original.
-- **Transactional Boundary**: Adicionada a anotação \@Transactional\ na classe \SessaoTreinoController\ (Backend). Isto evita a \LazyInitializationException\ durante a serialização do DTO de resposta da API na criação do Treino.
+### Pï¿½gina de Treinos e Biblioteca (Update)
+- **Read/Edit Mode Toggle**: O componente \TreinoDetailStudio\ implementa um padrï¿½o de visualizaï¿½ï¿½o dual (Read/Edit). Isto melhora a legibilidade durante a sessï¿½o e protege os dados contra ediï¿½ï¿½es acidentais.
+- **Smart Duplication (Biblioteca)**: O \NovoExercicioPranchetaModal\ verifica o \hasNameChanged\. Se alterado durante a ediï¿½ï¿½o, encaminha o request para um POST (novo) em vez de PUT (update), preservando o exercï¿½cio original.
+- **Transactional Boundary**: Adicionada a anotaï¿½ï¿½o \@Transactional\ na classe \SessaoTreinoController\ (Backend). Isto evita a \LazyInitializationException\ durante a serializaï¿½ï¿½o do DTO de resposta da API na criaï¿½ï¿½o do Treino.
 
 
 ## PadronizaÃ§Ã£o Visual e Design System Frontend (Fase 1)
@@ -202,11 +202,11 @@ O design de ecrã inteiro exigiu que a arquitetura do Frontend isolasse o TreinoB
 - **Plantel**: AtletaFormModal migrado para Input e Button padronizados.
 - **CalendÃ¡rio**: EventoFormModal alinhado com validaÃ§Ã£o robusta de datas e inputs controlados.
 
-### 6. Geometria Analítica para Rotação de Linhas
-- **Rotate Handle Offset**: Implementação de um manipulador de rotação espacial puro para linhas retas. O cálculo do pivot usa trigonometria (Math.atan2 com offset perpendicular de Math.PI / 2) para projetar o *handle* e atualizar a inclinação mantendo Math.hypot e o centro geométrico (cx, cy) imutáveis.
+### 6. Geometria Analï¿½tica para Rotaï¿½ï¿½o de Linhas
+- **Rotate Handle Offset**: Implementaï¿½ï¿½o de um manipulador de rotaï¿½ï¿½o espacial puro para linhas retas. O cï¿½lculo do pivot usa trigonometria (Math.atan2 com offset perpendicular de Math.PI / 2) para projetar o *handle* e atualizar a inclinaï¿½ï¿½o mantendo Math.hypot e o centro geomï¿½trico (cx, cy) imutï¿½veis.
 
-### 7. Normalização de Espaçamentos da UI
-- **Global Y-Offset**: A margem de respiro vertical para todos os menus contextuais flutuantes (Jogadores, Balizas, Formas Geométricas, Linhas) foi uniformizada globalmente através da propriedade CSS 	ranslateY(-40px). Esta abordagem garante uma folga visual consistente em toda a plataforma, sem afetar o cálculo subjacente dos *bounding boxes* para seleção.
+### 7. Normalizaï¿½ï¿½o de Espaï¿½amentos da UI
+- **Global Y-Offset**: A margem de respiro vertical para todos os menus contextuais flutuantes (Jogadores, Balizas, Formas Geomï¿½tricas, Linhas) foi uniformizada globalmente atravï¿½s da propriedade CSS 	ranslateY(-40px). Esta abordagem garante uma folga visual consistente em toda a plataforma, sem afetar o cï¿½lculo subjacente dos *bounding boxes* para seleï¿½ï¿½o.
 
 
 ## Camada de ServiÃ§os API Frontend (Fase 2)
@@ -227,4 +227,55 @@ O design de ecrã inteiro exigiu que a arquitetura do Frontend isolasse o TreinoB
   - components/calendario/: usePlaneamentoSemanal desacoplado em CalendarioHeader, CalendarioWeekView, CalendarioMonthView, CalendarioDayView.
   - components/treinos/: useTreinoDetailStudio desacoplado em TreinoStudioHeader, TreinoStudioMetadataForm, TreinoExercicioCard.
   - components/assiduidade/: useAttendance desacoplado em AttendanceHeader, AttendanceModal.
-- Componentes React tornaram-se estritamente " dumb components\, garantindo facilidade de manutenÃ§Ã£o e testes de interface isolados.
+- Componentes React tornaram-se estritamente "dumb components", garantindo facilidade de manutenÃ§Ã£o e testes de interface isolados.
+
+---
+
+## Fase 4: FragmentaÃ§Ã£o de Componentes (Dividir para Conquistar)
+
+### 1. Desmembramento de Modais e IsolaÃ§Ã£o de Hooks Form (Novidade da Fase 4)
+O objetivo foi reduzir ainda mais a complexidade dos componentes de modal ao aplicar o padrÃ£o de responsabilidade Ãºnica:
+- **`useEventoForm.ts`**: Hook customizado responsÃ¡vel por gerenciar todo o estado interno do formulÃ¡rio de eventos do calendÃ¡rio (`formData`, `duracao`, `localOption`, `availableTeams`, flags de equipas personalizadas, e lÃ³gica de inicializaÃ§Ã£o).
+- **`EventoFormEquipas.tsx`**: Sub-componente dedicado exclusivamente Ã  renderizaÃ§Ã£o e interaÃ§Ã£o dos seletores de equipa da casa e fora para eventos do tipo `JOGO`, encapsulando a lÃ³gica de alternÃ¢ncia entre seleÃ§Ã£o de equipas existentes e criaÃ§Ã£o de novas equipas.
+- **`EventoFormModal.tsx`**: Reduzido a um componente "contentor" (dumb component) que apenas orquestra a apresentaÃ§Ã£o visual e delegue a lÃ³gica para o `useEventoForm` e o `EventoFormEquipas`. Isso garante que o modal Ã© simples, focado apenas em layout e eventos de save/cancel.
+
+### 2. Arquitetura de Vistas Dedicadas no CalendÃ¡rio
+O `PlaneamentoSemanal.tsx` mantÃ©m a arquitetura orquestradora pura:
+- Consome apenas o hook `usePlaneamentoSemanal` e delega toda a renderizaÃ§Ã£o para sub-mÃ³dulos totalmente independentes.
+- **`CalendarioHeader.tsx`**: Controlos de navegaÃ§Ã£o, troca de vista e morfociclos.
+- **`CalendarioWeekView.tsx`**: RenderizaÃ§Ã£o da grelha de 7 dias com cards de eventos.
+- **`CalendarioMonthView.tsx`**: RenderizaÃ§Ã£o mensal de 42 dias com scroll customizado.
+- **`CalendarioDayView.tsx`**: Vista diÃ¡ria detalhada com horÃ¡rios.
+- **`EventoFormModal.tsx`**: Modal de formulÃ¡rio de evento (refatorado com o hook `useEventoForm` e sub-componente `EventoFormEquipas`).
+- **`CalendarioSyncModal.tsx`**: Modal de sincronizaÃ§Ã£o iCal isolado.
+
+**Resultado**: Cada componente visual assume responsabilidade exclusiva sobre o seu domÃ­nio de renderizaÃ§Ã£o. Nenhum ficheiro da Ã¡rea de calendÃ¡rio excede os limites de complexidade, garantindo facilidade de teste unitÃ¡rio e prevenÃ§Ã£o de regressÃµes visuais.
+
+---
+
+## Fase 5: Refatoramento da Prancheta TÃ¡tica (O Desafio Final)
+
+### 1. Desmembramento de Responsabilidades (Novidade da Fase 5)
+O objetivo da Fase 5 era aplicar o padrÃ£o de separaÃ§Ã£o de responsabilidades (SoC) ao `TacticalBoard.tsx`, dividindo a lÃ³gica em hooks especializados:
+
+- **Motor GrÃ¡fico (`useTacticalCanvasRenderer.ts`)**: ResponsÃ¡vel exclusivamente pela renderizaÃ§Ã£o da Canvas API - drawField, drawSingleDrawing, getDrawingBounds. Isola a lÃ³gica de desenho puro da componente visual.
+
+- **Gestor de InteraÃ§Ãµes (`useTacticalActions.ts`)**: Isola os eventos de rato, as teclas de atalho e a mÃ¡quina de estados (operaÃ§Ãµes de undo/redo) em um hook independente. ContÃ©m:
+  - GestÃ£o de histÃ³rico (saveStateToHistory, undo, redo)
+  - Atalhos de teclado (Ctrl+Z, Ctrl+Y, Ctrl+C, Ctrl+V, Delete, Backspace, 'R' key)
+  - Eventos de ponteiro e coordenadas de canvas
+  - Ãrea de transferÃªncia (clipboard) para copiar/colar elementos
+
+### 2. Arquitetura Resultante
+- **`TacticalBoard.tsx`**: Torna-se um componente "contentor" que orquestra a visualizaÃ§Ã£o, usando os hooks para state management e rendering.
+- **`useTacticalCanvasRenderer.ts`**: Motor de desenho puro, receives stateRef e ctx, returns drawing functions.
+- **`useTacticalActions.ts`**: Gerencia todo o estado interactivo e de histÃ³rico, retornando funÃ§Ãµes de aÃ§Ã£o e helpers.
+
+**Desafio TÃ©cnico**: A integraÃ§Ã£o completa enfrentou limitaÃ§Ãµes com o bundler Turbopack na configuraÃ§Ã£o atual, especificamente relacionados com conflitos de nomes de mÃ³dulos e resoluÃ§Ã£o de caminhos. A arquitetura em si Ã© sÃ³lida e modular, mas requer ajustes de configuraÃ§Ã£o ou nomenclatura para plena integraÃ§Ã£o.
+
+### 3. PrÃ³ximas Etapas
+- Resolver conflitos de nomenclatura entre hooks e componente
+- Garantir renderizaÃ§Ã£o visual consistente apÃ³s extraÃ§Ã£o da lÃ³gica
+- Verificar compatibilidade com todos os modos de relvado (Full/Half/Free)
+
+---

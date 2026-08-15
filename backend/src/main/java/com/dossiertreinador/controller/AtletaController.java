@@ -40,9 +40,19 @@ public class AtletaController {
         return new ResponseEntity<>(resposta, HttpStatus.CREATED);
     }
 
-    // Endpoint GET: Listar por equipa
+    // Endpoint GET: Listar por equipa (via query param)
     @GetMapping
     public ResponseEntity<List<AtletaResponseDTO>> listarAtletas(@RequestParam UUID equipaId) {
+        List<Atleta> atletas = atletaService.listarPorEquipa(equipaId);
+        List<AtletaResponseDTO> resposta = atletas.stream()
+                .map(atletaMapper::toResponseDTO)
+                .toList();
+        return ResponseEntity.ok(resposta);
+    }
+
+    // Endpoint GET: Listar por equipa (via path variable)
+    @GetMapping("/equipa/{equipaId}")
+    public ResponseEntity<List<AtletaResponseDTO>> listarAtletasPorEquipaPath(@PathVariable UUID equipaId) {
         List<Atleta> atletas = atletaService.listarPorEquipa(equipaId);
         List<AtletaResponseDTO> resposta = atletas.stream()
                 .map(atletaMapper::toResponseDTO)
