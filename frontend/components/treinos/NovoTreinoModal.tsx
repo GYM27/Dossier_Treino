@@ -4,7 +4,7 @@ import React, { useState, useEffect } from "react";
 import { X, Calendar, Clock, MapPin, Target, Users, Flame, Dumbbell } from "lucide-react";
 import { Team } from "@/models/team";
 import { SessaoTreino } from "@/models/sessao-treino";
-import { apiFetch } from "@/lib/api";
+import { treinoService, calendarioService } from "@/services";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 
@@ -36,9 +36,9 @@ export function NovoTreinoModal({
   // Buscar último número de treino da equipa para autoincrementar
   useEffect(() => {
     if (isOpen && activeTeam) {
-      apiFetch(`/eventos/equipa/${activeTeam.id}/ultimo-numero-treino`)
+      treinoService.getUltimoNumeroTreino(activeTeam.id)
         .then((num) => {
-          if (typeof num === "number") {
+          if (typeof num === "number" && num > 0) {
             setNumeroTreino(num + 1);
           }
         })
@@ -64,34 +64,24 @@ export function NovoTreinoModal({
       const dataFimStr = fim.toISOString().split("T")[0];
       const dataHoraFimStr = `${dataFimStr}T${horaFimStr}:00`;
 
-      // 2. Criar Evento no Calendário
-      const eventoPayload = {
+      // 2. Criar Evento no Calendário através do Serviço
+      const eventoCriado = await calendarioService.criarEvento(activeTeam.id, {
         tipoEvento: "TREINO",
         dataHoraInicio: dataHoraInicioStr,
         dataHoraFim: dataHoraFimStr,
         descricao: objetivo || `Treino #${numeroTreino}`,
         local: local,
         numeroTreino: numeroTreino,
-      };
-
-      const eventoCriado = await apiFetch(`/eventos/equipa/${activeTeam.id}`, {
-        method: "POST",
-        body: JSON.stringify(eventoPayload),
       });
 
-      // 3. Criar Sessão de Treino associada
-      const sessaoPayload = {
+      // 3. Criar Sessão de Treino associada através do Serviço
+      const sessaoCriada = await treinoService.criarTreino({
         eventoId: eventoCriado.id,
         equipaId: activeTeam.id,
         numeroJogadores: numeroJogadores,
         objetivo: objetivo || `Treino #${numeroTreino}`,
         intensidadeGeral: intensidade,
         material: material,
-      };
-
-      const sessaoCriada = await apiFetch(`/treinos`, {
-        method: "POST",
-        body: JSON.stringify(sessaoPayload),
       });
 
       onTreinoCreated(sessaoCriada);

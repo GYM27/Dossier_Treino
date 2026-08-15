@@ -7,4 +7,5 @@ export interface Exercicio {
   objetivosEspecificos?: string;
   espaco?: string;
   jogadoresEnvolvidos?: number;
+  dadosTaticos?: Record<string, any> | any;
 }

@@ -7,7 +7,7 @@ import { Placeholder } from "@/components/ui/Placeholder";
 import { TreinosSidebarList } from "./TreinosSidebarList";
 import { TreinoDetailStudio } from "./TreinoDetailStudio";
 import { NovoTreinoModal } from "./NovoTreinoModal";
-import { apiFetch } from "@/lib/api";
+import { treinoService } from "@/services";
 import { Dumbbell, Plus, Sparkles } from "lucide-react";
 
 export function TreinosOrchestrator({ activeTeam }: { activeTeam: Team | null }) {
@@ -21,7 +21,7 @@ export function TreinosOrchestrator({ activeTeam }: { activeTeam: Team | null })
     if (!activeTeam) return;
     setIsLoading(true);
     try {
-      const data: SessaoTreino[] = await apiFetch(`/treinos/equipa/${activeTeam.id}`);
+      const data = await treinoService.getTreinosByEquipa(activeTeam.id);
       setTreinos(data || []);
 
       if (data && data.length > 0) {
@@ -50,7 +50,7 @@ export function TreinosOrchestrator({ activeTeam }: { activeTeam: Team | null })
   const handleReloadTreino = async (treinoId: string) => {
     if (!activeTeam) return;
     try {
-      const data: SessaoTreino[] = await apiFetch(`/treinos/equipa/${activeTeam.id}`);
+      const data = await treinoService.getTreinosByEquipa(activeTeam.id);
       setTreinos(data || []);
     } catch (err) {
       console.error("Erro ao recarregar treino:", err);

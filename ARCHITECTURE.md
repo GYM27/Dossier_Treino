@@ -208,3 +208,23 @@ O design de ecr� inteiro exigiu que a arquitetura do Frontend isolasse o TreinoB
 ### 7. Normaliza��o de Espa�amentos da UI
 - **Global Y-Offset**: A margem de respiro vertical para todos os menus contextuais flutuantes (Jogadores, Balizas, Formas Geom�tricas, Linhas) foi uniformizada globalmente atrav�s da propriedade CSS 	ranslateY(-40px). Esta abordagem garante uma folga visual consistente em toda a plataforma, sem afetar o c�lculo subjacente dos *bounding boxes* para sele��o.
 
+
+## Camada de Serviços API Frontend (Fase 2)
+
+### 1. Padrão Service Layer (rontend/services/)
+- Isolamento total da comunicação HTTP e rotas da API em módulos de domínio independentes:
+  - 	reinoService: Gestão do ciclo de vida das sessões de treino e composição de exercícios.
+  - exercicioService: Catálogo de exercícios e persistência tática.
+  - tletaService: Gestão do plantel e fichas de jogador.
+  - calendarioService: Eventos de calendário e microciclos/morfociclos.
+  - ssiduidadeService: Registo e consulta de assiduidade semanal/mensal.
+- Centralização de tipos e contratos de dados nos serviços, evitando rotas hardcoded na camada de apresentação (React).
+
+## Extração de Custom Hooks e Desacoplamento da Apresentação (Fase 3)
+
+### 1. Padrão Container / Presentational & Custom Hooks
+- Eliminação de componentes monolíticos superiores a 200 linhas:
+  - components/calendario/: usePlaneamentoSemanal desacoplado em CalendarioHeader, CalendarioWeekView, CalendarioMonthView, CalendarioDayView.
+  - components/treinos/: useTreinoDetailStudio desacoplado em TreinoStudioHeader, TreinoStudioMetadataForm, TreinoExercicioCard.
+  - components/assiduidade/: useAttendance desacoplado em AttendanceHeader, AttendanceModal.
+- Componentes React tornaram-se estritamente " dumb components\, garantindo facilidade de manutenção e testes de interface isolados.
