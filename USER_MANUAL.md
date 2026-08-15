@@ -95,6 +95,10 @@ Aceda ao **CalendÃ¡rio** atravÃ©s da barra lateral. Esta secÃ§Ã£o serve como o "
   - Selecione o Tipo, InÃ­cio, Fim, DescriÃ§Ã£o (ex: "PressÃ£o Alta") e Local.
   - O evento serÃ¡ injetado em tempo real no seu calendÃ¡rio.
 
+### ðŸ”§ Melhorias TÃ©cnicas Internas (Arquitetura Modular)
+- **Modais Isolados e ReutilizÃ¡veis**: O formulÃ¡rio de eventos foi totalmente refatorizado para separar a lÃ³gica de negÃ³cio num hook dedicado (`useEventoForm.ts`) e o sub-componente de seleÃ§Ã£o de equipas (`EventoFormEquipas.tsx`), tornando a manutenÃ§Ã£o mais limpa e organizada.
+- **Vistas Independentes**: As vistas de CalendÃ¡rio (`WeekView`, `MonthView`, `DayView`) operam de forma isolada, garantindo escalabilidade e alta manutenibilidade do cÃ³digo.
+
 ## 3.4. Assiduidade (Modo Tabela de Controlo)
 
 ### ðŸ“Š Dashboard Profissional em Tempo Real
@@ -113,12 +117,12 @@ O Treinador pode agora atualizar as suas prÃ³prias informaÃ§Ãµes pessoais!
 6. Atualiza o teu nome ou define uma nova password.
 7. Clica em "Guardar AlteraÃ§Ãµes" e os teus dados serÃ£o atualizados em tempo real!
 
-## 5. Módulo Assiduidade (Centro de Controlo)
+## 5. Mï¿½dulo Assiduidade (Centro de Controlo)
 A funcionalidade de **Assiduidade** baseia-se numa Matriz / Grelha Semanal.
-- **Navegação**: No topo da grelha pode escolher qual a semana que pretende visualizar, usando as setas do calendário.
-- **Visualização**: À esquerda visualiza o plantel completo da sua equipa e no cabeçalho encontra os eventos da semana. Uma célula vazia com '?' significa que a presença não foi alterada, e um ícone de 'Cama' significa que é um dia de 'Folga' sem evento.
-- **Registar Presenças**: Basta colocar o rato por cima do ícone (cruzamento do Jogador com o Treino) e vai aparecer um pequeno menu flutuante. Clicando numa das opções (Presente, Ausente, Atrasado, Lesão, Seleção) a alteração fica **logo gravada**!
-- **Painel de Estatísticas**: No cabeçalho visualiza a média de disponibilidade da semana, o número de lesionados e de jogadores ao serviço da seleção.
+- **Navegaï¿½ï¿½o**: No topo da grelha pode escolher qual a semana que pretende visualizar, usando as setas do calendï¿½rio.
+- **Visualizaï¿½ï¿½o**: ï¿½ esquerda visualiza o plantel completo da sua equipa e no cabeï¿½alho encontra os eventos da semana. Uma cï¿½lula vazia com '?' significa que a presenï¿½a nï¿½o foi alterada, e um ï¿½cone de 'Cama' significa que ï¿½ um dia de 'Folga' sem evento.
+- **Registar Presenï¿½as**: Basta colocar o rato por cima do ï¿½cone (cruzamento do Jogador com o Treino) e vai aparecer um pequeno menu flutuante. Clicando numa das opï¿½ï¿½es (Presente, Ausente, Atrasado, Lesï¿½o, Seleï¿½ï¿½o) a alteraï¿½ï¿½o fica **logo gravada**!
+- **Painel de Estatï¿½sticas**: No cabeï¿½alho visualiza a mï¿½dia de disponibilidade da semana, o nï¿½mero de lesionados e de jogadores ao serviï¿½o da seleï¿½ï¿½o.
 
 
 ### SincronizaÃ§Ã£o com o Google Calendar / Apple Calendar
@@ -142,14 +146,14 @@ Se adicionares um jogador novo ao plantel a meio da epoca, ele aparecera imediat
 4. Guarda o atleta. A foto passara a aparecer em miniatura na grelha do Plantel e tambem na Assiduidade!
 
 
-## Construtor de Treinos e Catálogo de Exercícios
-No menu lateral esquerdo irás reparar num novo ícone com um Haltere chamado **Treinos**. Ao clicares nele, e depois em **Novo Treino**, abres o ecrã do Construtor de Sessões de Treino.
-Neste ecrã tático de fundo escuro, podes ver no topo todos os dados estruturais do teu treino segundo a Periodização Tática (Morfociclo, Microciclo, Fase).
-Se desceres a página, vês o separador 'Exercise Flow'. Ao clicares em **IMPORT LIBRARY**, irás abrir a tua biblioteca global de Exercícios, onde podes escolher qualquer um que tenhas criado para o incorporar imediatamente na sessão que estás a construir!
+## Construtor de Treinos e Catï¿½logo de Exercï¿½cios
+No menu lateral esquerdo irï¿½s reparar num novo ï¿½cone com um Haltere chamado **Treinos**. Ao clicares nele, e depois em **Novo Treino**, abres o ecrï¿½ do Construtor de Sessï¿½es de Treino.
+Neste ecrï¿½ tï¿½tico de fundo escuro, podes ver no topo todos os dados estruturais do teu treino segundo a Periodizaï¿½ï¿½o Tï¿½tica (Morfociclo, Microciclo, Fase).
+Se desceres a pï¿½gina, vï¿½s o separador 'Exercise Flow'. Ao clicares em **IMPORT LIBRARY**, irï¿½s abrir a tua biblioteca global de Exercï¿½cios, onde podes escolher qualquer um que tenhas criado para o incorporar imediatamente na sessï¿½o que estï¿½s a construir!
 
- # #   P r a n c h e t a   T á t i c a 
- N a   p á g i n a   d e   c o n s t r u ç ã o   d e   u m   T r e i n o ,   p o d e s   a g o r a   e d i t a r   o s   * * O b j e t i v o s   G e r a i s * *   ( c l i c a n d o   e m   +   A d i c i o n a r )   e   o   * * M a t e r i a l * * .   C l i c a   e m   * * G R A V A R   T R E I N O * *   p a r a   g u a r d a r e s   e s t a s   a l t e r a ç õ e s . 
- M a i s   i m p o r t a n t e ,   a o   c l i c a r e s   e m   * * N O V O   E X E R C Í C I O * * ,   a b r i r - s e - á   a   * * P r a n c h e t a   T á t i c a * * .   A q u i   p o d e s   d e s e n h a r   a   t u a   j o g a d a ,   a r r a s t a n d o   j o g a d o r e s ,   d e s e n h a n d o   l i n h a s   d e   p a s s e   o u   c o r r i d a ,   e   i n s e r i n d o   n o t a s   p a r a   c a d a   q u a d r o .   Q u a n d o   t e r m i n a r e s ,   p r e e n c h e   o   N o m e   e   c l i c a   e m   * * G r a v a r   T á t i c a * *   ( n o   m e n u   d a   p r a n c h e t a ) .   A   t á t i c a   f i c a r á   a s s o c i a d a   a o   t r e i n o   e   a p a r e c e r á   u m a   m i n i a t u r a   i n t e r a t i v a   n a   l i s t a g e m   d o   t e u   T r e i n o !  
+ # #   P r a n c h e t a   T ï¿½ t i c a 
+ N a   p ï¿½ g i n a   d e   c o n s t r u ï¿½ ï¿½ o   d e   u m   T r e i n o ,   p o d e s   a g o r a   e d i t a r   o s   * * O b j e t i v o s   G e r a i s * *   ( c l i c a n d o   e m   +   A d i c i o n a r )   e   o   * * M a t e r i a l * * .   C l i c a   e m   * * G R A V A R   T R E I N O * *   p a r a   g u a r d a r e s   e s t a s   a l t e r a ï¿½ ï¿½ e s . 
+ M a i s   i m p o r t a n t e ,   a o   c l i c a r e s   e m   * * N O V O   E X E R C ï¿½ C I O * * ,   a b r i r - s e - ï¿½   a   * * P r a n c h e t a   T ï¿½ t i c a * * .   A q u i   p o d e s   d e s e n h a r   a   t u a   j o g a d a ,   a r r a s t a n d o   j o g a d o r e s ,   d e s e n h a n d o   l i n h a s   d e   p a s s e   o u   c o r r i d a ,   e   i n s e r i n d o   n o t a s   p a r a   c a d a   q u a d r o .   Q u a n d o   t e r m i n a r e s ,   p r e e n c h e   o   N o m e   e   c l i c a   e m   * * G r a v a r   T ï¿½ t i c a * *   ( n o   m e n u   d a   p r a n c h e t a ) .   A   t ï¿½ t i c a   f i c a r ï¿½   a s s o c i a d a   a o   t r e i n o   e   a p a r e c e r ï¿½   u m a   m i n i a t u r a   i n t e r a t i v a   n a   l i s t a g e m   d o   t e u   T r e i n o !  
  
 
 
@@ -244,17 +248,17 @@ Agora pode rodar livremente **todas as Formas GeomÃ©tricas** (Quadrados, CÃ­rcul
    - Se quiser apenas corrigir o exercÃ­cio original, mantenha o nome e clique em **"Atualizar Original"**.
 3. **Eliminar ExercÃ­cio**: Clique no Ã­cone do **Caixote do Lixo** para remover o exercÃ­cio da biblioteca.
 
-### Como Utilizar a Nova Página de Treinos e Biblioteca
+### Como Utilizar a Nova Pï¿½gina de Treinos e Biblioteca
 
-1. **Página de Treinos:**
-   - A página apresenta, do lado esquerdo, uma lista (sidebar) de todos os teus treinos e, do lado direito, o detalhe do treino selecionado.
-   - Ao abrir um treino, este apresenta-se em **Modo de Leitura**. Neste modo, as informações estão preparadas para uma leitura fácil (por exemplo, num tablet no campo).
-   - Para fazer modificações, clica no botão **'Modo Edição'** (ícone do lápis) no topo. Podes então modificar o objetivo, a data, o número de jogadores, e também adicionar, editar ou remover os exercícios do treino. No final, clica em **'Guardar Alterações'.
+1. **Pï¿½gina de Treinos:**
+   - A pï¿½gina apresenta, do lado esquerdo, uma lista (sidebar) de todos os teus treinos e, do lado direito, o detalhe do treino selecionado.
+   - Ao abrir um treino, este apresenta-se em **Modo de Leitura**. Neste modo, as informaï¿½ï¿½es estï¿½o preparadas para uma leitura fï¿½cil (por exemplo, num tablet no campo).
+   - Para fazer modificaï¿½ï¿½es, clica no botï¿½o **'Modo Ediï¿½ï¿½o'** (ï¿½cone do lï¿½pis) no topo. Podes entï¿½o modificar o objetivo, a data, o nï¿½mero de jogadores, e tambï¿½m adicionar, editar ou remover os exercï¿½cios do treino. No final, clica em **'Guardar Alteraï¿½ï¿½es'.
 
-2. **Biblioteca de Exercícios:**
-   - Ao clicares em 'Biblioteca' podes agora ver os teus exercícios listados com uma pequena pré-visualização (miniatura).
-   - Em cada cartão de exercício, encontras botões rápidos para **Editar** ou **Eliminar**.
-   - **Funcionalidade Mágica:** Se estiveres a editar um exercício (por exemplo: 'Rondo 4x4') e lhe mudares o nome para 'Rondo 5x5' ao gravar, o Dossier Treinador percebe imediatamente a intenção e **duplica o exercício**, gravando-o como um novo no catálogo, mantendo o original intacto!
+2. **Biblioteca de Exercï¿½cios:**
+   - Ao clicares em 'Biblioteca' podes agora ver os teus exercï¿½cios listados com uma pequena prï¿½-visualizaï¿½ï¿½o (miniatura).
+   - Em cada cartï¿½o de exercï¿½cio, encontras botï¿½es rï¿½pidos para **Editar** ou **Eliminar**.
+   - **Funcionalidade Mï¿½gica:** Se estiveres a editar um exercï¿½cio (por exemplo: 'Rondo 4x4') e lhe mudares o nome para 'Rondo 5x5' ao gravar, o Dossier Treinador percebe imediatamente a intenï¿½ï¿½o e **duplica o exercï¿½cio**, gravando-o como um novo no catï¿½logo, mantendo o original intacto!
 
 
 ## Interface Padronizada e Consistente (Fase 1)
@@ -264,9 +268,9 @@ Agora pode rodar livremente **todas as Formas GeomÃ©tricas** (Quadrados, CÃ­rcul
 - **Campos de FormulÃ¡rio**: Os campos numÃ©ricos, seletores de data/hora e caixas de texto mantÃªm a mesma tipografia e contraste, quer esteja a agendar um treino, a desenhar uma prancheta ou a registar um atleta no plantel.
 - **Etiquetas e Badges**: Indicadores visuais de microciclo, duraÃ§Ã£o em minutos e categorias de exercÃ­cios destacam-se com cores semÃ¢nticas (ciano para microciclos, Ã¢mbar para intensidade e verde para confirmaÃ§Ãµes).
 
-### Funcionalidade: Linhas Simples e Rotação Pelo Centro
-- **Linha Sem Seta**: Adicionada a opção de desenhar uma 'Linha Simples' na barra de ferramentas inferior (e no menu de edição flutuante), permitindo criar traços diretos sem a seta direcional (ideal para delimitar espaços ou desenhar obstáculos planos).
-- **Handle de Rotação Cêntrica**: Ao selecionar qualquer tipo de linha (Simples, Deslocamento, ou Passe), agora surge um terceiro ponto de controlo (ponto azul) posicionado ligeiramente acima do meio da linha. Ao clicar e arrastar este ponto, a linha roda perfeitamente em torno do seu eixo central sem alterar o seu comprimento.
+### Funcionalidade: Linhas Simples e Rotaï¿½ï¿½o Pelo Centro
+- **Linha Sem Seta**: Adicionada a opï¿½ï¿½o de desenhar uma 'Linha Simples' na barra de ferramentas inferior (e no menu de ediï¿½ï¿½o flutuante), permitindo criar traï¿½os diretos sem a seta direcional (ideal para delimitar espaï¿½os ou desenhar obstï¿½culos planos).
+- **Handle de Rotaï¿½ï¿½o Cï¿½ntrica**: Ao selecionar qualquer tipo de linha (Simples, Deslocamento, ou Passe), agora surge um terceiro ponto de controlo (ponto azul) posicionado ligeiramente acima do meio da linha. Ao clicar e arrastar este ponto, a linha roda perfeitamente em torno do seu eixo central sem alterar o seu comprimento.
 
 
 ## Fiabilidade e Robustez de OperaÃ§Ãµes (Fase 2)
