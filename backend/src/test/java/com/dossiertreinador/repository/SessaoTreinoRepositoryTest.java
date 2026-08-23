@@ -80,6 +80,9 @@ class SessaoTreinoRepositoryTest {
         SessaoTreino sessao = SessaoTreino.builder()
                 .eventoCalendario(evento)
                 .objetivo("Finalização")
+                .mesociclo(1)
+                .microciclo(1)
+                .unidadeTreino(1)
                 .equipa(equipa)
                 .build();
 

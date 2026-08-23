@@ -54,7 +54,10 @@ public class SessaoTreinoController {
                         dto.getObjetivo(),
                         dto.getMaterial(),
                         dto.getNumeroJogadores(),
-                        dto.getIntensidadeGeral()
+                        dto.getIntensidadeGeral(),
+                        dto.getMesociclo(),
+                        dto.getMicrociclo(),
+                        dto.getUnidadeTreino()
                 );
                 return new ResponseEntity<>(sessaoTreinoMapper.toResponseDTO(atualizada), HttpStatus.CREATED);
             }
@@ -111,7 +114,10 @@ public class SessaoTreinoController {
                 dto.getObjetivo(),
                 dto.getMaterial(),
                 dto.getNumeroJogadores(),
-                dto.getIntensidadeGeral()
+                dto.getIntensidadeGeral(),
+                dto.getMesociclo(),
+                dto.getMicrociclo(),
+                dto.getUnidadeTreino()
         );
         
         return ResponseEntity.ok(sessaoTreinoMapper.toResponseDTO(atualizada));
@@ -135,6 +141,7 @@ public class SessaoTreinoController {
         SessaoTreino atualizada = sessaoTreinoService.atualizarExercicioNaSessao(
                 sessaoId, 
                 assocId,
+                dto.getExercicioId(),
                 dto.getOrdem(), 
                 dto.getDuracaoMinutos(), 
                 dto.getObservacoesDoTreinador()

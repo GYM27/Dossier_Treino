@@ -33,7 +33,6 @@ public class DossierTreinadorApplication {
                 jdbcTemplate.execute("ALTER TABLE registo_assiduidade DROP CONSTRAINT IF EXISTS registo_assiduidade_tipo_assiduidade_check");
                 jdbcTemplate.execute("ALTER TABLE sessao_treino DROP COLUMN IF EXISTS data");
                 jdbcTemplate.execute("ALTER TABLE sessao_treino DROP COLUMN IF EXISTS hora");
-                jdbcTemplate.execute("ALTER TABLE sessao_treino DROP COLUMN IF EXISTS microciclo");
                 jdbcTemplate.execute("ALTER TABLE sessao_treino DROP COLUMN IF EXISTS morfociclo");
                 jdbcTemplate.execute("ALTER TABLE sessao_treino DROP COLUMN IF EXISTS fase");
                 System.out.println("✅ Constraint de TipoAssiduidade e colunas antigas limpas com sucesso!");

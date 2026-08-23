@@ -375,3 +375,26 @@ Eliminou-se a redundância de formulários de criação de treinos, separando a 
 - **Horizontal CSS Grid (Ficha Técnica)**: Os metadados do exercício (Nome, Categoria, Espaço, Nº Atletas, Dificuldade, Objetivos) foram reorganizados num painel horizontal colapsável em grelha responsiva de 12 colunas, eliminando colunas verticais estáticas que espremiam o quadro tático.
 - **Auto-Scaling Fluid Canvas (`TacticalBoard`)**: A prancheta preenche `100%` da área flexível do contentor pai (`w-full h-full min-h-0`), e o `TacticalSidebar` inicia minimizado (`w-12`), garantindo a máxima área útil visual para o treinador.
 
+### 5. Segregação Estrita de Domínios (Eliminação de Duplicação)
+- **Desacoplamento de Treinos e Prancheta**: Eliminou-se o modal duplicado de prancheta de dentro de `modules/treinos`. O módulo de treinos passa a atuar unicamente como orquestrador da sessão, importando exercícios existentes do catálogo através do `CatalogoExerciciosModal`. A criação e modelação tática é centralizada com exclusividade em `PranchetaStudio`.
+
+### 6. Pipeline de Eventos e Sincronização em Tempo Real (Prancheta)
+- **Fluxo Unidirecional com Notificação Contínua**: O `TacticalBoard` expõe a prop `onChange`, invocada a cada alteração no histórico (`saveStateToHistory` e `restoreSnapshot`). O contentor pai (`PranchetaStudio`) mantém a cópia imutável e atualizada de `dadosTaticos`, garantindo persistência imediata na base de dados ao acionar o botão de gravação.
+- **Predefinição de Escala de Atletas**: Adoção do tamanho `sm` (11px de raio) como padrão no motor geométrico, otimizando o rácio espacial do relvado tático.
+
+### 7. Roteamento Contextual de Edição (Treinos -> Prancheta)
+- **Interoperabilidade sem Duplicação**: O clique no cartão do exercício em `/treinos` navega diretamente para `/prancheta?id={exercicioId}`. O `PranchetaStudio` resolve o parâmetro da rota de forma assíncrona com `<Suspense>`, hidratando a prancheta oficial e fornecendo os fluxos de gravação direta (atualização no catálogo) ou clonagem (duplicação).
+
+### 11. Gravação Contextual de Exercícios e Isolamento de Instâncias (Treinos -> Prancheta)
+- **Desacoplamento de Instância vs Matriz**:
+  - Quando um exercício é aberto a partir de uma sessão de treino, a URL transporta o contexto: `/prancheta?id={exercicioId}&treinoId={treinoId}&assocId={assocId}`.
+  - Ao gravar alterações, o `SaveExercicioOptionsModal` permite ao treinador optar entre mutar a matriz global do catálogo ou instanciar uma nova variante.
+  - Ao criar uma nova variante, a camada de persistência executa atomicamente o `POST /api/exercicios` e atualiza a chave estrangeira `exercicio_id` na entidade relacional `SessaoTreinoExercicio` através de `PUT /api/treinos/{sessaoId}/exercicios/{assocId}`, garantindo o isolamento das restantes instâncias do treino.
+
+
+
+
+
+
+
+

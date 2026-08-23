@@ -67,7 +67,8 @@ export function TacticalBottomBar({ state, setState, uiTick, setUiTick, onSaveHi
       number: num,
       x: CANVAS_WIDTH / 2,
       y: CANVAS_HEIGHT / 2,
-      color: team === "home" ? "#facc15" : "#3b82f6"
+      color: team === "home" ? "#facc15" : "#3b82f6",
+      size: "sm",
     });
     
     updateCurrentFrameElements(elements);

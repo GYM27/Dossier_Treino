@@ -18,6 +18,7 @@ export const getInitialElements = (): TacticalElement[] => {
       x: 30,
       y: 40 + (i - 1) * 54.5,
       color: HOME_TEAM_COLOR,
+      size: "sm",
     });
   }
 
@@ -30,6 +31,7 @@ export const getInitialElements = (): TacticalElement[] => {
       x: CANVAS_WIDTH - 30,
       y: 40 + (i - 1) * 54.5,
       color: AWAY_TEAM_COLOR,
+      size: "sm",
     });
   }
 

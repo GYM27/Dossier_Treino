@@ -58,7 +58,9 @@ class SessaoTreinoMapperTest {
         assertThat(dto.getLocal()).isEqualTo("Campo Sintético Arregaça");
         assertThat(dto.getData()).isEqualTo(inicio.toLocalDate());
         assertThat(dto.getHora()).isEqualTo(inicio.toLocalTime());
-        assertThat(dto.getMicrociclo()).isEqualTo(12);
+        assertThat(dto.getUnidadeTreino()).isEqualTo(12);
+        assertThat(dto.getMicrociclo()).isEqualTo(1);
+        assertThat(dto.getMesociclo()).isEqualTo(1);
         assertThat(dto.getObjetivo()).isEqualTo("Transição Ofensiva Rápida");
         assertThat(dto.getNumeroJogadores()).isEqualTo(18);
         assertThat(dto.getIntensidadeGeral()).isEqualTo(4);

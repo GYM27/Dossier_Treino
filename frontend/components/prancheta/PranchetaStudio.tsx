@@ -1,9 +1,13 @@
 "use client";
 
 import React, { useState, useEffect, useCallback } from "react";
+import Link from "next/link";
 import dynamic from "next/dynamic";
+import { useSearchParams } from "next/navigation";
 import { Exercicio } from "@/models/exercicio";
 import { exercicioService } from "@/services/exercicioService";
+import { treinoService } from "@/services/treinoService";
+import { SaveExercicioOptionsModal } from "@/components/prancheta/SaveExercicioOptionsModal";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Textarea } from "@/components/ui/textarea";
@@ -28,41 +32,80 @@ import {
   X,
   FolderKanban,
   Target,
+  ArrowLeft,
 } from "lucide-react";
 
 // Importação dinâmica da Prancheta Tática para evitar erros de SSR com o Canvas HTML5
-const TacticalBoard = dynamic(() => import("@/components/prancheta/TacticalBoard"), {
-  ssr: false,
-  loading: () => (
-    <div className="w-full h-full flex items-center justify-center bg-[#070b14] text-slate-500 text-xs">
-      <div className="flex flex-col items-center gap-2">
-        <div className="w-6 h-6 border-2 border-cyan-500 border-t-transparent rounded-full animate-spin" />
-        <span>A carregar Prancheta Tática...</span>
+const TacticalBoard = dynamic(
+  () => import("@/components/prancheta/TacticalBoard"),
+  {
+    ssr: false,
+    loading: () => (
+      <div className="w-full h-full flex items-center justify-center bg-[#070b14] text-slate-500 text-xs">
+        <div className="flex flex-col items-center gap-2">
+          <div className="w-6 h-6 border-2 border-cyan-500 border-t-transparent rounded-full animate-spin" />
+          <span>A carregar Prancheta Tática...</span>
+        </div>
       </div>
-    </div>
-  ),
-});
+    ),
+  },
+);
 
 const CATEGORIAS: Array<{ value: string; label: string; color: string }> = [
   { value: "TODOS", label: "Todos", color: "bg-slate-700 text-slate-200" },
-  { value: "AQUECIMENTO", label: "Aquecimento", color: "bg-amber-500/10 text-amber-400 border-amber-500/20" },
-  { value: "TECNICO", label: "Técnico", color: "bg-blue-500/10 text-blue-400 border-blue-500/20" },
-  { value: "TATICO", label: "Tático", color: "bg-cyan-500/10 text-cyan-400 border-cyan-500/20" },
-  { value: "FISICO", label: "Físico", color: "bg-rose-500/10 text-rose-400 border-rose-500/20" },
-  { value: "GUARDA_REDES", label: "Guarda-Redes", color: "bg-emerald-500/10 text-emerald-400 border-emerald-500/20" },
-  { value: "LUDICO", label: "Lúdico", color: "bg-purple-500/10 text-purple-400 border-purple-500/20" },
+  {
+    value: "AQUECIMENTO",
+    label: "Aquecimento",
+    color: "bg-amber-500/10 text-amber-400 border-amber-500/20",
+  },
+  {
+    value: "TECNICO",
+    label: "Técnico",
+    color: "bg-blue-500/10 text-blue-400 border-blue-500/20",
+  },
+  {
+    value: "TATICO",
+    label: "Tático",
+    color: "bg-cyan-500/10 text-cyan-400 border-cyan-500/20",
+  },
+  {
+    value: "FISICO",
+    label: "Físico",
+    color: "bg-rose-500/10 text-rose-400 border-rose-500/20",
+  },
+  {
+    value: "GUARDA_REDES",
+    label: "Guarda-Redes",
+    color: "bg-emerald-500/10 text-emerald-400 border-emerald-500/20",
+  },
+  {
+    value: "LUDICO",
+    label: "Lúdico",
+    color: "bg-purple-500/10 text-purple-400 border-purple-500/20",
+  },
 ];
 
-export function PranchetaStudio() {
+interface PranchetaStudioProps {
+  initialExercicioId?: string;
+}
+
+export function PranchetaStudio({ initialExercicioId }: PranchetaStudioProps = {}) {
+  const searchParams = useSearchParams();
+  const targetExercicioId = initialExercicioId || searchParams?.get("id") || null;
+  const treinoId = searchParams?.get("treinoId") || null;
+  const assocId = searchParams?.get("assocId") || null;
+
   const [exercicios, setExercicios] = useState<Exercicio[]>([]);
-  const [selectedExercicio, setSelectedExercicio] = useState<Exercicio | null>(null);
+  const [selectedExercicio, setSelectedExercicio] = useState<Exercicio | null>(
+    null,
+  );
   const [isLoading, setIsLoading] = useState(true);
   const [searchTerm, setSearchTerm] = useState("");
   const [categoriaFilter, setCategoriaFilter] = useState("TODOS");
 
   // Estados de Interface (Drawer e Ficha Técnica)
   const [isDrawerOpen, setIsDrawerOpen] = useState(false);
-  const [showMetadataPanel, setShowMetadataPanel] = useState(false);
+  const [showMetadataPanel, setShowMetadataPanel] = useState(true);
 
   // Estados do Formulário de Edição
   const [nome, setNome] = useState("Novo Exercício Tático");
@@ -70,8 +113,10 @@ export function PranchetaStudio() {
   const [categoria, setCategoria] = useState<Exercicio["categoria"]>("TATICO");
   const [nivelDificuldade, setNivelDificuldade] = useState(3);
   const [espaco, setEspaco] = useState("Meio-Campo (50x40m)");
+  const [tempo, setTempo] = useState("15 min");
   const [jogadoresEnvolvidos, setJogadoresEnvolvidos] = useState(14);
   const [objetivosEspecificos, setObjetivosEspecificos] = useState("");
+  const [carga, setCarga] = useState("");
   const [tacticData, setTacticData] = useState<any>(null);
 
   // Estados de Operação / Feedback
@@ -79,41 +124,67 @@ export function PranchetaStudio() {
   const [saveSuccess, setSaveSuccess] = useState(false);
   const [errorMsg, setErrorMsg] = useState<string | null>(null);
 
-  // Carregar lista de exercícios do servidor
+  // Estados do Modal de Opções de Gravação (Atualizar Original vs Nova Variante)
+  const [showSaveOptionsModal, setShowSaveOptionsModal] = useState(false);
+  const [pendingDirectTacticData, setPendingDirectTacticData] = useState<any>(null);
+  const [reassociatedInTreino, setReassociatedInTreino] = useState(false);
+
+  // Preencher os campos do estúdio com os dados do exercício selecionado
+  const carregarDetalhesExercicio = useCallback((ex: Exercicio) => {
+    const rawObjetivos = ex.objetivosEspecificos || ex.dadosTaticos?.objetivoEspecifico || "";
+    const rawCarga = ex.carga || ex.dadosTaticos?.carga || "";
+    const rawDescricao = ex.descricao || ex.dadosTaticos?.descricaoMetodologica || "";
+    const rawTempo = ex.dadosTaticos?.tempo || "";
+
+    setSelectedExercicio(ex);
+    setNome(ex.nome || "Sem Nome");
+    setDescricao(rawDescricao);
+    setCategoria(ex.categoria || "TATICO");
+    setNivelDificuldade(ex.nivelDificuldade || 3);
+    setEspaco(ex.espaco || "Meio-Campo");
+    setTempo(rawTempo);
+    setJogadoresEnvolvidos(ex.jogadoresEnvolvidos || 14);
+    setObjetivosEspecificos(rawObjetivos);
+    setCarga(rawCarga);
+
+    // Assegurar sincronização nos dados táticos internos
+    const mergedTactic = ex.dadosTaticos ? { ...ex.dadosTaticos } : {};
+    mergedTactic.objetivoEspecifico = rawObjetivos;
+    mergedTactic.carga = rawCarga;
+    mergedTactic.descricaoMetodologica = rawDescricao;
+    mergedTactic.tempo = rawTempo;
+    setTacticData(mergedTactic);
+    setErrorMsg(null);
+  }, []);
+
+  // Carregar lista de exercícios do servidor e, se houver id alvo, carregar o detalhe
   const carregarExercicios = useCallback(async () => {
     setIsLoading(true);
     try {
       const data = await exercicioService.getExercicios();
       setExercicios(data || []);
 
-      // Se não houver nenhum selecionado e a lista tiver elementos, seleciona o primeiro
-      if (data && data.length > 0 && !selectedExercicio) {
-        carregarDetalhesExercicio(data[0]);
+      if (targetExercicioId && data) {
+        const found = data.find((e) => e.id === targetExercicioId);
+        if (found) {
+          carregarDetalhesExercicio(found);
+        } else {
+          try {
+            const fetched = await exercicioService.getExercicioById(targetExercicioId);
+            if (fetched) carregarDetalhesExercicio(fetched);
+          } catch (_) {}
+        }
       }
     } catch (err) {
       console.error("Erro ao carregar catálogo de exercícios:", err);
     } finally {
       setIsLoading(false);
     }
-  }, [selectedExercicio]);
+  }, [targetExercicioId, carregarDetalhesExercicio]);
 
   useEffect(() => {
     carregarExercicios();
-  }, []);
-
-  // Preencher os campos do estúdio com os dados do exercício selecionado
-  const carregarDetalhesExercicio = (ex: Exercicio) => {
-    setSelectedExercicio(ex);
-    setNome(ex.nome || "Sem Nome");
-    setDescricao(ex.descricao || "");
-    setCategoria(ex.categoria || "TATICO");
-    setNivelDificuldade(ex.nivelDificuldade || 3);
-    setEspaco(ex.espaco || "Meio-Campo");
-    setJogadoresEnvolvidos(ex.jogadoresEnvolvidos || 14);
-    setObjetivosEspecificos(ex.objetivosEspecificos || "");
-    setTacticData(ex.dadosTaticos || null);
-    setErrorMsg(null);
-  };
+  }, [carregarExercicios]);
 
   // Iniciar criação de um novo exercício a partir do zero
   const handleNovoExercicio = () => {
@@ -123,8 +194,10 @@ export function PranchetaStudio() {
     setCategoria("TATICO");
     setNivelDificuldade(3);
     setEspaco("Meio-Campo (50x40m)");
+    setTempo("15 min");
     setJogadoresEnvolvidos(14);
     setObjetivosEspecificos("");
+    setCarga("");
     setTacticData(null);
     setErrorMsg(null);
     setIsDrawerOpen(false);
@@ -133,45 +206,172 @@ export function PranchetaStudio() {
   // Callback chamado quando a prancheta desenha ou altera algo
   const handleSaveTacticBoard = (data: any) => {
     setTacticData(data);
+    if (data?.objetivoEspecifico !== undefined) {
+      setObjetivosEspecificos(data.objetivoEspecifico);
+    }
+    if (data?.carga !== undefined) {
+      setCarga(data.carga);
+    }
+    if (data?.descricaoMetodologica !== undefined) {
+      setDescricao(data.descricaoMetodologica);
+    }
+    if (data?.tempo !== undefined) {
+      setTempo(data.tempo);
+    }
   };
 
-  // Gravar ou Atualizar o Exercício na Base de Dados
-  const handleGuardarExercicio = async () => {
-    if (!nome.trim()) {
+  // Iniciar fluxo de gravação (abre modal se o exercício já existir)
+  const handleGuardarExercicio = (directTacticData?: any) => {
+    let finalNome = nome.trim();
+    if (!finalNome) {
       setErrorMsg("O nome do exercício é obrigatório.");
       return;
     }
 
+    // Filtrar para evitar que eventos sintéticos do React passem como dados táticos
+    const isValidTactic =
+      directTacticData &&
+      typeof directTacticData === "object" &&
+      !("nativeEvent" in directTacticData) &&
+      !("_reactName" in directTacticData);
+    const currentTactic = isValidTactic ? directTacticData : tacticData;
+    setPendingDirectTacticData(currentTactic);
+
+    // Se o exercício já existe na base de dados, abrimos o modal de opções
+    if (selectedExercicio?.id) {
+      setShowSaveOptionsModal(true);
+    } else {
+      // Se for um novo exercício, grava diretamente como novo
+      handleExecutarGravacao({
+        isNew: true,
+        nomeFinal: finalNome,
+        directTacticData: currentTactic,
+      });
+    }
+  };
+
+  // Gravar ou Atualizar o Exercício na Base de Dados
+  const handleExecutarGravacao = async ({
+    isNew,
+    nomeFinal,
+    directTacticData,
+  }: {
+    isNew: boolean;
+    nomeFinal: string;
+    directTacticData?: any;
+  }) => {
     setIsSaving(true);
     setErrorMsg(null);
     setSaveSuccess(false);
+    setReassociatedInTreino(false);
 
     try {
-      const payload: Partial<Exercicio> = {
-        nome: nome.trim(),
-        descricao: descricao.trim() || nome.trim(),
-        categoria: categoria,
-        nivelDificuldade: nivelDificuldade,
-        espaco: espaco,
-        jogadoresEnvolvidos: jogadoresEnvolvidos,
-        objetivosEspecificos: objetivosEspecificos,
-        dadosTaticos: tacticData,
-      };
+      const isValidDirect =
+        directTacticData &&
+        typeof directTacticData === "object" &&
+        !("nativeEvent" in directTacticData) &&
+        !("_reactName" in directTacticData);
+      const isValidPending =
+        pendingDirectTacticData &&
+        typeof pendingDirectTacticData === "object" &&
+        !("nativeEvent" in pendingDirectTacticData) &&
+        !("_reactName" in pendingDirectTacticData);
+      const currentTactic = isValidDirect
+        ? directTacticData
+        : isValidPending
+        ? pendingDirectTacticData
+        : tacticData;
 
-      if (selectedExercicio?.id) {
-        // Atualizar exercício existente (PUT)
-        const atualizado = await exercicioService.atualizarExercicio(selectedExercicio.id, payload);
-        setSelectedExercicio(atualizado);
-        setExercicios((prev) => prev.map((e) => (e.id === atualizado.id ? atualizado : e)));
-      } else {
-        // Criar novo exercício (POST)
-        const criado = await exercicioService.criarExercicio(payload);
-        setSelectedExercicio(criado);
-        setExercicios((prev) => [criado, ...prev]);
+      const finalObjetivos = (currentTactic?.objetivoEspecifico || objetivosEspecificos || "").trim();
+      const finalCarga = (currentTactic?.carga || carga || "").trim();
+      const finalDescricao = (currentTactic?.descricaoMetodologica || descricao || "").trim();
+      const finalTempo = (currentTactic?.tempo || tempo || "").trim();
+
+      let cleanTacticData: any = {};
+      if (currentTactic && typeof currentTactic === "object") {
+        try {
+          cleanTacticData = JSON.parse(JSON.stringify(currentTactic));
+        } catch {
+          cleanTacticData = {};
+        }
+      }
+      cleanTacticData.objetivoEspecifico = finalObjetivos;
+      cleanTacticData.carga = finalCarga;
+      cleanTacticData.descricaoMetodologica = finalDescricao;
+      cleanTacticData.tempo = finalTempo;
+
+      let finalNameNormalized = nomeFinal.trim();
+      if (isNew && exercicios.some((e) => e.nome.toLowerCase() === finalNameNormalized.toLowerCase())) {
+        let counter = 2;
+        while (exercicios.some((e) => e.nome.toLowerCase() === `${finalNameNormalized} (${counter})`.toLowerCase())) {
+          counter++;
+        }
+        finalNameNormalized = `${finalNameNormalized} (${counter})`;
       }
 
+      const payload: Partial<Exercicio> = {
+        nome: finalNameNormalized,
+        descricao: finalDescricao,
+        categoria: categoria || "TATICO",
+        nivelDificuldade: nivelDificuldade || 3,
+        espaco: espaco || "Meio-Campo",
+        jogadoresEnvolvidos: jogadoresEnvolvidos || 14,
+        objetivosEspecificos: finalObjetivos,
+        carga: finalCarga,
+        dadosTaticos: cleanTacticData,
+      };
+
+      // Extrair minutos válidos do campo tempo (ex: "20 min" -> 20)
+      const parsedMinutes = parseInt(finalTempo.replace(/\D/g, ""), 10);
+      const hasValidMinutes = !isNaN(parsedMinutes) && parsedMinutes > 0;
+
+      if (!isNew && selectedExercicio?.id) {
+        // Atualizar exercício original existente (PUT)
+        const atualizado = await exercicioService.atualizarExercicio(
+          selectedExercicio.id,
+          payload,
+        );
+        setSelectedExercicio(atualizado);
+        setNome(atualizado.nome);
+        setExercicios((prev) =>
+          prev.map((e) => (e.id === atualizado.id ? atualizado : e)),
+        );
+
+        // Se veio de um plano de treino, atualiza também a duração na associação do treino!
+        if (treinoId && assocId && hasValidMinutes) {
+          try {
+            await treinoService.atualizarExercicio(treinoId, assocId, {
+              duracaoMinutos: parsedMinutes,
+            });
+          } catch (errTreino) {
+            console.error("Erro ao sincronizar duração no treino:", errTreino);
+          }
+        }
+      } else {
+        // Criar novo exercício independente / variante (POST)
+        const criado = await exercicioService.criarExercicio(payload);
+        setSelectedExercicio(criado);
+        setNome(criado.nome);
+        setExercicios((prev) => [criado, ...prev]);
+
+        // Se veio de um treino, re-associa apenas esta posição do treino ao novo exercício e sincroniza duração
+        if (treinoId && assocId) {
+          try {
+            const updatePayload: any = { exercicioId: criado.id };
+            if (hasValidMinutes) {
+              updatePayload.duracaoMinutos = parsedMinutes;
+            }
+            await treinoService.atualizarExercicio(treinoId, assocId, updatePayload);
+            setReassociatedInTreino(true);
+          } catch (errTreino) {
+            console.error("Erro ao re-associar exercício ao treino:", errTreino);
+          }
+        }
+      }
+
+      setShowSaveOptionsModal(false);
       setSaveSuccess(true);
-      setTimeout(() => setSaveSuccess(false), 2500);
+      setTimeout(() => setSaveSuccess(false), 3000);
     } catch (err: any) {
       console.error("Erro ao gravar exercício:", err);
       setErrorMsg(err.message || "Erro ao gravar o exercício.");
@@ -213,7 +413,12 @@ export function PranchetaStudio() {
   // Eliminar exercício
   const handleEliminarExercicio = async () => {
     if (!selectedExercicio?.id) return;
-    if (!confirm(`Tem a certeza que deseja eliminar o exercício "${selectedExercicio.nome}"?`)) return;
+    if (
+      !confirm(
+        `Tem a certeza que deseja eliminar o exercício "${selectedExercicio.nome}"?`,
+      )
+    )
+      return;
 
     try {
       await exercicioService.eliminarExercicio(selectedExercicio.id);
@@ -226,7 +431,9 @@ export function PranchetaStudio() {
       }
     } catch (err) {
       console.error("Erro ao eliminar exercício:", err);
-      alert("Erro ao eliminar o exercício. Pode estar associado a um treino existente.");
+      alert(
+        "Erro ao eliminar o exercício. Pode estar associado a um treino existente.",
+      );
     }
   };
 
@@ -235,14 +442,16 @@ export function PranchetaStudio() {
     const matchesSearch =
       (ex.nome || "").toLowerCase().includes(searchTerm.toLowerCase()) ||
       (ex.descricao || "").toLowerCase().includes(searchTerm.toLowerCase()) ||
-      (ex.objetivosEspecificos || "").toLowerCase().includes(searchTerm.toLowerCase());
-    const matchesCat = categoriaFilter === "TODOS" || ex.categoria === categoriaFilter;
+      (ex.objetivosEspecificos || "")
+        .toLowerCase()
+        .includes(searchTerm.toLowerCase());
+    const matchesCat =
+      categoriaFilter === "TODOS" || ex.categoria === categoriaFilter;
     return matchesSearch && matchesCat;
   });
 
   return (
     <div className="relative flex flex-col h-full w-full overflow-hidden bg-[#070b14] border border-slate-800/80 rounded-2xl shadow-2xl select-none">
-      
       {/* 📁 DRAWER RETRÁTIL (HAMBÚRGUER): Catálogo de Exercícios */}
       {isDrawerOpen && (
         <div
@@ -254,7 +463,9 @@ export function PranchetaStudio() {
       <aside
         className={cn(
           "absolute top-0 left-0 bottom-0 z-50 w-80 md:w-96 flex flex-col bg-[#111827] border-r border-slate-800 shadow-2xl transition-transform duration-300 ease-in-out",
-          isDrawerOpen ? "translate-x-0" : "-translate-x-full pointer-events-none"
+          isDrawerOpen
+            ? "translate-x-0"
+            : "-translate-x-full pointer-events-none",
         )}
       >
         {/* Topo do Catálogo com Botão Fechar e Ação Novo */}
@@ -269,7 +480,10 @@ export function PranchetaStudio() {
                   Biblioteca
                 </h2>
                 <p className="text-[11px] text-slate-400 font-medium">
-                  {exercicios.length} {exercicios.length === 1 ? "exercício criado" : "exercícios criados"}
+                  {exercicios.length}{" "}
+                  {exercicios.length === 1
+                    ? "exercício criado"
+                    : "exercícios criados"}
                 </p>
               </div>
             </div>
@@ -318,7 +532,7 @@ export function PranchetaStudio() {
                     "px-2 py-1 rounded-md text-[10px] font-bold tracking-wider whitespace-nowrap transition-all",
                     isSelected
                       ? "bg-cyan-500 text-slate-950 shadow-sm"
-                      : "bg-[#1e293b]/80 text-slate-400 hover:bg-[#334155] hover:text-white"
+                      : "bg-[#1e293b]/80 text-slate-400 hover:bg-[#334155] hover:text-white",
                   )}
                 >
                   {cat.label}
@@ -341,16 +555,21 @@ export function PranchetaStudio() {
                 <Layers className="w-5 h-5" />
               </div>
               <div>
-                <p className="font-semibold text-slate-300 mb-1">Nenhum exercício encontrado</p>
+                <p className="font-semibold text-slate-300 mb-1">
+                  Nenhum exercício encontrado
+                </p>
                 <p className="text-[11px] text-slate-500">
-                  Clique em "+ Novo" para desenhar o primeiro exercício na prancheta.
+                  Clique em "+ Novo" para desenhar o primeiro exercício na
+                  prancheta.
                 </p>
               </div>
             </div>
           ) : (
             exerciciosFiltrados.map((ex) => {
               const isSelected = selectedExercicio?.id === ex.id;
-              const catBadge = CATEGORIAS.find((c) => c.value === ex.categoria) || CATEGORIAS[3];
+              const catBadge =
+                CATEGORIAS.find((c) => c.value === ex.categoria) ||
+                CATEGORIAS[3];
 
               return (
                 <div
@@ -363,14 +582,14 @@ export function PranchetaStudio() {
                     "group relative p-3 rounded-xl border transition-all cursor-pointer flex flex-col gap-2",
                     isSelected
                       ? "bg-slate-800/90 border-cyan-500/80 shadow-md shadow-cyan-500/5 ring-1 ring-cyan-500/50"
-                      : "bg-[#162032]/60 border-slate-800/80 hover:bg-[#1e293b]/60 hover:border-slate-700"
+                      : "bg-[#162032]/60 border-slate-800/80 hover:bg-[#1e293b]/60 hover:border-slate-700",
                   )}
                 >
                   <div className="flex items-start justify-between gap-2">
                     <span
                       className={cn(
                         "px-1.5 py-0.5 rounded font-mono text-[9px] font-bold border",
-                        catBadge.color
+                        catBadge.color,
                       )}
                     >
                       {catBadge.label}
@@ -385,7 +604,9 @@ export function PranchetaStudio() {
                   <h3
                     className={cn(
                       "text-xs font-semibold truncate transition-colors",
-                      isSelected ? "text-cyan-300" : "text-white group-hover:text-cyan-200"
+                      isSelected
+                        ? "text-cyan-300"
+                        : "text-white group-hover:text-cyan-200",
                     )}
                   >
                     {ex.nome}
@@ -399,7 +620,11 @@ export function PranchetaStudio() {
 
                   <div className="flex items-center justify-between text-[10px] text-slate-500 pt-1.5 border-t border-slate-800/60">
                     <span className="truncate">{ex.espaco || "Campo"}</span>
-                    <span>{ex.jogadoresEnvolvidos ? `${ex.jogadoresEnvolvidos} atletas` : ""}</span>
+                    <span>
+                      {ex.jogadoresEnvolvidos
+                        ? `${ex.jogadoresEnvolvidos} atletas`
+                        : ""}
+                    </span>
                   </div>
                 </div>
               );
@@ -432,6 +657,17 @@ export function PranchetaStudio() {
               <span>Novo</span>
             </button>
 
+            {treinoId && (
+              <Link
+                href="/treinos"
+                className="flex items-center gap-1.5 px-3 py-1.5 rounded-lg bg-cyan-950/60 hover:bg-cyan-900/80 border border-cyan-500/40 text-cyan-300 text-xs font-bold transition-all active:scale-95 shadow-sm"
+                title="Voltar ao Plano de Treino"
+              >
+                <ArrowLeft className="w-3.5 h-3.5" />
+                <span className="hidden sm:inline">Voltar ao Treino</span>
+              </Link>
+            )}
+
             <div className="h-5 w-px bg-slate-800 hidden sm:block" />
 
             <div className="flex items-center gap-2">
@@ -439,11 +675,17 @@ export function PranchetaStudio() {
                 {nome || "Novo Exercício"}
               </h1>
               {selectedExercicio ? (
-                <Badge variant="cyan" className="text-[10px] py-0.5 hidden sm:inline-flex">
+                <Badge
+                  variant="cyan"
+                  className="text-[10px] py-0.5 hidden sm:inline-flex"
+                >
                   Guardado
                 </Badge>
               ) : (
-                <Badge variant="amber" className="text-[10px] py-0.5 hidden sm:inline-flex">
+                <Badge
+                  variant="amber"
+                  className="text-[10px] py-0.5 hidden sm:inline-flex"
+                >
                   Não Gravado
                 </Badge>
               )}
@@ -460,7 +702,9 @@ export function PranchetaStudio() {
               className="h-8 text-xs font-semibold"
             >
               <SlidersHorizontal className="w-3.5 h-3.5 mr-1.5" />
-              <span>{showMetadataPanel ? "Ocultar Ficha" : "Ficha Técnica"}</span>
+              <span>
+                {showMetadataPanel ? "Ocultar Ficha" : "Ficha Técnica"}
+              </span>
             </Button>
 
             {selectedExercicio && (
@@ -494,7 +738,7 @@ export function PranchetaStudio() {
             <Button
               variant="cyan"
               size="sm"
-              onClick={handleGuardarExercicio}
+              onClick={() => handleGuardarExercicio()}
               disabled={isSaving}
               title="Guardar alterações no catálogo"
               className="h-8 text-xs font-bold"
@@ -511,9 +755,9 @@ export function PranchetaStudio() {
           </div>
         </header>
 
-        {/* 📋 FICHA TÉCNICA HORIZONTAL (EXPANSÍVEL / COLAPSÁVEL) */}
+        {/* 📋 FICHA TÉCNICA HORIZONTAL (EXPANSÍVEL / COLAPSÁVEL - APENAS DADOS TÉCNICOS) */}
         {showMetadataPanel && (
-          <div className="bg-[#0f172a]/95 backdrop-blur-md border-b border-slate-800 p-3 px-4 shrink-0 animate-in slide-in-from-top-2 duration-200">
+          <div className="bg-[#0f172a]/95 backdrop-blur-md border-b border-slate-800 p-2.5 px-4 shrink-0 animate-in slide-in-from-top-2 duration-200">
             <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-12 gap-3 items-end">
               {/* Nome do Exercício */}
               <div className="md:col-span-3 space-y-1">
@@ -560,8 +804,21 @@ export function PranchetaStudio() {
                 />
               </div>
 
-              {/* Nº Jogadores */}
+              {/* Tempo */}
               <div className="md:col-span-1 space-y-1">
+                <label className="text-[10px] font-bold text-cyan-400 uppercase tracking-wider block">
+                  Tempo
+                </label>
+                <Input
+                  value={tempo}
+                  onChange={(e) => setTempo(e.target.value)}
+                  placeholder="Ex: 15 min"
+                  className="text-xs h-8 bg-[#162032] text-cyan-200 border-cyan-500/30 font-semibold"
+                />
+              </div>
+
+              {/* Nº Jogadores */}
+              <div className="md:col-span-2 space-y-1">
                 <label className="text-[10px] font-bold text-slate-400 uppercase tracking-wider block">
                   Nº Atletas
                 </label>
@@ -570,7 +827,9 @@ export function PranchetaStudio() {
                   min={1}
                   max={40}
                   value={jogadoresEnvolvidos}
-                  onChange={(e) => setJogadoresEnvolvidos(parseInt(e.target.value) || 14)}
+                  onChange={(e) =>
+                    setJogadoresEnvolvidos(parseInt(e.target.value) || 14)
+                  }
                   className="text-xs font-mono h-8 bg-[#162032]"
                 />
               </div>
@@ -590,26 +849,13 @@ export function PranchetaStudio() {
                         "flex-1 h-8 rounded-lg text-xs font-bold transition-all",
                         nivelDificuldade >= lvl
                           ? "bg-cyan-500 text-slate-950 shadow-sm"
-                          : "bg-slate-800 text-slate-500 hover:bg-slate-700"
+                          : "bg-slate-800 text-slate-500 hover:bg-slate-700",
                       )}
                     >
                       {lvl}
                     </button>
                   ))}
                 </div>
-              </div>
-
-              {/* Objetivos / Comportamentos Específicos */}
-              <div className="md:col-span-2 space-y-1">
-                <label className="text-[10px] font-bold text-slate-400 uppercase tracking-wider block">
-                  Objetivos / Comportamentos
-                </label>
-                <Input
-                  value={objetivosEspecificos}
-                  onChange={(e) => setObjetivosEspecificos(e.target.value)}
-                  placeholder="Ex: Circulação rápida..."
-                  className="text-xs h-8 bg-[#162032]"
-                />
               </div>
             </div>
           </div>
@@ -623,18 +869,55 @@ export function PranchetaStudio() {
           </div>
         )}
 
+        {/* Banner Informativo de Re-Associação com Sucesso no Treino */}
+        {reassociatedInTreino && treinoId && (
+          <div className="mx-4 mt-2 p-2.5 bg-cyan-500/10 border border-cyan-500/30 rounded-xl text-cyan-200 text-xs flex items-center justify-between gap-2 shrink-0 animate-in fade-in duration-200">
+            <div className="flex items-center gap-2">
+              <CheckCircle2 className="w-4 h-4 text-cyan-400 shrink-0" />
+              <span>Nova variante criada e associada a este exercício do treino com sucesso! Os restantes exercícios do treino continuam inalterados.</span>
+            </div>
+            <Link
+              href="/treinos"
+              className="px-2.5 py-1 bg-cyan-600 hover:bg-cyan-500 text-slate-950 font-bold rounded-lg text-xs transition-colors shrink-0"
+            >
+              Voltar ao Treino
+            </Link>
+          </div>
+        )}
+
         {/* 🕹️ Quadro Tático Interativo (Ocupa 100% da Área Útil) */}
         <div className="flex-1 w-full h-full min-h-0 bg-[#070b14] p-2 md:p-3 overflow-hidden flex flex-col items-center justify-center relative">
           <div className="w-full h-full flex items-center justify-center">
             <TacticalBoard
               key={selectedExercicio?.id || "novo-exercicio"}
               initialTacticData={tacticData}
-              onSave={handleSaveTacticBoard}
+              onChange={handleSaveTacticBoard}
+              onSave={(data) => handleGuardarExercicio(data)}
             />
           </div>
         </div>
       </main>
+
+      {/* Modal de Confirmação e Opções de Gravação */}
+      <SaveExercicioOptionsModal
+        isOpen={showSaveOptionsModal}
+        onClose={() => setShowSaveOptionsModal(false)}
+        currentNome={nome}
+        isFromTreino={Boolean(treinoId)}
+        isSaving={isSaving}
+        onConfirmOverwrite={() =>
+          handleExecutarGravacao({
+            isNew: false,
+            nomeFinal: nome,
+          })
+        }
+        onConfirmSaveAsNew={(novoNome) =>
+          handleExecutarGravacao({
+            isNew: true,
+            nomeFinal: novoNome,
+          })
+        }
+      />
     </div>
   );
 }
-

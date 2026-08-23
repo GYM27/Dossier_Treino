@@ -110,7 +110,7 @@ class SessaoTreinoControllerTest {
                 .duracaoTotalMinutos(20)
                 .build();
 
-        when(sessaoTreinoService.atualizarExercicioNaSessao(any(), any(), any(), any(), any())).thenReturn(new SessaoTreino());
+        when(sessaoTreinoService.atualizarExercicioNaSessao(any(), any(), any(), any(), any(), any())).thenReturn(new SessaoTreino());
         when(sessaoTreinoMapper.toResponseDTO(any())).thenReturn(response);
 
         mockMvc.perform(org.springframework.test.web.servlet.request.MockMvcRequestBuilders.put("/api/treinos/{sessaoId}/exercicios/{assocId}", sessaoId, assocId)

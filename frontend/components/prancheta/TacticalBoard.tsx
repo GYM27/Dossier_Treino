@@ -40,7 +40,19 @@ import { cn } from "@/lib/utils";
  * - TacticalGoalFloatingBar: Edição de balizas (tamanho, cor)
  * - TacticalPlayerFloatingBar: Edição de propriedades de jogadores selecionados
  */
-export default function TacticalBoard({ initialTacticData, onSave, readOnly = false, thumbnail = false }: { initialTacticData?: any, onSave?: (data: any) => void, readOnly?: boolean, thumbnail?: boolean }) {
+export default function TacticalBoard({ 
+  initialTacticData, 
+  onSave, 
+  onChange,
+  readOnly = false, 
+  thumbnail = false 
+}: { 
+  initialTacticData?: any, 
+  onSave?: (data: any) => void, 
+  onChange?: (data: any) => void,
+  readOnly?: boolean, 
+  thumbnail?: boolean 
+}) {
   const canvasRef = useRef<HTMLCanvasElement>(null);
   const stateRef = useRef<TacticalState>(initialTacticData ? { ...INITIAL_STATE, ...initialTacticData } : JSON.parse(JSON.stringify(INITIAL_STATE)));
   const [uiTick, setUiTick] = useState(0);
@@ -104,6 +116,9 @@ export default function TacticalBoard({ initialTacticData, onSave, readOnly = fa
     }
     s.historyIndex = s.history.length - 1;
     setUiTick((t) => t + 1); 
+
+    // Notificar pai da mudança de estado em tempo real
+    if (onChange) onChange(s);
   };
 
   const undo = () => {
@@ -131,11 +146,14 @@ export default function TacticalBoard({ initialTacticData, onSave, readOnly = fa
     setDrawingSelection(null);
     setElementSelection(null);
     setUiTick((t) => t + 1);
+    if (onChange) onChange(s);
   };
 
   useEffect(() => {
     if (stateRef.current.history.length === 0) {
       saveStateToHistory();
+    } else {
+      if (onChange) onChange(stateRef.current);
     }
   }, []);
 
@@ -355,7 +373,7 @@ export default function TacticalBoard({ initialTacticData, onSave, readOnly = fa
     for (let i = currentFrameElements.length - 1; i >= 0; i--) {
       const el = currentFrameElements[i];
       const dist = Math.hypot(el.x - coords.x, el.y - coords.y);
-      const radius = el.type === "ball" ? 12 : el.type === "cone" ? 14 : el.type === "mini_goal" ? (el.goalSize === "fut11" ? 44 : el.goalSize === "fut7" ? 32 : 22) : (el.size === "sm" ? 13 : el.size === "md" ? 16 : 20);
+      const radius = el.type === "ball" ? 12 : el.type === "cone" ? 14 : el.type === "mini_goal" ? (el.goalSize === "fut11" ? 44 : el.goalSize === "fut7" ? 32 : 22) : (el.size === "lg" ? 20 : el.size === "md" ? 16 : 13);
 
       if (dist <= radius) {
         s.selectedElement = el;
@@ -1277,8 +1295,8 @@ export default function TacticalBoard({ initialTacticData, onSave, readOnly = fa
         } else {
           // Home / Away / Neutral player (sm, md, lg)
           const pColor = el.color || (el.type === "home" ? "#facc15" : "#3b82f6");
-          const pRadius = el.size === "sm" ? 11 : el.size === "md" ? 15 : 19;
-          const pBorder = el.size === "sm" ? 1.8 : el.size === "md" ? 2.2 : 2.5;
+          const pRadius = el.size === "lg" ? 19 : el.size === "md" ? 15 : 11;
+          const pBorder = el.size === "lg" ? 2.5 : el.size === "md" ? 2.2 : 1.8;
 
           ctx.beginPath();
           ctx.arc(el.x, el.y, pRadius, 0, Math.PI * 2);
@@ -1294,13 +1312,13 @@ export default function TacticalBoard({ initialTacticData, onSave, readOnly = fa
           const textToRender = el.label !== undefined ? el.label : el.number !== undefined ? el.number.toString() : "";
           if (textToRender) {
             const isLong = textToRender.length > 2;
-            let fontSize = 15;
-            if (el.size === "sm") {
-              fontSize = isLong ? 7 : 9;
+            let fontSize = 9;
+            if (el.size === "lg") {
+              fontSize = isLong ? 11 : 15;
             } else if (el.size === "md") {
               fontSize = isLong ? 9 : 12;
             } else {
-              fontSize = isLong ? 11 : 15;
+              fontSize = isLong ? 7 : 9;
             }
             ctx.font = `bold ${fontSize}px Inter, system-ui, sans-serif`;
             ctx.textAlign = "center";
@@ -1318,7 +1336,7 @@ export default function TacticalBoard({ initialTacticData, onSave, readOnly = fa
           ctx.setLineDash([5, 4]);
           ctx.shadowColor = "#38bdf8";
           ctx.shadowBlur = 10;
-          const selectRadius = el.type === "ball" ? 17 : el.type === "cone" ? 21 : el.type === "mini_goal" ? (el.goalSize === "fut11" ? 48 : el.goalSize === "fut7" ? 36 : 26) : (el.size === "sm" ? 16 : el.size === "md" ? 21 : 27);
+          const selectRadius = el.type === "ball" ? 17 : el.type === "cone" ? 21 : el.type === "mini_goal" ? (el.goalSize === "fut11" ? 48 : el.goalSize === "fut7" ? 36 : 26) : (el.size === "lg" ? 27 : el.size === "md" ? 21 : 16);
           ctx.beginPath();
           ctx.arc(el.x, el.y, selectRadius, 0, Math.PI * 2);
           ctx.stroke();
@@ -1354,12 +1372,26 @@ export default function TacticalBoard({ initialTacticData, onSave, readOnly = fa
 
   const s = stateRef.current;
 
+  // Miniatura ultra-leve para cards de catálogo e listas de treino
+  if (thumbnail) {
+    return (
+      <div className="w-full h-full flex items-center justify-center overflow-hidden bg-[#1b4332]">
+        <canvas
+          ref={canvasRef}
+          width={CANVAS_WIDTH}
+          height={CANVAS_HEIGHT}
+          className="w-full h-full object-contain pointer-events-none"
+        />
+      </div>
+    );
+  }
+
   return (
     <div className="w-full h-full min-h-0 bg-[#0a0f1c] text-slate-300 font-sans flex gap-2.5 p-2 md:p-3 rounded-xl border border-slate-800 shadow-2xl">
       
       {/* Main Area: Canvas + Bottom Bar */}
-      <div className="flex-1 flex flex-col min-h-0 overflow-hidden bg-transparent rounded-2xl border border-slate-800 shadow-lg">
-        <div className="w-full flex-1 min-h-0 bg-[#1b4332] flex items-center justify-center overflow-hidden relative">
+      <div className="flex-1 flex flex-col min-h-0 w-full h-full overflow-hidden bg-transparent rounded-2xl border border-slate-800 shadow-lg">
+        <div className="w-full flex-1 min-h-0 bg-[#1b4332] flex items-center justify-center overflow-hidden relative p-1">
           <canvas
             ref={canvasRef}
             width={CANVAS_WIDTH}
@@ -1368,7 +1400,7 @@ export default function TacticalBoard({ initialTacticData, onSave, readOnly = fa
             onPointerMove={handlePointerMove}
             onPointerUp={handlePointerUp}
             className={cn(
-              "touch-none w-full h-full object-contain",
+              "touch-none max-w-full max-h-full aspect-[1000/625] object-contain shadow-inner rounded-sm",
               s.drawingMode === "select" ? "cursor-default" : "cursor-crosshair"
             )}
           />
@@ -1528,7 +1560,11 @@ export default function TacticalBoard({ initialTacticData, onSave, readOnly = fa
         {!readOnly && (
           <TacticalBottomBar 
             state={s} 
-            setState={(val) => { stateRef.current = typeof val === 'function' ? val(stateRef.current) : val; setUiTick(t => t + 1); }} 
+            setState={(val) => { 
+              stateRef.current = typeof val === 'function' ? val(stateRef.current) : val; 
+              setUiTick(t => t + 1); 
+              if (onChange) onChange(stateRef.current);
+            }} 
             uiTick={uiTick} 
             setUiTick={setUiTick}
             onSaveHistory={saveStateToHistory}
@@ -1540,10 +1576,17 @@ export default function TacticalBoard({ initialTacticData, onSave, readOnly = fa
       {!readOnly && (
         <TacticalSidebar 
           state={s} 
-          setState={(val) => { stateRef.current = typeof val === 'function' ? val(stateRef.current) : val; setUiTick(t => t + 1); }} 
+          setState={(val) => { 
+            stateRef.current = typeof val === 'function' ? val(stateRef.current) : val; 
+            setUiTick(t => t + 1); 
+            if (onChange) onChange(stateRef.current);
+          }} 
           uiTick={uiTick} 
           setUiTick={setUiTick} 
-          onSave={onSave}
+          onSave={(data) => {
+            if (onChange) onChange(data);
+            if (onSave) onSave(data);
+          }}
         />
       )}
 

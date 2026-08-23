@@ -73,4 +73,78 @@ class SessaoTreinoServiceTest {
         assertThat(atualizada.getDuracaoTotalMinutos()).isEqualTo(15);
         verify(sessaoTreinoRepository, times(1)).save(atualizada);
     }
+
+    @Test
+    void atualizarSessao_DeveAtualizarPeriodizacaoEMetadados() {
+        // Arrange
+        when(sessaoTreinoRepository.findById(sessaoId)).thenReturn(Optional.of(sessao));
+        when(sessaoTreinoRepository.save(any(SessaoTreino.class))).thenAnswer(i -> i.getArguments()[0]);
+
+        // Act
+        SessaoTreino atualizada = sessaoTreinoService.atualizarSessao(
+                sessaoId,
+                "Pressão Bloco Alto",
+                "20 Bolas, 10 Cones",
+                22,
+                4,
+                2, // Mesociclo #2
+                3, // Microciclo #3
+                8  // Unidade de Treino #8
+        );
+
+        // Assert
+        assertThat(atualizada.getObjetivo()).isEqualTo("Pressão Bloco Alto");
+        assertThat(atualizada.getMaterial()).isEqualTo("20 Bolas, 10 Cones");
+        assertThat(atualizada.getNumeroJogadores()).isEqualTo(22);
+        assertThat(atualizada.getIntensidadeGeral()).isEqualTo(4);
+        assertThat(atualizada.getMesociclo()).isEqualTo(2);
+        assertThat(atualizada.getMicrociclo()).isEqualTo(3);
+        assertThat(atualizada.getUnidadeTreino()).isEqualTo(8);
+        verify(sessaoTreinoRepository, times(1)).save(atualizada);
+    }
+
+    @Test
+    void atualizarExercicioNaSessao_DevePermitirReassociarNovoExercicio() {
+        // Arrange
+        UUID assocId = UUID.randomUUID();
+        SessaoTreinoExercicio assoc = SessaoTreinoExercicio.builder()
+                .id(assocId)
+                .sessaoTreino(sessao)
+                .exercicio(exercicio)
+                .ordem(1)
+                .duracaoMinutos(15)
+                .build();
+        sessao.getExercicios().add(assoc);
+
+        UUID novoExercicioId = UUID.randomUUID();
+        Exercicio novoExercicio = Exercicio.builder()
+                .id(novoExercicioId)
+                .nome("Meinho Variante 2")
+                .build();
+
+        when(sessaoTreinoRepository.findById(sessaoId)).thenReturn(Optional.of(sessao));
+        when(exercicioService.buscarPorId(novoExercicioId)).thenReturn(novoExercicio);
+        when(sessaoTreinoRepository.save(any(SessaoTreino.class))).thenAnswer(i -> i.getArguments()[0]);
+
+        // Act
+        SessaoTreino atualizada = sessaoTreinoService.atualizarExercicioNaSessao(
+                sessaoId,
+                assocId,
+                novoExercicioId,
+                2,
+                20,
+                "Nova variante tática com 2 toques"
+        );
+
+        // Assert
+        assertThat(atualizada.getExercicios()).hasSize(1);
+        SessaoTreinoExercicio assocAtualizada = atualizada.getExercicios().get(0);
+        assertThat(assocAtualizada.getExercicio().getId()).isEqualTo(novoExercicioId);
+        assertThat(assocAtualizada.getExercicio().getNome()).isEqualTo("Meinho Variante 2");
+        assertThat(assocAtualizada.getOrdem()).isEqualTo(2);
+        assertThat(assocAtualizada.getDuracaoMinutos()).isEqualTo(20);
+        assertThat(assocAtualizada.getObservacoesDoTreinador()).isEqualTo("Nova variante tática com 2 toques");
+        verify(sessaoTreinoExercicioRepository, times(1)).save(assocAtualizada);
+        verify(sessaoTreinoRepository, times(1)).save(atualizada);
+    }
 }

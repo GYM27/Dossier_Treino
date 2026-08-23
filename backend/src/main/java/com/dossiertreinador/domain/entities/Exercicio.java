@@ -42,6 +42,9 @@ public class Exercicio {
     @Column(columnDefinition = "TEXT")
     private String objetivosEspecificos; // Specific Objectives
 
+    @Column(columnDefinition = "TEXT")
+    private String carga; // Load / Sets / Reps / Rest
+
     @Column
     private String espaco; // Area (ex: 30x20m)
 

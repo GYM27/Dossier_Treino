@@ -85,13 +85,21 @@ public class SessaoTreinoServiceImpl implements SessaoTreinoService {
 
     @Override
     @Transactional
-    public SessaoTreino atualizarSessao(UUID id, String objetivo, String material, Integer numeroJogadores, Integer intensidadeGeral) {
+    public SessaoTreino atualizarSessao(UUID id, String objetivo, String material, Integer numeroJogadores, Integer intensidadeGeral, Integer mesociclo, Integer microciclo, Integer unidadeTreino) {
         SessaoTreino sessao = buscarPorId(id);
         
         if (objetivo != null) sessao.setObjetivo(objetivo);
         if (material != null) sessao.setMaterial(material);
         if (numeroJogadores != null) sessao.setNumeroJogadores(numeroJogadores);
         if (intensidadeGeral != null) sessao.setIntensidadeGeral(intensidadeGeral);
+        if (mesociclo != null) sessao.setMesociclo(mesociclo);
+        if (microciclo != null) sessao.setMicrociclo(microciclo);
+        if (unidadeTreino != null) {
+            sessao.setUnidadeTreino(unidadeTreino);
+            if (sessao.getEventoCalendario() != null) {
+                sessao.getEventoCalendario().setNumeroTreino(unidadeTreino);
+            }
+        }
         
         return sessaoTreinoRepository.save(sessao);
     }
@@ -118,7 +126,7 @@ public class SessaoTreinoServiceImpl implements SessaoTreinoService {
 
     @Override
     @Transactional
-    public SessaoTreino atualizarExercicioNaSessao(UUID sessaoId, UUID exercicioAssocId, Integer ordem, Integer duracaoMinutos, String observacoes) {
+    public SessaoTreino atualizarExercicioNaSessao(UUID sessaoId, UUID exercicioAssocId, UUID novoExercicioId, Integer ordem, Integer duracaoMinutos, String observacoes) {
         SessaoTreino sessao = buscarPorId(sessaoId);
         
         SessaoTreinoExercicio assoc = sessao.getExercicios().stream()
@@ -126,6 +134,10 @@ public class SessaoTreinoServiceImpl implements SessaoTreinoService {
                 .findFirst()
                 .orElseThrow(() -> new RuntimeException("Associação de exercício não encontrada nesta sessão."));
         
+        if (novoExercicioId != null) {
+            Exercicio novoEx = exercicioService.buscarPorId(novoExercicioId);
+            assoc.setExercicio(novoEx);
+        }
         if (ordem != null) assoc.setOrdem(ordem);
         if (duracaoMinutos != null) assoc.setDuracaoMinutos(duracaoMinutos);
         if (observacoes != null) assoc.setObservacoesDoTreinador(observacoes);

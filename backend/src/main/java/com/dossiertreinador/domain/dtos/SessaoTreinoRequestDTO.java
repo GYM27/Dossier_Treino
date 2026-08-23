@@ -23,7 +23,11 @@ public class SessaoTreinoRequestDTO {
     @Min(value = 1, message = "Intensidade mínima é 1.")
     @Max(value = 5, message = "Intensidade máxima é 5.")
     private Integer intensidadeGeral;
-    
+
+    private Integer mesociclo;
+    private Integer microciclo;
+    private Integer unidadeTreino;
+
     @NotNull(message = "O ID da equipa é obrigatório.")
     private UUID equipaId;
 }

@@ -27,12 +27,13 @@ export function useTreinoDetailStudio({
   const [numeroJogadores, setNumeroJogadores] = useState(treino.numeroJogadores || 20);
   const [intensidade, setIntensidade] = useState(treino.intensidadeGeral || 3);
   const [material, setMaterial] = useState(treino.material || "Bolas, cones, coletes.");
+  const [mesociclo, setMesociclo] = useState(treino.mesociclo || 1);
+  const [microciclo, setMicrociclo] = useState(treino.microciclo || 1);
+  const [unidadeTreino, setUnidadeTreino] = useState(treino.unidadeTreino || 1);
 
   // Modais
   const [showCatalogModal, setShowCatalogModal] = useState(false);
-  const [showPranchetaModal, setShowPranchetaModal] = useState(false);
   const [showPrintModal, setShowPrintModal] = useState(false);
-  const [exercicioToEdit, setExercicioToEdit] = useState<Exercicio | null>(null);
 
   // Estados de gravação
   const [isSaving, setIsSaving] = useState(false);
@@ -46,6 +47,9 @@ export function useTreinoDetailStudio({
     setNumeroJogadores(treino.numeroJogadores || 20);
     setIntensidade(treino.intensidadeGeral || 3);
     setMaterial(treino.material || "Bolas, cones, coletes.");
+    setMesociclo(treino.mesociclo || 1);
+    setMicrociclo(treino.microciclo || 1);
+    setUnidadeTreino(treino.unidadeTreino || 1);
   }, [treino.id]);
 
   // Gravar alterações no cabeçalho do treino
@@ -61,7 +65,10 @@ export function useTreinoDetailStudio({
         material: material,
         numeroJogadores: numeroJogadores,
         intensidadeGeral: intensidade,
-      });
+        mesociclo: mesociclo,
+        microciclo: microciclo,
+        unidadeTreino: unidadeTreino,
+      } as any);
 
       onTreinoUpdated(atualizado);
       setSaveSuccess(true);
@@ -75,7 +82,7 @@ export function useTreinoDetailStudio({
     } finally {
       setIsSaving(false);
     }
-  }, [treino.id, activeTeam.id, objetivo, material, numeroJogadores, intensidade, onTreinoUpdated]);
+  }, [treino.id, activeTeam.id, objetivo, material, numeroJogadores, intensidade, mesociclo, microciclo, unidadeTreino, onTreinoUpdated]);
 
   // Adicionar exercício selecionado da Biblioteca
   const handleSelectFromLibrary = useCallback(
@@ -86,35 +93,13 @@ export function useTreinoDetailStudio({
           exercicioId: exercicio.id,
           ordem: (treino.exercicios?.length || 0) + 1,
           duracaoMinutos: 15,
-          observacoesDoTreinador:
-            exercicio.objetivosEspecificos || exercicio.descricao || exercicio.nome,
+          observacoesDoTreinador: "",
         });
 
         onTreinoUpdated(sessaoAtualizada);
       } catch (err) {
         console.error("Erro ao adicionar exercício do catálogo:", err);
         alert("Erro ao adicionar exercício.");
-      }
-    },
-    [treino.id, treino.exercicios?.length, onTreinoUpdated]
-  );
-
-  // Adicionar novo exercício criado na Prancheta
-  const handleCreatedFromPrancheta = useCallback(
-    async (exercicio: Exercicio, duracao: number, obs?: string) => {
-      setShowPranchetaModal(false);
-      try {
-        const sessaoAtualizada = await treinoService.adicionarExercicio(treino.id, {
-          exercicioId: exercicio.id,
-          ordem: (treino.exercicios?.length || 0) + 1,
-          duracaoMinutos: duracao,
-          observacoesDoTreinador: obs || exercicio.objetivosEspecificos || exercicio.nome,
-        });
-
-        onTreinoUpdated(sessaoAtualizada);
-      } catch (err) {
-        console.error("Erro ao anexar exercício criado:", err);
-        alert("Erro ao associar exercício à sessão.");
       }
     },
     [treino.id, treino.exercicios?.length, onTreinoUpdated]
@@ -150,19 +135,81 @@ export function useTreinoDetailStudio({
     [treino.id, onReloadTreino]
   );
 
-  // Abrir exercício na Prancheta para edição
-  const handleEditPrancheta = useCallback(
-    async (exercicioId: string) => {
+  // Substituir um exercício existente na sessão por outro da biblioteca (mantém o mesmo lugar/ordem)
+  const [replacingAssoc, setReplacingAssoc] = useState<SessaoTreinoExercicio | null>(null);
+
+  const handleStartReplace = useCallback((assoc: SessaoTreinoExercicio) => {
+    setReplacingAssoc(assoc);
+    setShowCatalogModal(true);
+  }, []);
+
+  const handleReplaceExercicio = useCallback(
+    async (novoExercicio: Exercicio) => {
+      if (!replacingAssoc?.id) return;
+      setShowCatalogModal(false);
       try {
-        const exercicioFull = await exercicioService.getExercicioById(exercicioId);
-        setExercicioToEdit(exercicioFull);
-        setShowPranchetaModal(true);
+        await treinoService.atualizarExercicio(treino.id, replacingAssoc.id, {
+          exercicioId: novoExercicio.id,
+        });
+        setReplacingAssoc(null);
+        onReloadTreino(treino.id);
       } catch (err) {
-        console.error("Erro ao buscar detalhes do exercício:", err);
-        alert("Erro ao abrir exercício para edição.");
+        console.error("Erro ao substituir exercício:", err);
+        alert("Erro ao substituir exercício.");
       }
     },
-    []
+    [treino.id, replacingAssoc, onReloadTreino]
+  );
+
+  // Reordenar exercícios na sessão (Mover para Cima / Mover para Baixo)
+  const handleMoveExercicio = useCallback(
+    async (currentIndex: number, targetIndex: number) => {
+      const exercicios = treino.exercicios || [];
+      if (
+        currentIndex < 0 ||
+        currentIndex >= exercicios.length ||
+        targetIndex < 0 ||
+        targetIndex >= exercicios.length
+      ) {
+        return;
+      }
+
+      const currentAssoc = exercicios[currentIndex];
+      const targetAssoc = exercicios[targetIndex];
+      if (!currentAssoc?.id || !targetAssoc?.id) return;
+
+      // Criação da lista reordenada localmente para feedback instantâneo no ecrã
+      const novaLista = [...exercicios];
+      const temp = novaLista[currentIndex];
+      novaLista[currentIndex] = novaLista[targetIndex];
+      novaLista[targetIndex] = temp;
+
+      novaLista.forEach((item, idx) => {
+        item.ordem = idx + 1;
+      });
+
+      onTreinoUpdated({
+        ...treino,
+        exercicios: novaLista,
+      });
+
+      try {
+        // Persistir a troca de ordem no backend
+        await Promise.all([
+          treinoService.atualizarExercicio(treino.id, currentAssoc.id, {
+            ordem: targetIndex + 1,
+          }),
+          treinoService.atualizarExercicio(treino.id, targetAssoc.id, {
+            ordem: currentIndex + 1,
+          }),
+        ]);
+        onReloadTreino(treino.id);
+      } catch (err) {
+        console.error("Erro ao reordenar exercícios:", err);
+        onReloadTreino(treino.id);
+      }
+    },
+    [treino, onTreinoUpdated, onReloadTreino]
   );
 
   return {
@@ -182,20 +229,26 @@ export function useTreinoDetailStudio({
     setIntensidade,
     material,
     setMaterial,
+    mesociclo,
+    setMesociclo,
+    microciclo,
+    setMicrociclo,
+    unidadeTreino,
+    setUnidadeTreino,
     showCatalogModal,
     setShowCatalogModal,
-    showPranchetaModal,
-    setShowPranchetaModal,
     showPrintModal,
     setShowPrintModal,
-    exercicioToEdit,
     isSaving,
     saveSuccess,
+    replacingAssoc,
+    setReplacingAssoc,
     handleSaveMetadata,
     handleSelectFromLibrary,
-    handleCreatedFromPrancheta,
     handleRemoveExercicio,
     handleUpdateExercicioAssoc,
-    handleEditPrancheta,
+    handleStartReplace,
+    handleReplaceExercicio,
+    handleMoveExercicio,
   };
 }

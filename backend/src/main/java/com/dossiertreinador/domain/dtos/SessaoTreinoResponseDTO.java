@@ -19,7 +19,9 @@ public class SessaoTreinoResponseDTO {
     private LocalTime hora;
     private String local;
     private Integer morfociclo;
+    private Integer mesociclo;
     private Integer microciclo;
+    private Integer unidadeTreino;
     private String fase;
     
     private Integer numeroJogadores;

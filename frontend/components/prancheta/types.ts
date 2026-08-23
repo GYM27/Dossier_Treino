@@ -76,5 +76,6 @@ export interface TacticalState {
   numeroJogadores?: string;
   espaco?: string;
   objetivoEspecifico?: string;
+  carga?: string;
   descricaoMetodologica?: string;
 }

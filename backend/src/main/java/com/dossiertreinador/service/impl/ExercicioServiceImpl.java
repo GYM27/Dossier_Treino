@@ -51,6 +51,7 @@ public class ExercicioServiceImpl implements ExercicioService {
         existente.setCategoria(exercicioAtualizado.getCategoria());
         existente.setNivelDificuldade(exercicioAtualizado.getNivelDificuldade());
         existente.setObjetivosEspecificos(exercicioAtualizado.getObjetivosEspecificos());
+        existente.setCarga(exercicioAtualizado.getCarga());
         existente.setEspaco(exercicioAtualizado.getEspaco());
         existente.setJogadoresEnvolvidos(exercicioAtualizado.getJogadoresEnvolvidos());
         existente.setDadosTaticos(exercicioAtualizado.getDadosTaticos());

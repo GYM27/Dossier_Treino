@@ -9,6 +9,7 @@ import {
   ChevronLeft,
   FileText,
   Target,
+  Zap,
 } from "lucide-react";
 import { TacticalState } from "./types";
 import { cn } from "@/lib/utils";
@@ -127,39 +128,56 @@ export function TacticalSidebar({
       </div>
 
       {!isMinimized && (
-        <div className="flex-1 overflow-y-auto p-4 flex flex-col gap-5 text-xs text-slate-300">
+        <div className="flex-1 overflow-y-auto p-4 flex flex-col gap-4 text-xs text-slate-300">
           
-          {/* Objetivo(s) Específico(s) */}
-          <div className="flex flex-col gap-2">
-            <label className="flex items-center gap-2 font-semibold text-slate-200 text-xs">
-              <Target className="w-4 h-4 text-cyan-400" />
+          {/* 1. Objetivo(s) Específico(s) */}
+          <div className="flex flex-col gap-1.5">
+            <label className="flex items-center gap-2 font-bold text-cyan-400 text-xs uppercase tracking-wider">
+              <Target className="w-3.5 h-3.5" />
               Objetivo(s) Específico(s)
             </label>
             <textarea
-              rows={5}
+              rows={4}
               value={state.objetivoEspecifico || ""}
               onChange={(e) =>
                 handleChange("objetivoEspecifico", e.target.value)
               }
               placeholder="Ex: Trabalho de transição ofensiva rápida, circulação em apoio e finalização no último terço..."
-              className="w-full bg-slate-900/90 border border-slate-800 rounded-xl p-3 outline-none focus:border-cyan-500 text-slate-200 placeholder:text-slate-600 resize-none leading-relaxed transition-colors text-xs"
+              className="w-full bg-slate-900/90 border border-slate-800 rounded-xl p-2.5 outline-none focus:border-cyan-500 text-slate-200 placeholder:text-slate-600 resize-none leading-relaxed transition-colors text-xs"
             />
           </div>
 
-          {/* Descrição e Organização Metodológica */}
-          <div className="flex flex-col gap-2 flex-1">
-            <label className="flex items-center gap-2 font-semibold text-slate-200 text-xs">
-              <FileText className="w-4 h-4 text-cyan-400" />
+          {/* 2. Carga / Dosagem */}
+          <div className="flex flex-col gap-1.5">
+            <label className="flex items-center gap-2 font-bold text-amber-400 text-xs uppercase tracking-wider">
+              <Zap className="w-3.5 h-3.5" />
+              Carga / Séries / Pausas
+            </label>
+            <textarea
+              rows={3}
+              value={state.carga || ""}
+              onChange={(e) =>
+                handleChange("carga", e.target.value)
+              }
+              placeholder="Ex: 4 x 6 repetições por jogador (1 minuto de pausa ativa entre séries)..."
+              className="w-full bg-slate-900/90 border border-slate-800 rounded-xl p-2.5 outline-none focus:border-cyan-500 text-slate-200 placeholder:text-slate-600 resize-none leading-relaxed transition-colors text-xs"
+            />
+          </div>
+
+          {/* 3. Descrição e Organização Metodológica */}
+          <div className="flex flex-col gap-1.5 flex-1">
+            <label className="flex items-center gap-2 font-bold text-slate-300 text-xs uppercase tracking-wider">
+              <FileText className="w-3.5 h-3.5 text-cyan-400" />
               Descrição e Organização Metodológica
             </label>
             <textarea
-              rows={10}
+              rows={6}
               value={state.descricaoMetodologica || ""}
               onChange={(e) =>
                 handleChange("descricaoMetodologica", e.target.value)
               }
               placeholder="Ex: Exercício em espaço reduzido com 2 equipas de 7 jogadores + 2 jokers exteriores. A equipa em posse tem de realizar 6 passes antes de poder variar o centro de jogo..."
-              className="w-full flex-1 min-h-[160px] bg-slate-900/90 border border-slate-800 rounded-xl p-3 outline-none focus:border-cyan-500 text-slate-200 placeholder:text-slate-600 resize-none leading-relaxed transition-colors text-xs"
+              className="w-full flex-1 min-h-[120px] bg-slate-900/90 border border-slate-800 rounded-xl p-2.5 outline-none focus:border-cyan-500 text-slate-200 placeholder:text-slate-600 resize-none leading-relaxed transition-colors text-xs"
             />
           </div>
 

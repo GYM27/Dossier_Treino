@@ -19,6 +19,7 @@ import java.util.UUID;
  * Representa um dia de treino (Cabeçalho).
  */
 @Entity
+@Table(name = "sessao_treino")
 @Getter
 @Setter
 @NoArgsConstructor
@@ -49,6 +50,15 @@ public class SessaoTreino {
     @Column
     private Integer intensidadeGeral;
 
+    @Column(name = "mesociclo")
+    private Integer mesociclo;
+
+    @Column(name = "microciclo")
+    private Integer microciclo;
+
+    @Column(name = "unidade_treino")
+    private Integer unidadeTreino;
+
     @Column(nullable = false)
     @Builder.Default
     private Integer duracaoTotalMinutos = 0; // Calculado automaticamente pela soma dos exercícios
@@ -60,6 +70,7 @@ public class SessaoTreino {
 
     // Relacionamento com os exercícios do treino
     @OneToMany(mappedBy = "sessaoTreino", cascade = CascadeType.ALL, orphanRemoval = true)
+    @OrderBy("ordem ASC")
     @Builder.Default
     private List<SessaoTreinoExercicio> exercicios = new ArrayList<>();
 

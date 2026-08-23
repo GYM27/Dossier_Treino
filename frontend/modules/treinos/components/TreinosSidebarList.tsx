@@ -124,14 +124,14 @@ export function TreinosSidebarList({
                 {/* Cabeçalho do Card */}
                 <div className="flex items-start justify-between gap-2">
                   <div className="flex items-center gap-1.5">
-                    <span className="px-1.5 py-0.5 rounded bg-cyan-500/10 text-cyan-400 font-mono text-[10px] font-bold border border-cyan-500/20">
-                      #{t.microciclo || "1"}
+                    <span className="px-1.5 py-0.5 rounded bg-amber-500/10 text-amber-400 font-mono text-[10px] font-bold border border-amber-500/20">
+                      UT #{t.unidadeTreino || 1}
                     </span>
                     <h3 className={cn(
                       "text-xs font-semibold truncate transition-colors",
                       isSelected ? "text-cyan-300" : "text-white group-hover:text-cyan-200"
                     )}>
-                      {t.objetivo ? t.objetivo.split("\n")[0] : `Treino #${t.microciclo || 1}`}
+                      {t.objetivo ? t.objetivo.split("\n")[0] : `Treino - UT #${t.unidadeTreino || 1}`}
                     </h3>
                   </div>
 

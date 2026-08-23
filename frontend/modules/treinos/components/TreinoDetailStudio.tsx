@@ -8,9 +8,8 @@ import { TreinoStudioHeader } from "./TreinoStudioHeader";
 import { TreinoStudioMetadataForm } from "./TreinoStudioMetadataForm";
 import { TreinoExercicioCard } from "./TreinoExercicioCard";
 import { CatalogoExerciciosModal } from "../modals/CatalogoExerciciosModal";
-import { NovoExercicioPranchetaModal } from "../modals/NovoExercicioPranchetaModal";
 import { TreinoPrintPreviewModal } from "../modals/TreinoPrintPreviewModal";
-import { Dumbbell, Library, Sparkles } from "lucide-react";
+import { Dumbbell, Library } from "lucide-react";
 import { Button } from "@/components/ui/button";
 
 interface TreinoDetailStudioProps {
@@ -39,21 +38,27 @@ export function TreinoDetailStudio({
     setIntensidade,
     material,
     setMaterial,
+    mesociclo,
+    setMesociclo,
+    microciclo,
+    setMicrociclo,
+    unidadeTreino,
+    setUnidadeTreino,
     showCatalogModal,
     setShowCatalogModal,
-    showPranchetaModal,
-    setShowPranchetaModal,
     showPrintModal,
     setShowPrintModal,
-    exercicioToEdit,
     isSaving,
     saveSuccess,
+    replacingAssoc,
+    setReplacingAssoc,
     handleSaveMetadata,
     handleSelectFromLibrary,
-    handleCreatedFromPrancheta,
     handleRemoveExercicio,
     handleUpdateExercicioAssoc,
-    handleEditPrancheta,
+    handleStartReplace,
+    handleReplaceExercicio,
+    handleMoveExercicio,
   } = useTreinoDetailStudio({
     treino,
     activeTeam,
@@ -77,7 +82,6 @@ export function TreinoDetailStudio({
         onSaveMetadata={handleSaveMetadata}
         onOpenPrintModal={() => setShowPrintModal(true)}
         onOpenCatalogModal={() => setShowCatalogModal(true)}
-        onOpenPranchetaModal={() => setShowPranchetaModal(true)}
       />
 
       {/* Corpo Principal com Scroll */}
@@ -93,6 +97,12 @@ export function TreinoDetailStudio({
           setIntensidade={setIntensidade}
           material={material}
           setMaterial={setMaterial}
+          mesociclo={mesociclo}
+          setMesociclo={setMesociclo}
+          microciclo={microciclo}
+          setMicrociclo={setMicrociclo}
+          unidadeTreino={unidadeTreino}
+          setUnidadeTreino={setUnidadeTreino}
         />
 
         {/* Timeline de Exercícios da Sessão */}
@@ -109,20 +119,12 @@ export function TreinoDetailStudio({
 
             <div className="flex items-center gap-2">
               <Button
-                variant="dark"
+                variant="cyan"
                 size="sm"
                 onClick={() => setShowCatalogModal(true)}
               >
-                <Library className="w-3.5 h-3.5 mr-1 text-cyan-400" />
-                Catálogo
-              </Button>
-              <Button
-                variant="cyan"
-                size="sm"
-                onClick={() => setShowPranchetaModal(true)}
-              >
-                <Sparkles className="w-3.5 h-3.5 mr-1" />
-                + Prancheta
+                <Library className="w-3.5 h-3.5 mr-1" />
+                Biblioteca
               </Button>
             </div>
           </div>
@@ -138,25 +140,17 @@ export function TreinoDetailStudio({
                   Nenhum exercício associado
                 </h3>
                 <p className="text-xs text-slate-500 max-w-sm mt-1">
-                  Adicione exercícios a partir da biblioteca ou desenhe um novo exercício na prancheta tática.
+                  Adicione exercícios a partir da biblioteca para estruturar o plano de treino.
                 </p>
               </div>
               <div className="flex items-center gap-2 mt-2">
                 <Button
-                  variant="dark"
+                  variant="cyan"
                   size="sm"
                   onClick={() => setShowCatalogModal(true)}
                 >
-                  <Library className="w-3.5 h-3.5 mr-1 text-cyan-400" />
-                  Abrir Catálogo
-                </Button>
-                <Button
-                  variant="cyan"
-                  size="sm"
-                  onClick={() => setShowPranchetaModal(true)}
-                >
-                  <Sparkles className="w-3.5 h-3.5 mr-1" />
-                  Desenhar Prancheta
+                  <Library className="w-3.5 h-3.5 mr-1" />
+                  Abrir Biblioteca
                 </Button>
               </div>
             </div>
@@ -166,12 +160,15 @@ export function TreinoDetailStudio({
                 <TreinoExercicioCard
                   key={assoc.id || idx}
                   exercicio={assoc}
+                  treinoId={treino.id}
                   index={idx}
                   total={exercicios.length}
                   isEditing={isEditing}
                   onRemove={() => assoc.id && handleRemoveExercicio(assoc.id)}
+                  onMoveUp={() => handleMoveExercicio(idx, idx - 1)}
+                  onMoveDown={() => handleMoveExercicio(idx, idx + 1)}
+                  onReplace={() => handleStartReplace(assoc)}
                   onUpdate={(updates) => assoc.id && handleUpdateExercicioAssoc(assoc.id, updates)}
-                  onEditPrancheta={() => assoc.exercicioId && handleEditPrancheta(assoc.exercicioId)}
                 />
               ))}
             </div>
@@ -182,19 +179,18 @@ export function TreinoDetailStudio({
       {/* Modais do Estúdio */}
       {showCatalogModal && (
         <CatalogoExerciciosModal
-          onClose={() => setShowCatalogModal(false)}
-          onSelect={handleSelectFromLibrary}
-        />
-      )}
-
-      {showPranchetaModal && (
-        <NovoExercicioPranchetaModal
-          isOpen={showPranchetaModal}
-          exercicioToEdit={exercicioToEdit}
+          replacingExerciseName={replacingAssoc?.exercicioNome}
           onClose={() => {
-            setShowPranchetaModal(false);
+            setShowCatalogModal(false);
+            setReplacingAssoc(null);
           }}
-          onExercicioCreated={handleCreatedFromPrancheta}
+          onSelect={(ex) => {
+            if (replacingAssoc) {
+              handleReplaceExercicio(ex);
+            } else {
+              handleSelectFromLibrary(ex);
+            }
+          }}
         />
       )}
 

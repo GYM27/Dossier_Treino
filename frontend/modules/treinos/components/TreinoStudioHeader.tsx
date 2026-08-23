@@ -26,7 +26,6 @@ interface TreinoStudioHeaderProps {
   onSaveMetadata: () => void;
   onOpenPrintModal: () => void;
   onOpenCatalogModal: () => void;
-  onOpenPranchetaModal: () => void;
 }
 
 export function TreinoStudioHeader({
@@ -40,18 +39,25 @@ export function TreinoStudioHeader({
   onSaveMetadata,
   onOpenPrintModal,
   onOpenCatalogModal,
-  onOpenPranchetaModal,
 }: TreinoStudioHeaderProps) {
   return (
     <header className="p-4 border-b border-slate-800 bg-[#0d131f] flex flex-col md:flex-row md:items-center justify-between gap-4 shrink-0">
       <div className="flex items-center gap-3">
-        <Badge variant="cyan" className="text-xs px-2.5 py-1">
-          MICRO #{treino.microciclo || "1"}
-        </Badge>
+        <div className="flex items-center gap-1.5 flex-wrap">
+          <span className="text-[10px] font-black uppercase tracking-wider px-2 py-1 rounded-md bg-blue-500/20 text-blue-300 border border-blue-500/30" title="Mesociclo da Época">
+            MESO #{treino.mesociclo || 1}
+          </span>
+          <span className="text-[10px] font-black uppercase tracking-wider px-2 py-1 rounded-md bg-cyan-500/20 text-cyan-300 border border-cyan-500/30" title="Microciclo (Semana)">
+            MICRO #{treino.microciclo || 1}
+          </span>
+          <span className="text-[10px] font-black uppercase tracking-wider px-2 py-1 rounded-md bg-amber-500/20 text-amber-300 border border-amber-500/30" title="Unidade de Treino (Sessão)">
+            UT #{treino.unidadeTreino || 1}
+          </span>
+        </div>
         <div>
           <div className="flex items-center gap-2">
             <h1 className="text-base font-bold text-white tracking-wide">
-              {treino.objetivo ? treino.objetivo.split("\n")[0] : `Treino #${treino.microciclo || 1}`}
+              {treino.objetivo ? treino.objetivo.split("\n")[0] : `Treino - UT #${treino.unidadeTreino || 1}`}
             </h1>
             <span className="text-xs text-slate-500 font-mono">
               ({treino.duracaoTotalMinutos || 0} min)
@@ -89,23 +95,13 @@ export function TreinoStudioHeader({
         </Button>
 
         <Button
-          variant="dark"
-          size="sm"
-          onClick={onOpenCatalogModal}
-          title="Adicionar exercício do Catálogo"
-        >
-          <Library className="w-3.5 h-3.5 mr-1 text-cyan-400" />
-          <span>Biblioteca</span>
-        </Button>
-
-        <Button
           variant="cyan"
           size="sm"
-          onClick={onOpenPranchetaModal}
-          title="Criar novo exercício tático"
+          onClick={onOpenCatalogModal}
+          title="Adicionar exercício da Biblioteca"
         >
-          <Sparkles className="w-3.5 h-3.5 mr-1" />
-          <span>Prancheta</span>
+          <Library className="w-3.5 h-3.5 mr-1" />
+          <span>Biblioteca</span>
         </Button>
 
         <Button

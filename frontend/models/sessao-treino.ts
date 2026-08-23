@@ -2,6 +2,13 @@ export interface SessaoTreinoExercicio {
   id?: string;
   exercicioId: string;
   exercicioNome: string;
+  descricao?: string;
+  objetivosEspecificos?: string;
+  carga?: string;
+  categoria?: string;
+  nivelDificuldade?: number;
+  espaco?: string;
+  jogadoresEnvolvidos?: number;
   ordem: number;
   duracaoMinutos: number;
   observacoesDoTreinador?: string;
@@ -15,7 +22,9 @@ export interface SessaoTreino {
   hora?: string;
   local?: string;
   morfociclo?: number;
+  mesociclo?: number;
   microciclo?: number;
+  unidadeTreino?: number;
   fase?: string;
   numeroJogadores?: number;
   material?: string;

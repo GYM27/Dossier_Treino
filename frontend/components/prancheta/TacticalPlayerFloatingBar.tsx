@@ -30,7 +30,7 @@ export function TacticalPlayerFloatingBar({
 }: TacticalPlayerFloatingBarProps) {
   const currentLabel = element.label !== undefined ? element.label : element.number !== undefined ? String(element.number) : "";
   const currentColor = element.color || (element.type === "home" ? "#facc15" : "#3b82f6");
-  const currentSize = element.size || "lg";
+  const currentSize = element.size || "sm";
 
   return (
     <div className="relative w-[400px] bg-[#1e293b] text-slate-200 border border-slate-700/80 rounded-2xl shadow-2xl p-2.5 px-3 flex flex-col gap-2 text-xs select-none backdrop-blur-md animate-in fade-in zoom-in-95 duration-150">
