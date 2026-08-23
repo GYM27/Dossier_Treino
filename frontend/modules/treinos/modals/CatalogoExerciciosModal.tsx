@@ -16,7 +16,7 @@ import {
   Flame
 } from "lucide-react";
 import { NovoExercicioPranchetaModal } from "./NovoExercicioPranchetaModal";
-import { TacticalBoardThumbnail } from "../prancheta/TacticalBoardThumbnail";
+import { TacticalBoardThumbnail } from "@/components/prancheta/TacticalBoardThumbnail";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 

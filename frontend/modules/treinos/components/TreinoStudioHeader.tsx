@@ -5,6 +5,7 @@ import { Button } from "@/components/ui/button";
 import {
   Calendar,
   Clock,
+  MapPin,
   Printer,
   Library,
   Sparkles,
@@ -56,7 +57,7 @@ export function TreinoStudioHeader({
               ({treino.duracaoTotalMinutos || 0} min)
             </span>
           </div>
-          <div className="flex items-center gap-3 text-xs text-slate-400 mt-0.5">
+          <div className="flex flex-wrap items-center gap-3 text-xs text-slate-400 mt-0.5">
             <span className="flex items-center gap-1">
               <Calendar className="w-3.5 h-3.5 text-slate-500" />
               {data || "Sem data"}
@@ -65,6 +66,12 @@ export function TreinoStudioHeader({
               <Clock className="w-3.5 h-3.5 text-slate-500" />
               {hora}
             </span>
+            {treino.local && (
+              <span className="flex items-center gap-1 text-cyan-400/90 font-medium">
+                <MapPin className="w-3.5 h-3.5 text-cyan-400" />
+                {treino.local}
+              </span>
+            )}
           </div>
         </div>
       </div>

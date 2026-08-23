@@ -9,7 +9,7 @@ import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 
 interface NovoTreinoModalProps {
-  activeTeam: Team;
+  activeTeam: Team | null;
   isOpen: boolean;
   onClose: () => void;
   onTreinoCreated: (treino: SessaoTreino) => void;
@@ -65,7 +65,7 @@ export function NovoTreinoModal({
       const dataHoraFimStr = `${dataFimStr}T${horaFimStr}:00`;
 
       // 2. Criar Evento no Calendário através do Serviço
-      const eventoCriado = await calendarioService.criarEvento(activeTeam.id, {
+      const eventoCriado = await calendarioService.criarEvento(activeTeam!.id, {
         tipoEvento: "TREINO",
         dataHoraInicio: dataHoraInicioStr,
         dataHoraFim: dataHoraFimStr,
@@ -77,7 +77,7 @@ export function NovoTreinoModal({
       // 3. Criar Sessão de Treino associada através do Serviço
       const sessaoCriada = await treinoService.criarTreino({
         eventoId: eventoCriado.id,
-        equipaId: activeTeam.id,
+        equipaId: activeTeam!.id,
         numeroJogadores: numeroJogadores,
         objetivo: objetivo || `Treino #${numeroTreino}`,
         intensidadeGeral: intensidade,

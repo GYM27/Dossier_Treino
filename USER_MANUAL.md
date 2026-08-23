@@ -285,3 +285,35 @@ Agora pode rodar livremente **todas as Formas Geométricas** (Quadrados, Círcul
 - **Vistas do Calendário**: Transição instantânea e fluida entre vista de Mês, Semana e Dia sem atrasos de renderização.
 - **Estúdio de Treinos**: Edição rápida de objetivos e materiais com sincronização visual imediata entre os blocos de exercícios.
 - **Painel de Assiduidade**: Marcação de presenças com resposta tátil e salvaguarda automática de registos.
+
+---
+
+## Otimização de Fluxos de Treino e Prancheta Tática (Fase 6)
+
+### 1. Como Agendar e Planear um Treino
+1. **No Calendário**:
+   - Clique em **"+ Novo"** no dia pretendido (ex: Terça-feira).
+   - Escolha o tipo **Treino**, defina a hora de início, duração (minutos), local (ex: *Arregaça*) e o número do treino (ex: *#12*).
+   - Clique em **"Guardar Evento"**.
+2. **Abrir o Estúdio de Treino**:
+   - No cartão do treino criado no calendário, clique no botão **"Planear Treino"** (ícone de haltere).
+   - É imediatamente redirecionado para a página **"Planos de Treino"** com essa sessão de treino aberta.
+   - Todos os dados (Data, Hora, Microciclo e Local) já surgem preenchidos!
+3. **Construir a Sessão de Treino**:
+   - Clique em **"Editar"** no topo da sessão para definir o Objetivo, Nº de Jogadores, Intensidade e Material.
+   - Clique em **"Biblioteca"** para escolher exercícios previamente criados, ou em **"Prancheta"** para desenhar um novo esquema no momento.
+   - Ajuste as durações dos exercícios (a duração total do treino é calculada automaticamente).
+   - Clique em **"PDF"** para gerar a folha de treino pronta para levar para o campo.
+
+### 2. Como Criar e Gerir Exercícios na Prancheta Tática
+1. No menu lateral, aceda à aba **"Prancheta Tática"**.
+2. **Biblioteca de Exercícios (Esquerda)**:
+   - Pesquise por nome ou filtre por categoria (*Aquecimento, Técnico, Tático, Físico, Guarda-Redes, Lúdico*).
+   - Clique em qualquer exercício existente para carregar o seu desenho tático e ficha técnica.
+3. **Desenhar e Configurar o Exercício (Direita)**:
+   - Clique em **"+ Novo"** para começar um exercício do zero.
+   - Preencha o Nome, Categoria, Espaço (ex: *40x30m*), Jogadores Envolvidos, Dificuldade (1 a 5) e Instruções/Objetivos.
+   - Utilize a prancheta interativa para posicionar jogadores (vermelhos/azuis), bolas, cones, balizas e desenhar trajetórias de passe, corrida ou zonas táticas.
+   - Clique em **"Guardar Exercício"**.
+4. **Duplicação Inteligente**:
+   - Se abrir um exercício existente e quiser criar uma variação sem estragar o original, clique em **"Duplicar"**. É criada uma cópia independente pronta para edição!

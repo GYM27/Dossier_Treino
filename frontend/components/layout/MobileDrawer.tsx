@@ -7,6 +7,10 @@ import {
   LayoutDashboard,
   Settings,
   Users,
+  Dumbbell,
+  Sparkles,
+  Shield,
+  Search,
   X,
   type LucideIcon,
 } from "lucide-react";
@@ -20,9 +24,13 @@ interface MobileNavItem {
 
 const mobileNav: MobileNavItem[] = [
   { key: "dashboard", label: "Dashboard", icon: LayoutDashboard },
+  { key: "clube", label: "Clube", icon: Shield },
   { key: "plantel", label: "Plantel", icon: Users },
   { key: "calendario", label: "Calendário", icon: Calendar },
+  { key: "treinos", label: "Planos de Treino", icon: Dumbbell },
+  { key: "prancheta", label: "Prancheta Tática", icon: Sparkles },
   { key: "assiduidade", label: "Assiduidade", icon: CheckSquare },
+  { key: "scouting", label: "Scouting", icon: Search },
   { key: "config", label: "Configurações", icon: Settings },
 ];
 

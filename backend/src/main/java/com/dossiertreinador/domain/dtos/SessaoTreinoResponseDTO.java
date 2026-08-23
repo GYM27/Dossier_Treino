@@ -17,6 +17,7 @@ public class SessaoTreinoResponseDTO {
     // Dados que vêm do calendário (Read-only no Treino Builder, ou atualizados via evento)
     private LocalDate data;
     private LocalTime hora;
+    private String local;
     private Integer morfociclo;
     private Integer microciclo;
     private String fase;

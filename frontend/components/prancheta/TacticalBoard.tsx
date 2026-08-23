@@ -3,6 +3,7 @@
 import React, { useEffect, useRef, useState } from "react";
 import { TacticalState, FrameNode, HistorySnapshot, TacticalElement, TacticalDrawing, Point } from "./types";
 import { INITIAL_STATE, CANVAS_WIDTH, CANVAS_HEIGHT, FIELD_BG, HOME_TEAM_COLOR, AWAY_TEAM_COLOR } from "./constants";
+import { DrawingHandleType, DrawingBounds, getDrawingBounds } from "./utils/tacticalGeometry";
 import { TacticalBottomBar } from "./TacticalBottomBar";
 import { TacticalSidebar } from "./TacticalSidebar";
 import { TacticalShapeFloatingBar } from "./TacticalShapeFloatingBar";
@@ -11,115 +12,34 @@ import { TacticalPlayerFloatingBar } from "./TacticalPlayerFloatingBar";
 import { Clock, Users, Maximize2, LayoutDashboard } from "lucide-react";
 import { cn } from "@/lib/utils";
 
-type DrawingHandleType = "tl" | "tr" | "bl" | "br" | "radius" | "p0" | "p1" | "rotate_line" | "rotate_shape";
-
-interface DrawingBounds {
-  minX: number;
-  maxX: number;
-  minY: number;
-  maxY: number;
-  cx?: number;
-  cy?: number;
-  rotation?: number;
-  handles: { type: DrawingHandleType; x: number; y: number }[];
-}
-
-const getDrawingBounds = (d: TacticalDrawing): DrawingBounds | null => {
-  if (!d.points || d.points.length < 2) return null;
-  const p0 = d.points[0];
-  const p1 = d.points[d.points.length - 1];
-
-  if (d.type === "rect" || d.type === "triangle" || d.type === "pentagon" || d.type === "hexagon") {
-    const minX = Math.min(p0.x, p1.x);
-    const maxX = Math.max(p0.x, p1.x);
-    const minY = Math.min(p0.y, p1.y);
-    const maxY = Math.max(p0.y, p1.y);
-    const cx = (minX + maxX) / 2;
-    const cy = (minY + maxY) / 2;
-    return {
-      minX,
-      maxX,
-      minY: minY - 24, // extra space for rotate handle in bounding rect
-      maxY,
-      cx,
-      cy,
-      rotation: d.rotation || 0,
-      handles: [
-        { type: "tl", x: minX, y: minY },
-        { type: "tr", x: maxX, y: minY },
-        { type: "bl", x: minX, y: maxY },
-        { type: "br", x: maxX, y: maxY },
-        { type: "rotate_shape", x: cx, y: minY - 24 },
-      ],
-    };
-  } else if (d.type === "circle") {
-    const radius = Math.hypot(p1.x - p0.x, p1.y - p0.y);
-    const minX = p0.x - radius;
-    const maxX = p0.x + radius;
-    const minY = p0.y - radius;
-    const maxY = p0.y + radius;
-    return {
-      minX,
-      maxX,
-      minY: minY - 24, // extra space for rotate handle
-      maxY,
-      cx: p0.x,
-      cy: p0.y,
-      rotation: d.rotation || 0,
-      handles: [
-        { type: "tl", x: minX, y: minY },
-        { type: "tr", x: maxX, y: minY },
-        { type: "bl", x: minX, y: maxY },
-        { type: "br", x: maxX, y: maxY },
-        { type: "radius", x: p0.x + radius, y: p0.y },
-        { type: "rotate_shape", x: p0.x, y: minY - 24 },
-      ],
-    };
-  } else if (d.type === "run" || d.type === "pass" || d.type === "line") {
-    const cx = (p0.x + p1.x) / 2;
-    const cy = (p0.y + p1.y) / 2;
-    const angle = Math.atan2(p1.y - p0.y, p1.x - p0.x);
-    // Offset the rotation handle by 24 pixels perpendicular to the line
-    const rotX = cx + 24 * Math.cos(angle - Math.PI / 2);
-    const rotY = cy + 24 * Math.sin(angle - Math.PI / 2);
-    
-    return {
-      minX: Math.min(p0.x, p1.x, rotX - 16),
-      maxX: Math.max(p0.x, p1.x, rotX + 16),
-      // Sempre damos um espaço extra (- 36) no minY para garantir que a barra flutuante 
-      // Sem espaço extra fixo aqui, usamos translateY(-40px) no rendering para todas as formas
-      minY: Math.min(p0.y, p1.y, rotY),
-      maxY: Math.max(p0.y, p1.y, rotY),
-      handles: [
-        { type: "p0", x: p0.x, y: p0.y },
-        { type: "p1", x: p1.x, y: p1.y },
-        { type: "rotate_line", x: rotX, y: rotY },
-      ],
-    };
-  } else if (d.type === "pen") {
-    let minX = Infinity, maxX = -Infinity, minY = Infinity, maxY = -Infinity;
-    d.points.forEach(p => {
-      minX = Math.min(minX, p.x);
-      maxX = Math.max(maxX, p.x);
-      minY = Math.min(minY, p.y);
-      maxY = Math.max(maxY, p.y);
-    });
-    return {
-      minX,
-      maxX,
-      minY,
-      maxY,
-      handles: [
-        { type: "tl", x: minX, y: minY },
-        { type: "tr", x: maxX, y: minY },
-        { type: "bl", x: minX, y: maxY },
-        { type: "br", x: maxX, y: maxY },
-      ],
-    };
-  }
-  return null;
-};
-
+/**
+ * TacticalBoard - Componente principal do quadro tático interativo.
+ * 
+ * Este componente orquestra a renderização de um canvas 2D para desenho tático de futebol,
+ * permitindo arrastar jogadores, desenhar formas (linhas, passes, círculos), seleção, rotação,
+ * redimensionamento e gestão de histórico (Undo/Redo). É o "motor" por trás da Prancheta Tática.
+ * 
+ * Responsabilidades:
+ * - Renderização do campo de jogo e elementos (jogadores, balizas, bola, formas táticas)
+ * - Gestão de estado de seleção, arrastamento e redimensionamento
+ * - Integração com barras flutuantes laterais e inferiores
+ * - Histórico de estados para Undo/Redo
+ * - Atalhos de teclado (R: rotar, Delete/Backspace: apagar, Ctrl+C/V: copiar/colar)
+ * 
+ * Props:
+ * - initialTacticData: Dados iniciais da tática (opcional), vindo da Base de Dados ou estado guardado
+ * - onSave: Callback invocado quando o utilizador guarda a tática (ex: ao criar um novo exercício)
+ * - readOnly: Se verdadeiro, o canvas fica em modo apenas de visualização (sem interação)
+ * - thumbnail: Se verdadeiro, o componente renderiza numa vista de miniatura (usado no catálogo de exercícios)
+ * 
+ * Dependências de UI (components):
+ * - TacticalBoardThumbnail: Versão estática/miniatura
+ * - TacticalBottomBar: Controles de modo, ferramentas e ação
+ * - TacticalSidebar: Metadados do exercício, histórico e operações de persistência
+ * - TacticalShapeFloatingBar: Edição contextual de formas geométricas
+ * - TacticalGoalFloatingBar: Edição de balizas (tamanho, cor)
+ * - TacticalPlayerFloatingBar: Edição de propriedades de jogadores selecionados
+ */
 export default function TacticalBoard({ initialTacticData, onSave, readOnly = false, thumbnail = false }: { initialTacticData?: any, onSave?: (data: any) => void, readOnly?: boolean, thumbnail?: boolean }) {
   const canvasRef = useRef<HTMLCanvasElement>(null);
   const stateRef = useRef<TacticalState>(initialTacticData ? { ...INITIAL_STATE, ...initialTacticData } : JSON.parse(JSON.stringify(INITIAL_STATE)));

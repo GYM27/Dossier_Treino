@@ -4,7 +4,7 @@ import React, { useEffect } from "react";
 import { SessaoTreino } from "@/models/sessao-treino";
 import { Team } from "@/models/team";
 import { Printer, X } from "lucide-react";
-import { TacticalBoardThumbnail } from "../prancheta/TacticalBoardThumbnail";
+import { TacticalBoardThumbnail } from "@/components/prancheta/TacticalBoardThumbnail";
 
 interface TreinoPrintPreviewModalProps {
   treino: SessaoTreino;

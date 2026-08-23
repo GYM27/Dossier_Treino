@@ -8,6 +8,7 @@ interface CalendarioMonthViewProps {
   eventos: EventoCalendario[];
   onNewEvent: (dayDate: Date) => void;
   onEditEvent: (evento: EventoCalendario) => void;
+  onPlanTreino?: (evento: EventoCalendario) => void;
 }
 
 const DIAS_SEMANA = ["SEG", "TER", "QUA", "QUI", "SEX", "SAB", "DOM"];
@@ -18,6 +19,7 @@ export function CalendarioMonthView({
   eventos,
   onNewEvent,
   onEditEvent,
+  onPlanTreino,
 }: CalendarioMonthViewProps) {
   return (
     <section className="bg-[#0f172a] rounded-xl overflow-hidden border border-slate-800 shadow-xl">

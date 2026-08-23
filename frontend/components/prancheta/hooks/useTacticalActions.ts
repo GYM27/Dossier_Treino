@@ -1,7 +1,7 @@
 "use client"
 
 import { useRef, useState, useEffect } from "react";
-import { TacticalState, TacticalDrawing, Point, DrawingHandleType } from "@/components/prancheta/types";
+import { TacticalState, TacticalDrawing, Point, TacticalElement, DrawingHandleType } from "@/components/prancheta/types";
 import { useTacticalCanvasRenderer } from "./useTacticalCanvasRenderer";
 import { INITIAL_STATE, CANVAS_WIDTH, CANVAS_HEIGHT } from "@/components/prancheta/constants";
 

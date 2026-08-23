@@ -666,3 +666,66 @@ Confirmámos a arquitetura pura do `PlaneamentoSemanal.tsx`:
 - **Orquestrador**: Consome apenas o `usePlaneamentoSemanal` e delega toda a renderização para sub-módulos autónomos: `<CalendarioHeader />`, `<CalendarioWeekView />`, `<CalendarioMonthView />`, `<CalendarioDayView />`, `<EventoFormModal />` e `<CalendarioSyncModal />`.
 - **Manutenção e Escalabilidade**: Nenhum ficheiro da área de calendário excede os limites de complexidade, garantindo facilidade de teste unitário e prevenção de regressões visuais.
 
+---
+
+# Fase 6: Especialização das Áreas de Trabalho (Exercícios vs Planos de Treino vs Calendário)
+
+## 1. O Problema da Mistura e Duplicação de Fluxos
+- **Sintoma Anterior**: O utilizador podia criar treinos tanto no Calendário como na aba Treinos através de modais com campos duplicados (Data, Hora, Local, Duração, etc.).
+- **Problema de Engenharia**: Duplicação de código, divergência de estado entre o evento de calendário e a sessão de treino, e falta de um espaço dedicado para o desenho livre e gestão do catálogo de exercícios táticos.
+
+## 2. A Nova Arquitetura de 3 Especialistas (SoC - Separation of Concerns)
+Dividimos o sistema em 3 pilares perfeitamente especializados:
+
+### Pilar 1: 📅 Calendário (Agendamento & Logística)
+- **Papel**: Define **quando** e **onde** a equipa treina (`dataHoraInicio`, `dataHoraFim`, `local`, `numeroTreino`).
+- **O que acontece por detrás dos panos**:
+  - O `EventoCalendarioServiceImpl.registarEventoEGerarGrelha` grava o evento e cria automaticamente uma `SessaoTreino` vinculada (relação 1-para-1).
+  - No cartão do evento (vistas Semanal, Mensal e Diária), surge um atalho **"Planear Treino"** com o ícone de haltere que aciona `onPlanTreino(evento)`.
+  - O estado central em `app/page.tsx` comuta o separador ativo para `"treinos"` e pré-seleciona a sessão correspondente via `initialTreinoId`.
+
+### Pilar 2: 📋 Planos de Treino (Estúdio de Treinos)
+- **Papel**: O treinador constrói a sessão pedagógica com base no agendamento do calendário.
+- **O que acontece por detrás dos panos**:
+  - A `SessaoTreinoResponseDTO` agora transporta o campo `local` mapeado diretamente do evento de calendário associado via `SessaoTreinoMapper`.
+  - O cabeçalho (`TreinoStudioHeader`) e a lista lateral (`TreinosSidebarList`) mostram imediatamente a Data, Hora, Microciclo e o Local (`MapPin`).
+  - O treinador foca-se exclusivamente na montagem desportiva: definir o **Objetivo Principal**, **Nº de Jogadores**, **Intensidade Geral**, **Material** e importar os exercícios do catálogo ou desenhá-los na prancheta.
+
+### Pilar 3: 🎨 Página Dedicada da Prancheta Tática (`PranchetaStudio.tsx`)
+- **Papel**: Laboratório de criação e gestão de todo o repertório de exercícios do clube.
+- **Estrutura**:
+  - **Menu Lateral Esquerdo**: Galeria com catálogo completo de exercícios guardados no PostgreSQL, pesquisa em tempo real e filtros rápidos por categoria (*Aquecimento, Técnico, Tático, Físico, Guarda-Redes, Lúdico*).
+  - **Área Central/Direita**: A Prancheta Tática interativa (`TacticalBoard`), sincronizada com a Ficha Técnica do Exercício (Nome, Categoria, Espaço, Nº Jogadores, Nível de Dificuldade 1-5, Objetivos e Instruções).
+  - **Operações**: "+ Novo", "Guardar Exercício", "Duplicar", "Eliminar" e visualização da ficha técnica colapsável.
+  - Todos os exercícios gravados aqui ficam instantaneamente disponíveis para serem importados em qualquer sessão de treino!
+
+## 3. Dissecação Linha-a-Linha do Transporte do `Local` (Backend & Frontend)
+1. **DTO de Resposta (`SessaoTreinoResponseDTO.java`)**:
+   ```java
+   private String local;
+   ```
+2. **Mapper (`SessaoTreinoMapper.java`)**:
+   ```java
+   .local(entity.getEventoCalendario() != null ? entity.getEventoCalendario().getLocal() : null)
+   ```
+3. **Modelo TypeScript (`models/sessao-treino.ts`)**:
+   ```typescript
+   export interface SessaoTreino {
+     id: string;
+     eventoId?: string;
+     data: string;
+     hora?: string;
+     local?: string;
+     ...
+   }
+   ```
+4. **Renderização Visual no Card (`TreinosSidebarList.tsx`)**:
+   ```tsx
+   {t.local && (
+     <div className="flex items-center gap-1">
+       <MapPin className="w-3 h-3 text-cyan-400/80" />
+       <span className="truncate max-w-[110px]">{t.local}</span>
+     </div>
+   )}
+   ```
+
