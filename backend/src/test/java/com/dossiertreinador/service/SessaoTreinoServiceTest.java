@@ -147,4 +147,48 @@ class SessaoTreinoServiceTest {
         verify(sessaoTreinoExercicioRepository, times(1)).save(assocAtualizada);
         verify(sessaoTreinoRepository, times(1)).save(atualizada);
     }
+
+    @Test
+    void reordenarExercicios_DeveAtualizarOrdemDeTodosOsExerciciosCorretamente() {
+        // Arrange
+        UUID assocId1 = UUID.randomUUID();
+        UUID assocId2 = UUID.randomUUID();
+        UUID assocId3 = UUID.randomUUID();
+
+        SessaoTreinoExercicio assoc1 = SessaoTreinoExercicio.builder()
+                .id(assocId1)
+                .sessaoTreino(sessao)
+                .ordem(1)
+                .duracaoMinutos(10)
+                .build();
+        SessaoTreinoExercicio assoc2 = SessaoTreinoExercicio.builder()
+                .id(assocId2)
+                .sessaoTreino(sessao)
+                .ordem(2)
+                .duracaoMinutos(15)
+                .build();
+        SessaoTreinoExercicio assoc3 = SessaoTreinoExercicio.builder()
+                .id(assocId3)
+                .sessaoTreino(sessao)
+                .ordem(3)
+                .duracaoMinutos(20)
+                .build();
+
+        sessao.getExercicios().add(assoc1);
+        sessao.getExercicios().add(assoc2);
+        sessao.getExercicios().add(assoc3);
+
+        when(sessaoTreinoRepository.findById(sessaoId)).thenReturn(Optional.of(sessao));
+        when(sessaoTreinoRepository.save(any(SessaoTreino.class))).thenAnswer(i -> i.getArguments()[0]);
+
+        // Act: Reordenar para: 3º -> 1º, 1º -> 2º, 2º -> 3º
+        java.util.List<UUID> novaOrdemIds = java.util.List.of(assocId3, assocId1, assocId2);
+        SessaoTreino atualizada = sessaoTreinoService.reordenarExercicios(sessaoId, novaOrdemIds);
+
+        // Assert
+        assertThat(assoc3.getOrdem()).isEqualTo(1);
+        assertThat(assoc1.getOrdem()).isEqualTo(2);
+        assertThat(assoc2.getOrdem()).isEqualTo(3);
+        verify(sessaoTreinoRepository, times(1)).save(atualizada);
+    }
 }

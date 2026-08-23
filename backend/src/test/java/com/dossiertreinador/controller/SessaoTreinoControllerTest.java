@@ -119,4 +119,28 @@ class SessaoTreinoControllerTest {
                 .andExpect(status().isOk())
                 .andExpect(jsonPath("$.duracaoTotalMinutos").value(20));
     }
+
+    @Test
+    @WithMockUser(username = "treinador@equipa.pt", roles = {"TREINADOR"})
+    void testReordenarExerciciosNaSessao() throws Exception {
+        UUID sessaoId = UUID.randomUUID();
+        UUID assocId1 = UUID.randomUUID();
+        UUID assocId2 = UUID.randomUUID();
+        java.util.List<UUID> novaOrdem = java.util.List.of(assocId2, assocId1);
+
+        SessaoTreinoResponseDTO response = SessaoTreinoResponseDTO.builder()
+                .id(sessaoId)
+                .duracaoTotalMinutos(30)
+                .build();
+
+        when(sessaoTreinoService.reordenarExercicios(any(), any())).thenReturn(new SessaoTreino());
+        when(sessaoTreinoMapper.toResponseDTO(any())).thenReturn(response);
+
+        mockMvc.perform(org.springframework.test.web.servlet.request.MockMvcRequestBuilders.put("/api/treinos/{sessaoId}/exercicios/reordenar", sessaoId)
+                .contentType(MediaType.APPLICATION_JSON)
+                .content(objectMapper.writeValueAsString(novaOrdem)))
+                .andExpect(status().isOk())
+                .andExpect(jsonPath("$.id").value(sessaoId.toString()))
+                .andExpect(jsonPath("$.duracaoTotalMinutos").value(30));
+    }
 }

@@ -149,4 +149,13 @@ public class SessaoTreinoController {
         
         return ResponseEntity.ok(sessaoTreinoMapper.toResponseDTO(atualizada));
     }
+
+    @PutMapping("/{sessaoId}/exercicios/reordenar")
+    public ResponseEntity<SessaoTreinoResponseDTO> reordenarExerciciosNaSessao(
+            @PathVariable UUID sessaoId,
+            @RequestBody List<UUID> ordemAssocIds) {
+            
+        SessaoTreino atualizada = sessaoTreinoService.reordenarExercicios(sessaoId, ordemAssocIds);
+        return ResponseEntity.ok(sessaoTreinoMapper.toResponseDTO(atualizada));
+    }
 }

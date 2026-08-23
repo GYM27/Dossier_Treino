@@ -122,17 +122,35 @@ export function useTreinoDetailStudio({
     [treino.id, onReloadTreino]
   );
 
-  // Atualizar dados de um exercício associado
+  // Atualizar dados de um exercício associado (Duração, Observações, etc.)
   const handleUpdateExercicioAssoc = useCallback(
     async (assocId: string, updates: Partial<SessaoTreinoExercicio>) => {
+      // 1. Atualização Otimista imediata da duração e do total da sessão
+      const exerciciosAtualizados = (treino.exercicios || []).map((ex) =>
+        ex.id === assocId ? { ...ex, ...updates } : ex
+      );
+      const novoTotal = exerciciosAtualizados.reduce(
+        (sum, curr) => sum + (curr.duracaoMinutos || 0),
+        0
+      );
+      onTreinoUpdated({
+        ...treino,
+        exercicios: exerciciosAtualizados,
+        duracaoTotalMinutos: novoTotal,
+      });
+
+      // 2. Persistir no backend
       try {
-        await treinoService.atualizarExercicio(treino.id, assocId, updates);
-        onReloadTreino(treino.id);
+        const treinoAtualizado = await treinoService.atualizarExercicio(treino.id, assocId, updates);
+        if (treinoAtualizado) {
+          onTreinoUpdated(treinoAtualizado);
+        }
       } catch (err) {
         console.error("Erro ao atualizar exercício:", err);
+        onReloadTreino(treino.id);
       }
     },
-    [treino.id, onReloadTreino]
+    [treino, onTreinoUpdated, onReloadTreino]
   );
 
   // Substituir um exercício existente na sessão por outro da biblioteca (mantém o mesmo lugar/ordem)
@@ -161,9 +179,46 @@ export function useTreinoDetailStudio({
     [treino.id, replacingAssoc, onReloadTreino]
   );
 
-  // Reordenar exercícios na sessão (Mover para Cima / Mover para Baixo)
+  // Reordenação atómica de exercícios (usada tanto pelo Drag & Drop como pelos botões de subir/descer)
+  const handleReorderExercicios = useCallback(
+    async (novaLista: SessaoTreinoExercicio[]) => {
+      // 1. Atualização otimista imediata na interface
+      const listaComOrdem = novaLista.map((item, idx) => ({
+        ...item,
+        ordem: idx + 1,
+      }));
+
+      onTreinoUpdated({
+        ...treino,
+        exercicios: listaComOrdem,
+      });
+
+      // 2. Extração dos IDs para persistência atómica no backend
+      const idsOrdenados = listaComOrdem
+        .map((item) => item.id)
+        .filter((id): id is string => Boolean(id));
+
+      if (idsOrdenados.length === 0) return;
+
+      try {
+        const treinoAtualizado = await treinoService.reordenarExercicios(
+          treino.id,
+          idsOrdenados
+        );
+        if (treinoAtualizado) {
+          onTreinoUpdated(treinoAtualizado);
+        }
+      } catch (err) {
+        console.error("Erro ao reordenar exercícios:", err);
+        onReloadTreino(treino.id);
+      }
+    },
+    [treino, onTreinoUpdated, onReloadTreino]
+  );
+
+  // Mover exercício uma posição para cima ou para baixo (botões direcionais)
   const handleMoveExercicio = useCallback(
-    async (currentIndex: number, targetIndex: number) => {
+    (currentIndex: number, targetIndex: number) => {
       const exercicios = treino.exercicios || [];
       if (
         currentIndex < 0 ||
@@ -174,42 +229,13 @@ export function useTreinoDetailStudio({
         return;
       }
 
-      const currentAssoc = exercicios[currentIndex];
-      const targetAssoc = exercicios[targetIndex];
-      if (!currentAssoc?.id || !targetAssoc?.id) return;
-
-      // Criação da lista reordenada localmente para feedback instantâneo no ecrã
       const novaLista = [...exercicios];
-      const temp = novaLista[currentIndex];
-      novaLista[currentIndex] = novaLista[targetIndex];
-      novaLista[targetIndex] = temp;
+      const [itemMovido] = novaLista.splice(currentIndex, 1);
+      novaLista.splice(targetIndex, 0, itemMovido);
 
-      novaLista.forEach((item, idx) => {
-        item.ordem = idx + 1;
-      });
-
-      onTreinoUpdated({
-        ...treino,
-        exercicios: novaLista,
-      });
-
-      try {
-        // Persistir a troca de ordem no backend
-        await Promise.all([
-          treinoService.atualizarExercicio(treino.id, currentAssoc.id, {
-            ordem: targetIndex + 1,
-          }),
-          treinoService.atualizarExercicio(treino.id, targetAssoc.id, {
-            ordem: currentIndex + 1,
-          }),
-        ]);
-        onReloadTreino(treino.id);
-      } catch (err) {
-        console.error("Erro ao reordenar exercícios:", err);
-        onReloadTreino(treino.id);
-      }
+      handleReorderExercicios(novaLista);
     },
-    [treino, onTreinoUpdated, onReloadTreino]
+    [treino.exercicios, handleReorderExercicios]
   );
 
   return {
@@ -250,5 +276,6 @@ export function useTreinoDetailStudio({
     handleStartReplace,
     handleReplaceExercicio,
     handleMoveExercicio,
+    handleReorderExercicios,
   };
 }

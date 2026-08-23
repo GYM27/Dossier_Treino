@@ -56,7 +56,7 @@ export const treinoService = {
     treinoId: string,
     assocId: string,
     updates: Partial<SessaoTreinoExercicio>
-  ): Promise<void> {
+  ): Promise<SessaoTreino> {
     return apiFetch(`/treinos/${treinoId}/exercicios/${assocId}`, {
       method: "PUT",
       body: JSON.stringify(updates),
@@ -66,6 +66,16 @@ export const treinoService = {
   async removerExercicio(treinoId: string, assocId: string): Promise<void> {
     return apiFetch(`/treinos/${treinoId}/exercicios/${assocId}`, {
       method: "DELETE",
+    });
+  },
+
+  async reordenarExercicios(
+    treinoId: string,
+    ordemAssocIds: string[]
+  ): Promise<SessaoTreino> {
+    return apiFetch(`/treinos/${treinoId}/exercicios/reordenar`, {
+      method: "PUT",
+      body: JSON.stringify(ordemAssocIds),
     });
   },
 };

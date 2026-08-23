@@ -101,6 +101,12 @@ public class SessaoTreinoServiceImpl implements SessaoTreinoService {
             }
         }
         
+        // Recalcular duração total
+        int duracaoTotal = sessao.getExercicios().stream()
+                .mapToInt(SessaoTreinoExercicio::getDuracaoMinutos)
+                .sum();
+        sessao.setDuracaoTotalMinutos(duracaoTotal);
+        
         return sessaoTreinoRepository.save(sessao);
     }
 
@@ -149,6 +155,28 @@ public class SessaoTreinoServiceImpl implements SessaoTreinoService {
                 .mapToInt(SessaoTreinoExercicio::getDuracaoMinutos)
                 .sum();
         sessao.setDuracaoTotalMinutos(duracaoTotal);
+        
+        return sessaoTreinoRepository.save(sessao);
+    }
+
+    @Override
+    @Transactional
+    public SessaoTreino reordenarExercicios(UUID sessaoId, List<UUID> exercicioAssocIds) {
+        SessaoTreino sessao = buscarPorId(sessaoId);
+        
+        if (exercicioAssocIds != null && !exercicioAssocIds.isEmpty()) {
+            for (int i = 0; i < exercicioAssocIds.size(); i++) {
+                UUID assocId = exercicioAssocIds.get(i);
+                int novaOrdem = i + 1;
+                sessao.getExercicios().stream()
+                        .filter(e -> e.getId().equals(assocId))
+                        .findFirst()
+                        .ifPresent(assoc -> {
+                            assoc.setOrdem(novaOrdem);
+                            sessaoTreinoExercicioRepository.save(assoc);
+                        });
+            }
+        }
         
         return sessaoTreinoRepository.save(sessao);
     }

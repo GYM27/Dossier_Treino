@@ -2,21 +2,26 @@ import React, { useState, useEffect } from "react";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { RefreshCw, Copy, Sparkles, AlertCircle, CheckCircle2, X } from "lucide-react";
+import { PastaDropdownOption } from "@/models/pasta";
 
 interface SaveExercicioOptionsModalProps {
   isOpen: boolean;
   onClose: () => void;
   currentNome: string;
+  currentPasta?: string;
+  pastaOptions?: PastaDropdownOption[];
   isFromTreino: boolean;
   isSaving: boolean;
-  onConfirmOverwrite: () => void;
-  onConfirmSaveAsNew: (novoNome: string) => void;
+  onConfirmOverwrite: (pasta?: string) => void;
+  onConfirmSaveAsNew: (novoNome: string, pasta?: string) => void;
 }
 
 export function SaveExercicioOptionsModal({
   isOpen,
   onClose,
   currentNome,
+  currentPasta = "Organização Ofensiva",
+  pastaOptions = [],
   isFromTreino,
   isSaving,
   onConfirmOverwrite,
@@ -24,25 +29,27 @@ export function SaveExercicioOptionsModal({
 }: SaveExercicioOptionsModalProps) {
   const [selectedMode, setSelectedMode] = useState<"OVERWRITE" | "NEW">("NEW");
   const [novoNome, setNovoNome] = useState("");
+  const [selectedPasta, setSelectedPasta] = useState(currentPasta);
 
   useEffect(() => {
     if (isOpen) {
       // Sugerir automaticamente um nome para a variante
       const baseName = currentNome.trim() || "Exercício";
       setNovoNome(`${baseName} (Variante)`);
+      setSelectedPasta(currentPasta || "Organização Ofensiva");
       // Se veio de um treino, sugerimos "NEW" por padrão para evitar quebrar outros exercícios do treino
       setSelectedMode(isFromTreino ? "NEW" : "OVERWRITE");
     }
-  }, [isOpen, currentNome, isFromTreino]);
+  }, [isOpen, currentNome, currentPasta, isFromTreino]);
 
   if (!isOpen) return null;
 
   const handleConfirm = () => {
     if (selectedMode === "OVERWRITE") {
-      onConfirmOverwrite();
+      onConfirmOverwrite(selectedPasta);
     } else {
       const finalName = novoNome.trim() || `${currentNome} (Variante)`;
-      onConfirmSaveAsNew(finalName);
+      onConfirmSaveAsNew(finalName, selectedPasta);
     }
   };
 
@@ -152,21 +159,42 @@ export function SaveExercicioOptionsModal({
             </div>
           </div>
 
-          {/* Campo de Nome para Nova Variante */}
-          {selectedMode === "NEW" && (
-            <div className="bg-[#111827] p-3.5 rounded-xl border border-slate-800 space-y-1.5 animate-in fade-in duration-200">
-              <label className="text-[11px] font-semibold text-slate-300 uppercase tracking-wider block">
-                Nome da Nova Variante
-              </label>
-              <Input
-                value={novoNome}
-                onChange={(e) => setNovoNome(e.target.value)}
-                placeholder="Ex: Meínhos 4x1 (Pressão Alta)"
-                className="bg-[#162032] border-cyan-500/30 text-cyan-100 text-xs"
-                autoFocus
-              />
-            </div>
-          )}
+          {/* Configurações para Gravação */}
+          <div className="bg-[#111827] p-3.5 rounded-xl border border-slate-800 space-y-3 animate-in fade-in duration-200">
+            {selectedMode === "NEW" && (
+              <div className="space-y-1.5">
+                <label className="text-[11px] font-semibold text-slate-300 uppercase tracking-wider block">
+                  Nome da Nova Variante
+                </label>
+                <Input
+                  value={novoNome}
+                  onChange={(e) => setNovoNome(e.target.value)}
+                  placeholder="Ex: Meínhos 4x1 (Pressão Alta)"
+                  className="bg-[#162032] border-cyan-500/30 text-cyan-100 text-xs"
+                  autoFocus
+                />
+              </div>
+            )}
+
+            {pastaOptions && pastaOptions.length > 0 && (
+              <div className="space-y-1.5">
+                <label className="text-[11px] font-semibold text-amber-400 uppercase tracking-wider block">
+                  📁 Pasta de Destino
+                </label>
+                <select
+                  value={selectedPasta}
+                  onChange={(e) => setSelectedPasta(e.target.value)}
+                  className="w-full bg-[#162032] border border-amber-500/30 rounded-lg px-2.5 h-8 text-xs text-amber-100 focus:outline-none focus:border-amber-400 font-semibold"
+                >
+                  {pastaOptions.map((opt) => (
+                    <option key={opt.id} value={opt.nome}>
+                      {opt.label}
+                    </option>
+                  ))}
+                </select>
+              </div>
+            )}
+          </div>
 
           {/* Rodapé com Ações */}
           <div className="flex items-center justify-end gap-2 pt-3 border-t border-slate-800">

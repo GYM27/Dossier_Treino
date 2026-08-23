@@ -26,4 +26,7 @@ public interface SessaoTreinoService {
     
     // Atualizar um exercício associado a uma sessão (re-associação de exercício, ordem, duração, observações)
     SessaoTreino atualizarExercicioNaSessao(UUID sessaoId, UUID exercicioAssocId, UUID novoExercicioId, Integer ordem, Integer duracaoMinutos, String observacoes);
+    
+    // Reordenar atomicamente a lista de exercícios da sessão
+    SessaoTreino reordenarExercicios(UUID sessaoId, List<UUID> exercicioAssocIds);
 }

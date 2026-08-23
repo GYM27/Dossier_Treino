@@ -275,12 +275,15 @@ Agora pode rodar livremente **todas as Formas Geométricas** (Quadrados, Círcul
 
 1. **Navegar pelo Histórico**: Na barra lateral esquerda encontra todos os treinos registados para a equipa ativa, ordenados por microciclo/data, com contagem de exercícios e duração.
 2. **Criar Novo Treino**: Clique no botão **"+ Novo"** no topo da barra lateral para abrir o assistente. Preencha a data, hora, local e objetivo. O treino será agendado automaticamente no Calendário!
-3. **Adicionar Exercícios**:
-   - Clique em **"Biblioteca"** para escolher um exercício já existente no catálogo.
-   - Clique em **"Novo Exercício (Prancheta)"** para desenhar um exercício de raiz na Prancheta Tática e associá-lo de imediato à sessão.
-4. **Editar e Guardar**: Altere o número de jogadores, o material ou os objetivos e clique em **"Guardar Treino"**.
-5. **Reordenar Exercícios no Plano (1-Clique)**:
-   - Em cada cartão de exercício na sessão de treino, utilize os botões **`[▲]` (Mover para Cima)** e **`[▼]` (Mover para Baixo)** no canto superior direito para alterar a ordem da sessão instantaneamente. A ordenação é mantida intacta e estável mesmo quando os exercícios são editados na prancheta.
+3. **Adicionar Exercícios por Pastas (Momentos do Jogo)**:
+   - Clique em **"Biblioteca"** para abrir o catálogo. Pode navegar pelas 5 pastas principais (`Organização Ofensiva`, `Organização Defensiva`, `Transições`, etc.) ou pelas suas subpastas, alternar para a vista de todos os exercícios ou usar a pesquisa rápida.
+   - Clique em qualquer exercício para o adicionar de imediato à sessão de treino.
+4. **Editar e Ajustar Tempos em Tempo Real**:
+   - Clique em **"Modo Edição"** (botão com ícone de lápis) para ajustar o tempo (`tempo`) de qualquer exercício. Ao alterar o valor (ex: de 10 para 20 min) e sair do campo ou premir Enter, o tempo total do plano de treino no cabeçalho atualiza-se de imediato e grava automaticamente na base de dados.
+   - Altere o número de jogadores, o material ou os objetivos e clique em **"Guardar"**.
+5. **Reordenar Exercícios no Plano (Arrastar e Largar / Botões Direcionais)**:
+   - **Arrastar e Largar (Drag & Drop)**: Clique no puxador vertical (`⋮⋮`) no cabeçalho de qualquer cartão de exercício e arraste-o para a posição desejada na lista. O cartão de destino acenderá a ciano para indicar onde o exercício será inserido. Ao largar, a ordem da sessão atualiza-se de imediato e grava automaticamente na base de dados.
+   - **Botões Subir / Descer**: Pode também usar os botões **`[▲]` (Mover para Cima)** e **`[▼]` (Mover para Baixo)** no canto superior direito de cada cartão para reposicionar o exercício um lugar de cada vez. A alteração é persistida atomicamente sem qualquer retorno à posição original.
 6. **Substituir Exercício no Mesmo Lugar (`[🔄]`)**:
    - Clique no ícone **`[🔄]` (Substituir)** no topo de qualquer cartão de exercício. A biblioteca abrirá em modo de substituição, permitindo escolher o novo exercício que assumirá imediatamente aquela posição na sessão de treino.
 
@@ -366,22 +369,31 @@ Agora pode rodar livremente **todas as Formas Geométricas** (Quadrados, Círcul
      - Clique em **"PDF"** no topo para abrir a folha oficial de treino com cabeçalho de periodização completo (`MESOCICLO`, `MICROCICLO`, `UNIDADE DE TREINO`, `Nº JOGADORES`, `VOLUME TOTAL`) e todos os blocos de cada exercício perfeitamente discriminados.
 
 ### 2. Como Criar e Gerir Exercícios na Prancheta Tática
+ 
+ 1. No menu principal ou no topo, aceda a **"Prancheta Tática"**.
+ 2. **Área Máxima de Desenho**: O relvado de jogo ocupa o centro do ecrã para posicionar atletas, balizas e trajetórias.
+ 3. **Menu Hambúrguer & Árvore de Pastas (Momentos do Jogo e Bolas Paradas)**:
+    - Clique no botão `[☰ Exercícios (X)]` no canto superior esquerdo para **abrir e fechar a biblioteca com 1 clique** no mesmo símbolo (alterna para `[✕]` quando aberta).
+    - **Pastas Principais Padrão**:
+      - 📁 **Organização Ofensiva**
+      - 📁 **Organização Defensiva**
+      - 📁 **Transição Ofensiva**
+      - 📁 **Transição Defensiva**
+      - 📁 **Bolas Paradas**
+    - **Criar Pastas e Subpastas ("Pastas dentro de Pastas")**:
+      - **Criar Subpasta Imediata**: No cabeçalho de qualquer pasta no acordeão, clique no botão **`[+]`** para abrir o formulário inline já focado para criar uma subpasta diretamente dentro dessa pasta (ex: criar *"Construção / 1ª Fase"* dentro de *"Organização Ofensiva"*).
+      - **Criar Nova Pasta Principal**: Clique em **`[+ Pasta]`** no topo da gaveta para criar uma nova pasta raiz.
+      - **Contadores de Exercícios**: Cada pasta exibe o número de exercícios diretos e, quando tem subpastas, o total agregado de exercícios (`diretos (total)`).
+ 4. **Ficha Técnica Horizontal e Atribuição de Pasta**:
+    - Configure de forma independente: **Nome do Exercício**, 📁 **Pasta** (com dropdown hierárquico formatado `└─ Subpasta`), **Categoria**, **Espaço** (ex: _50x40m_), ⏱️ **Tempo** (ex: _15 min_), **Nº Atletas**, **Dificuldade (1 a 5)**, ⚡ **Carga** (séries e pausas), 🎯 **Objetivos Específicos** (comportamentos alvo) e 📄 **Descrição e Organização Metodológica**.
+ 5. **Desenhar, Guardar e Gerir Variantes**:
+    - Os jogadores começam pré-configurados em **tamanho pequeno (P)**, ideal para a escala de campo e colocação tática precisa.
+    - Utilize a barra de ferramentas inferior da prancheta para alternar entre seleção, linhas de passe/condução, jogadores de equipa da casa/fora, balizas móveis e cones.
+    - **Janela de Gravação Inteligente**: Ao clicar em **"Guardar"** num exercício existente, surge o modal com duas opções:
+      - **"Atualizar Original"**: Altera o exercício base em toda a biblioteca e permite escolher/mudar a pasta de destino.
+      - **"Gravar Nova Variante"**: Permite indicar um novo nome e pasta de destino, criando um novo exercício independente. Se abriu o exercício a partir de um plano de treino, apenas essa posição do treino é vinculada à nova variante, mantendo os restantes exercícios do treino 100% inalterados!
+    - Utilize o botão **[← Voltar ao Treino]** no topo para regressar diretamente ao estúdio do plano de treino.
 
-1. No menu principal ou no topo, aceda a **"Prancheta Tática"**.
-2. **Área Máxima de Desenho**: O relvado de jogo ocupa o centro do ecrã para posicionar atletas, balizas e trajetórias.
-3. **Menu Hambúrguer da Biblioteca de Exercícios**:
-   - Clique no botão `[☰ Exercícios (X)]` no canto superior esquerdo para abrir a gaveta lateral retrátil.
-   - Pesquise por nome ou filtre por categoria (_Aquecimento, Técnico, Tático, Físico, Guarda-Redes, Lúdico_).
-   - Ao selecionar um exercício ou criar um novo (`+ Novo`), o menu recolhe-se suavemente para libertar toda a largura da prancheta.
-4. **Ficha Técnica Horizontal e Painel Lateral**:
-   - Configure de forma independente: **Nome do Exercício**, **Categoria**, **Espaço** (ex: _50x40m_), ⏱️ **Tempo** (ex: _15 min_), **Nº Atletas**, **Dificuldade (1 a 5)**, ⚡ **Carga** (séries e pausas), 🎯 **Objetivos Específicos** (comportamentos alvo) e 📄 **Descrição e Organização Metodológica**.
-5. **Desenhar, Guardar e Gerir Variantes**:
-   - Os jogadores começam pré-configurados em **tamanho pequeno (P)**, ideal para a escala de campo e colocação tática precisa.
-   - Utilize a barra de ferramentas inferior da prancheta para alternar entre seleção, linhas de passe/condução, jogadores de equipa da casa/fora, balizas móveis e cones.
-   - **Janela de Gravação Inteligente**: Ao clicar em **"Guardar"** num exercício existente, surge o modal com duas opções:
-     - **"Atualizar Original"**: Altera o exercício base em toda a biblioteca.
-     - **"Gravar Nova Variante"**: Permite indicar um novo nome (ex: *Meínhos 4x1 (Pressão Alta)*), criando um novo exercício independente. Se abriu o exercício a partir de um plano de treino, apenas essa posição do treino é vinculada à nova variante, mantendo os restantes exercícios do treino 100% inalterados!
-   - Utilize o botão **[← Voltar ao Treino]** no topo para regressar diretamente ao estúdio do plano de treino.
 
 
 

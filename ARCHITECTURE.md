@@ -385,11 +385,23 @@ Eliminou-se a redundância de formulários de criação de treinos, separando a 
 ### 7. Roteamento Contextual de Edição (Treinos -> Prancheta)
 - **Interoperabilidade sem Duplicação**: O clique no cartão do exercício em `/treinos` navega diretamente para `/prancheta?id={exercicioId}`. O `PranchetaStudio` resolve o parâmetro da rota de forma assíncrona com `<Suspense>`, hidratando a prancheta oficial e fornecendo os fluxos de gravação direta (atualização no catálogo) ou clonagem (duplicação).
 
-### 11. Gravação Contextual de Exercícios e Isolamento de Instâncias (Treinos -> Prancheta)
-- **Desacoplamento de Instância vs Matriz**:
-  - Quando um exercício é aberto a partir de uma sessão de treino, a URL transporta o contexto: `/prancheta?id={exercicioId}&treinoId={treinoId}&assocId={assocId}`.
-  - Ao gravar alterações, o `SaveExercicioOptionsModal` permite ao treinador optar entre mutar a matriz global do catálogo ou instanciar uma nova variante.
-  - Ao criar uma nova variante, a camada de persistência executa atomicamente o `POST /api/exercicios` e atualiza a chave estrangeira `exercicio_id` na entidade relacional `SessaoTreinoExercicio` através de `PUT /api/treinos/{sessaoId}/exercicios/{assocId}`, garantindo o isolamento das restantes instâncias do treino.
+### 13. Reordenação Atómica de Sessões de Treino e Drag & Drop
+- **Padrão de Batch Reordering Atómico**:
+  - A ordenação de coleções ordenadas (`@OrderBy("ordem ASC")`) nunca deve ser feita através de múltiplos pedidos `PUT` individuais concorrentes, sob pena de sofrer de *Lost Updates* decorrentes do isolamento de transações em bases de dados relacionais.
+  - Criou-se o endpoint atómico `PUT /api/treinos/{sessaoId}/exercicios/reordenar` associado ao método `@Transactional public SessaoTreino reordenarExercicios(UUID sessaoId, List<UUID> exercicioAssocIds)`.
+- **Estratégia de Sincronização Otimista no Cliente**:
+  - O hook `useTreinoDetailStudio` implementa atualização otimista imediata na memória do cliente (`onTreinoUpdated({ ...treino, exercicios: novaLista })`).
+  - O resultado da chamada atómica do backend substitui o estado local de forma idempotente, eliminando o padrão de *bouncing* (onde os cartões regressavam à posição anterior).
+### 14. Arquitetura de Pastas Partilhadas e Sincronização de Metadados de Treino
+- **Extração de Modelo de Domínio (`models/pasta.ts`)**:
+  - Centralização de tipos e algoritmos em árvore (`matchesPasta`, `getExercisesForFolderAndDescendants`, `buildHierarchicalOptions`) promovendo o princípio DRY (Don't Repeat Yourself).
+  - Interoperabilidade transparente entre o Estúdio de Treinos e a Prancheta Tática.
+- **Pipeline de Atualização de Duração Bidirecional**:
+  - Propagação reativa de `duracaoMinutos` no cartão do exercício com recálculo em tempo real de `duracaoTotalMinutos` na barra superior do treino.
+  - Sincronização transacional no Spring Boot com recalculo forçado da duração da sessão em todas as mutações relacionais.
+
+
+
 
 
 

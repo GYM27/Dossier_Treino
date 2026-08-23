@@ -1102,6 +1102,124 @@ Consagramos a separação de conceitos da Metodologia do Treino de Futebol:
   - **Catálogo Contextual (`CatalogoExerciciosModal.tsx`)**: Exibe banner informativo com o nome do exercício a ser substituído.
   - **Atualização Relacional Atómica**: Invoca `PUT /api/treinos/{sessaoId}/exercicios/{assocId}` com o novo `exercicioId`. O registo associativo é atualizado no mesmo ID e ordem, garantindo que o novo exercício assume imediatamente o lugar na sessão.
 
+### 16. Sistema de Pastas Personalizadas e Menu Hambúrguer na Prancheta Tática
+- **Menu Hambúrguer 1-Clique**:
+  - O botão de exercícios na barra superior foi convertido num botão retrátil com ícones `[☰]` (quando fechado) e `[✕]` (quando aberto), permitindo abrir e fechar a gaveta lateral da biblioteca com um clique no mesmo símbolo.
+- **Estrutura de Pastas Hierárquica (Acordeão)**:
+  - **5 Pastas Principais Padrão (Momentos do Jogo + Bolas Paradas)**:
+    - 📁 `Organização Ofensiva` (id: `org-ofensiva`)
+    - 📁 `Organização Defensiva` (id: `org-defensiva`)
+    - 📁 `Transição Ofensiva` (id: `trans-ofensiva`)
+    - 📁 `Transição Defensiva` (id: `trans-defensiva`)
+    - 📁 `Bolas Paradas` (id: `bolas-paradas`)
+  - **Criação Flexível de Subpastas ("Pastas dentro de Pastas")**:
+    - Cada cabeçalho de pasta no acordeão disponibiliza um botão `[+]` (*"Adicionar subpasta dentro de [Nome]"*), que define instantaneamente o `creatingParentId` e foca a caixa inline.
+    - Suporte a profundidade multinível com indentação visual (`CornerDownRight` / `└─`), contagem agregada de exercícios (`diretos` e `total incluindo subpastas`), e expansão independente.
+  - **Filtros e Seletores Hierárquicos**:
+    - Tanto no dropdown da **Ficha Técnica Horizontal** como no modal **`SaveExercicioOptionsModal`**, as opções são construídas pela função recursiva `buildHierarchicalOptions`, exibindo as subpastas indentadas com o prefixo `└─` para uma experiência de seleção intuitiva.
+### 17. Reordenação Atómica de Exercícios e Drag & Drop no Plano de Treino
+
+#### 1. O Problema das Condições de Corrida (*Race Conditions*)
+- **O que acontecia antes:**
+  - Ao mover um exercício para cima ou para baixo, o frontend executava dois pedidos HTTP simultâneos usando `Promise.all`:
+    ```ts
+    await Promise.all([
+      treinoService.atualizarExercicio(treino.id, assoc1.id, { ordem: 2 }),
+      treinoService.atualizarExercicio(treino.id, assoc2.id, { ordem: 1 }),
+    ]);
+    ```
+  - No Spring Boot, cada pedido corria na sua própria transação `@Transactional`. Como ocorriam em paralelo, a Transação A lia a sessão no estado antigo, a Transação B lia a sessão no mesmo estado antigo, e ao gravarem, uma sobrescrevia a outra na base de dados.
+  - Logo a seguir, o frontend recarregava os dados do backend (`onReloadTreino`), que devolvia a ordem corrompida/antiga, fazendo com que o exercício saltasse de volta à posição inicial (*bouncing*).
+
+#### 2. A Solução: Endpoint Atómico de Lote no Backend
+- **Endpoint Dedicado (`PUT /api/treinos/{sessaoId}/exercicios/reordenar`)**:
+  - Em vez de vários pedidos concorrentes, enviamos um único array com todos os IDs na nova ordem pretendida:
+    ```java
+    @PutMapping("/{sessaoId}/exercicios/reordenar")
+    public ResponseEntity<SessaoTreinoResponseDTO> reordenarExerciciosNaSessao(
+            @PathVariable UUID sessaoId,
+            @RequestBody List<UUID> ordemAssocIds) {
+        SessaoTreino atualizada = sessaoTreinoService.reordenarExercicios(sessaoId, ordemAssocIds);
+        return ResponseEntity.ok(sessaoTreinoMapper.toResponseDTO(atualizada));
+    }
+    ```
+- **Lógica Transacional no Serviço (`SessaoTreinoServiceImpl.java`)**:
+  - Percorremos a lista de IDs recebida e atribuímos o valor `ordem = i + 1` diretamente a cada associação correspondente na mesma transação:
+    ```java
+    @Override
+    @Transactional
+    public SessaoTreino reordenarExercicios(UUID sessaoId, List<UUID> exercicioAssocIds) {
+        SessaoTreino sessao = buscarPorId(sessaoId);
+        if (exercicioAssocIds != null && !exercicioAssocIds.isEmpty()) {
+            for (int i = 0; i < exercicioAssocIds.size(); i++) {
+                UUID assocId = exercicioAssocIds.get(i);
+                int novaOrdem = i + 1;
+                sessao.getExercicios().stream()
+                        .filter(e -> e.getId().equals(assocId))
+                        .findFirst()
+                        .ifPresent(assoc -> {
+                            assoc.setOrdem(novaOrdem);
+                            sessaoTreinoExercicioRepository.save(assoc);
+                        });
+            }
+        }
+        return sessaoTreinoRepository.save(sessao);
+    }
+    ```
+  - O `@Transactional` garante o princípio de **Atomicidade**: ou todas as ordens são atualizadas com sucesso em bloco, ou nenhuma é gravada, prevenindo estados inconsistentes.
+
+#### 3. Frontend: Atualização Otimista e Sincronização Fluida
+- **No hook `useTreinoDetailStudio.ts`**:
+  - `handleReorderExercicios`: aplica a nova ordem localmente de imediato (UI otimista), extrai os IDs das associações e chama `treinoService.reordenarExercicios`.
+  - Quando a resposta chega do backend, a sessão é sincronizada de forma limpa com `onTreinoUpdated(treinoAtualizado)`.
+  - `handleMoveExercicio`: utiliza `splice` para reposicionar elementos de forma imutável e reutiliza `handleReorderExercicios`.
+
+#### 4. Suporte a Arrastar e Largar (*HTML5 Drag & Drop*)
+- **No `TreinoExercicioCard.tsx`**:
+  - Adicionado o ícone `GripVertical` como puxador visual.
+  - Suporte a atributos nativos `draggable`, `onDragStart`, `onDragOver`, `onDrop` e `onDragEnd`.
+  - Estilos visuais dinâmicos: `opacity-40` e borda tracejada durante o arrasto (`isDragging`), e realce luminoso `ring-2 ring-cyan-400` sobre o cartão de destino (`isOver`).
+- **No `TreinoDetailStudio.tsx`**:
+  - Gestão de estado do índice arrastado (`draggedIndex`) e do destino (`dragOverIndex`), desencadeando a reordenação automática ao largar o cartão (`handleDrop`).
+
+#### Resumo Didático: O que acontece "por detrás dos panos"?
+1. Quando o utilizador arrasta um cartão ou clica em `[▲] / [▼]`, o array de exercícios é reordenado no estado do React em milissegundos.
+2. O React redesenha a lista com as ordens 1, 2, 3 atualizadas sem qualquer paragem ou intermitência visual.
+3. É disparado um único pedido HTTP `PUT` com a sequência `[id_C, id_A, id_B]`.
+4. O Spring Boot abre uma transação na base de dados, atualiza as 3 linhas e faz `COMMIT`.
+### 18. Sistema Unificado de Pastas na Biblioteca de Treinos e Sincronização de Duração
+
+#### 1. Unificação do Modelo de Pastas (`models/pasta.ts`)
+- **Separação de Preocupações e Reutilização Limpa**:
+  - Extraímos o modelo relacional de pastas (`PastaItem`, `DEFAULT_MAIN_PASTAS`, `matchesPasta`, `getExercisesForFolderAndDescendants`, `buildHierarchicalOptions`) para `frontend/models/pasta.ts`.
+  - Esta centralização permitiu que tanto a **Prancheta Tática** (`PranchetaStudio.tsx`) como a **Biblioteca no Plano de Treino** (`CatalogoExerciciosModal.tsx`) partilhem exatamente a mesma estrutura em árvore, regras de correspondência e sincronização de `localStorage` (`prancheta_pastas_hierarquia_v2`).
+
+#### 2. Acordeão Hierárquico no Modal do Catálogo (`CatalogoExerciciosModal.tsx`)
+- **Renderização Recursiva (`renderTreeLevel`)**:
+  - Permite desenhar as 5 pastas padrão dos Momentos do Jogo (`Organização Ofensiva`, `Organização Defensiva`, `Transição Ofensiva`, `Transição Defensiva`, `Bolas Paradas`) e qualquer nível de subpastas criadas pelo treinador.
+  - Cada pasta exibe a contagem agregada de exercícios diretos e descendentes, botões rápidos de criação de subpastas e expansão independente.
+- **Alternador de Modos e Pesquisa Inteligente**:
+  - Permite alternar entre a navegação por **Pastas** ou a vista plana de **Todos os Exercícios** (com filtros de categoria).
+  - A pesquisa por texto expande automaticamente as pastas que contêm exercícios correspondentes.
+
+#### 3. Sincronização e Recálculo da Duração dos Exercícios
+- **No `TreinoExercicioCard.tsx`**:
+  - `useEffect` dedicado para sincronizar os inputs locais de `duracao` e `obs` com as propriedades atualizadas do exercício.
+  - Submissão imediata no `onBlur` ou ao premir `Enter`.
+- **No `useTreinoDetailStudio.ts`**:
+#### 4. Resolução da Inversão de Prioridade no Formulário da Prancheta
+- **Diagnóstico da Causa-Raiz**:
+  - No método `handleExecutarGravacao` de `PranchetaStudio.tsx`, os valores eram recolhidos com a expressão `(currentTactic?.tempo || tempo || "")`. Como `currentTactic` continha o valor antigo carregado da base de dados, a edição efetuada pelo utilizador no input `tempo` era silenciosamente ignorada!
+  - **Correção**: A prioridade foi invertida para `(tempo || currentTactic?.tempo || "")`, garantindo que qualquer alteração digitada pelo treinador nos campos `tempo`, `carga`, `objetivosEspecificos`, `descricao` e `pasta` sobrepõe com autoridade os dados preexistentes.
+- **Edição Inline Ágil no Cartão do Treino (`TreinoExercicioCard.tsx`)**:
+  - Implementado o modo de edição rápida de duração ao clicar diretamente no badge de tempo (`"15 min"`).
+  - Adicionados botões de passo rápido `[-]` e `[+]` de 5 minutos, com propagação reativa e recálculo do tempo total da sessão em tempo real.
+
+
+
+
+
+
 
 
 

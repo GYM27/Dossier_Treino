@@ -1,6 +1,6 @@
 "use client";
 
-import React from "react";
+import React, { useState } from "react";
 import { SessaoTreino } from "@/models/sessao-treino";
 import { Team } from "@/models/team";
 import { useTreinoDetailStudio } from "../hooks/useTreinoDetailStudio";
@@ -25,6 +25,9 @@ export function TreinoDetailStudio({
   onTreinoUpdated,
   onReloadTreino,
 }: TreinoDetailStudioProps) {
+  const [draggedIndex, setDraggedIndex] = useState<number | null>(null);
+  const [dragOverIndex, setDragOverIndex] = useState<number | null>(null);
+
   const {
     isEditing,
     setIsEditing,
@@ -67,6 +70,38 @@ export function TreinoDetailStudio({
   });
 
   const exercicios = treino.exercicios || [];
+
+  const handleDragStart = (e: React.DragEvent, idx: number) => {
+    setDraggedIndex(idx);
+    try {
+      e.dataTransfer.effectAllowed = "move";
+      e.dataTransfer.setData("text/plain", idx.toString());
+    } catch {
+      // Fallback para ambientes restritos
+    }
+  };
+
+  const handleDragOver = (e: React.DragEvent, idx: number) => {
+    e.preventDefault();
+    e.dataTransfer.dropEffect = "move";
+    if (dragOverIndex !== idx) {
+      setDragOverIndex(idx);
+    }
+  };
+
+  const handleDrop = (e: React.DragEvent, targetIndex: number) => {
+    e.preventDefault();
+    if (draggedIndex !== null && draggedIndex !== targetIndex) {
+      handleMoveExercicio(draggedIndex, targetIndex);
+    }
+    setDraggedIndex(null);
+    setDragOverIndex(null);
+  };
+
+  const handleDragEnd = () => {
+    setDraggedIndex(null);
+    setDragOverIndex(null);
+  };
 
   return (
     <div className="flex-1 flex flex-col bg-[#070b14] h-full overflow-hidden select-none">
@@ -164,6 +199,13 @@ export function TreinoDetailStudio({
                   index={idx}
                   total={exercicios.length}
                   isEditing={isEditing}
+                  draggable={true}
+                  onDragStart={(e) => handleDragStart(e, idx)}
+                  onDragOver={(e) => handleDragOver(e, idx)}
+                  onDrop={(e) => handleDrop(e, idx)}
+                  onDragEnd={handleDragEnd}
+                  isDragging={draggedIndex === idx}
+                  isOver={dragOverIndex === idx && draggedIndex !== idx}
                   onRemove={() => assoc.id && handleRemoveExercicio(assoc.id)}
                   onMoveUp={() => handleMoveExercicio(idx, idx - 1)}
                   onMoveDown={() => handleMoveExercicio(idx, idx + 1)}

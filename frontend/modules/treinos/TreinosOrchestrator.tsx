@@ -73,14 +73,19 @@ export function TreinosOrchestrator({ activeTeam, initialTreinoId }: TreinosOrch
     );
   };
 
-  // Recarregar um treino específico
-  const handleReloadTreino = async (treinoId: string) => {
+  // Recarregar lista de treinos preservando a seleção atual
+  const handleReloadTreino = async (treinoId?: string) => {
     if (!activeTeam) return;
     try {
       const data = await treinoService.getTreinosByEquipa(activeTeam.id);
       setTreinos(data || []);
       if (data && data.length > 0) {
-        setSelectedTreinoId(data[0].id);
+        const idToSelect = treinoId || selectedTreinoId;
+        if (idToSelect && data.some((t) => t.id === idToSelect)) {
+          setSelectedTreinoId(idToSelect);
+        } else {
+          setSelectedTreinoId(data[0].id);
+        }
       } else {
         setSelectedTreinoId(null);
       }
