@@ -369,3 +369,9 @@ Eliminou-se a redundância de formulários de criação de treinos, separando a 
 - **`SessaoTreinoResponseDTO`**: Expandido com `local` e `eventoId` para eliminar consultas secundárias do frontend.
 - **`SessaoTreinoMapper`**: Resolve a associação `@OneToOne` de `EventoCalendario` com segurança transacional.
 - **Navegação com Estado**: O `app/page.tsx` gere o `selectedTreinoId`, permitindo transições fluidas e contextualizadas entre o Calendário e o Estúdio de Treino.
+
+### 4. Padrão de Apresentação da Prancheta: Offcanvas Drawer & Horizontal CSS Grid
+- **Offcanvas Drawer (Hambúrguer)**: O catálogo de exercícios (`PranchetaStudio`) foi convertido num painel retrátil posicionado fora do fluxo normal (`absolute z-50`), libertando 100% da largura horizontal do monitor para o canvas de desenho quando recolhido.
+- **Horizontal CSS Grid (Ficha Técnica)**: Os metadados do exercício (Nome, Categoria, Espaço, Nº Atletas, Dificuldade, Objetivos) foram reorganizados num painel horizontal colapsável em grelha responsiva de 12 colunas, eliminando colunas verticais estáticas que espremiam o quadro tático.
+- **Auto-Scaling Fluid Canvas (`TacticalBoard`)**: A prancheta preenche `100%` da área flexível do contentor pai (`w-full h-full min-h-0`), e o `TacticalSidebar` inicia minimizado (`w-12`), garantindo a máxima área útil visual para o treinador.
+

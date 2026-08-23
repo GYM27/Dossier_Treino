@@ -1355,11 +1355,11 @@ export default function TacticalBoard({ initialTacticData, onSave, readOnly = fa
   const s = stateRef.current;
 
   return (
-    <div className="w-full bg-[#0a0f1c] text-slate-300 font-sans h-[calc(100vh-180px)] min-h-[500px] flex gap-4 p-4 rounded-xl border border-slate-800 shadow-2xl">
+    <div className="w-full h-full min-h-0 bg-[#0a0f1c] text-slate-300 font-sans flex gap-2.5 p-2 md:p-3 rounded-xl border border-slate-800 shadow-2xl">
       
       {/* Main Area: Canvas + Bottom Bar */}
-      <div className="flex-1 flex flex-col overflow-hidden bg-transparent rounded-2xl border border-slate-800 shadow-lg">
-        <div className="w-full flex-1 bg-[#1b4332] flex items-center justify-center overflow-hidden relative">
+      <div className="flex-1 flex flex-col min-h-0 overflow-hidden bg-transparent rounded-2xl border border-slate-800 shadow-lg">
+        <div className="w-full flex-1 min-h-0 bg-[#1b4332] flex items-center justify-center overflow-hidden relative">
           <canvas
             ref={canvasRef}
             width={CANVAS_WIDTH}

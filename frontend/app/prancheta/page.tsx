@@ -6,8 +6,8 @@ import { ArrowLeft } from "lucide-react";
 
 export default function PranchetaPage() {
   return (
-    <div className="min-h-screen bg-[#070b14] flex flex-col p-4 md:p-8">
-      <div className="max-w-[1600px] w-full mx-auto mb-4 flex items-center justify-between">
+    <div className="min-h-screen bg-[#070b14] flex flex-col p-2 md:p-3 overflow-hidden">
+      <div className="w-full mb-2 flex items-center justify-between px-1">
         <Link
           href="/"
           className="flex items-center gap-2 text-xs font-semibold text-slate-400 hover:text-white transition-colors"
@@ -17,7 +17,7 @@ export default function PranchetaPage() {
         </Link>
       </div>
 
-      <div className="max-w-[1600px] w-full mx-auto flex-1">
+      <div className="w-full flex-1 flex flex-col min-h-0">
         <PranchetaStudio />
       </div>
     </div>

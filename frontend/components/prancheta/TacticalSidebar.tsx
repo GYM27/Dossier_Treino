@@ -28,7 +28,7 @@ export function TacticalSidebar({
   setUiTick,
   onSave,
 }: TacticalSidebarProps) {
-  const [isMinimized, setIsMinimized] = useState(false);
+  const [isMinimized, setIsMinimized] = useState(true);
 
   const handleUndo = () => {
     if (state.historyIndex > 0) {

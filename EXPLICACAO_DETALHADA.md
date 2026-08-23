@@ -729,3 +729,69 @@ Dividimos o sistema em 3 pilares perfeitamente especializados:
    )}
    ```
 
+---
+
+## Fase 6: Redesenho e Maximização da Prancheta Tática (Layout Moderno e Espaçoso)
+
+### 1. O Problema das Três Colunas Fixas
+Anteriormente, o ecrã da prancheta estava dividido em 3 colunas verticais estáticas:
+1. **Catálogo de Exercícios** (320px) à esquerda.
+2. **Ficha do Exercício** (336px) no meio.
+3. **Quadro Tático e Barra Lateral** (com mais 320px de anotações) à direita.
+
+Em ecrãs padrão (portáteis e monitores 1080p), o relvado de jogo ficava espremido e com pouca área visível para desenhar linhas, posicionar jogadores e organizar movimentações.
+
+### 2. As Soluções Implementadas Passo a Passo
+
+#### A. Menu Retrátil de Exercícios (*Offcanvas Drawer / Hambúrguer*)
+*Ficheiro: `frontend/components/prancheta/PranchetaStudio.tsx`*
+- **O que faz**: Em vez de roubar 320px permanentemente, o catálogo de exercícios agora fica oculto fora do ecrã (`-translate-x-full`) e desliza suavemente (`translate-x-0`) quando o treinador clica no botão `[☰ Exercícios (X)]`.
+- **Como funciona no código**:
+  ```tsx
+  {/* Fundo escurecido que fecha o menu ao clicar fora */}
+  {isDrawerOpen && (
+    <div
+      onClick={() => setIsDrawerOpen(false)}
+      className="absolute inset-0 bg-slate-950/70 backdrop-blur-xs z-40 transition-opacity"
+    />
+  )}
+
+  <aside
+    className={cn(
+      "absolute top-0 left-0 bottom-0 z-50 w-80 md:w-96 flex flex-col bg-[#111827] border-r border-slate-800 shadow-2xl transition-transform duration-300 ease-in-out",
+      isDrawerOpen ? "translate-x-0" : "-translate-x-full pointer-events-none"
+    )}
+  >
+    ...
+  </aside>
+  ```
+- **Por detrás dos panos**: O Tailwind utiliza transformações aceleradas por GPU (`translate-x-0` e `-translate-x-full`). Quando fechado, `pointer-events-none` garante que o utilizador não clica acidentalmente no menu invisível, e o canvas ganha 100% da largura do monitor!
+
+#### B. Ficha Técnica Horizontal em CSS Grid
+*Ficheiro: `frontend/components/prancheta/PranchetaStudio.tsx`*
+- **O que faz**: Converte o antigo formulário vertical num painel horizontal compacto colocado no topo (logo abaixo do cabeçalho), que pode ser mostrado ou escondido com o botão `[📋 Ficha Técnica]`.
+- **Como funciona no código**:
+  ```tsx
+  {showMetadataPanel && (
+    <div className="bg-[#0f172a]/95 backdrop-blur-md border-b border-slate-800 p-3 px-4 shrink-0 animate-in slide-in-from-top-2 duration-200">
+      <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-12 gap-3 items-end">
+        <div className="md:col-span-3 space-y-1">Nome do Exercício</div>
+        <div className="md:col-span-2 space-y-1">Categoria</div>
+        <div className="md:col-span-2 space-y-1">Espaço</div>
+        <div className="md:col-span-1 space-y-1">Nº Atletas</div>
+        <div className="md:col-span-2 space-y-1">Dificuldade</div>
+        <div className="md:col-span-2 space-y-1">Objetivos</div>
+      </div>
+    </div>
+  )}
+  ```
+- **Por detrás dos panos**: O sistema de 12 colunas do CSS Grid (`grid-cols-12`) alinha todos os controlos de forma compacta e responsiva. O utilizador edita rapidamente todos os metadados sem sacrificar a visibilidade da prancheta.
+
+#### C. Maximização Fluida do Relvado e Mini-Barra Lateral
+*Ficheiros: `frontend/app/prancheta/page.tsx`, `TacticalBoard.tsx` e `TacticalSidebar.tsx`*
+- **O que faz**:
+  - `page.tsx`: Passa a usar `p-2 md:p-3` e `w-full h-full flex flex-col min-h-0` para aproveitar o ecrã completo.
+  - `TacticalBoard.tsx`: Remove restrições de `h-[calc(100vh-180px)]` e adota `h-full w-full min-h-0`, adaptando o canvas HTML5 automaticamente à resolução disponível.
+  - `TacticalSidebar.tsx`: Inicia minimizado por defeito (`isMinimized: true`), ocupando uma barra elegante de apenas 48px (`w-12`), que pode ser expandida a qualquer momento.
+
+

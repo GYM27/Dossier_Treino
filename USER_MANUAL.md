@@ -306,14 +306,18 @@ Agora pode rodar livremente **todas as Formas Geométricas** (Quadrados, Círcul
    - Clique em **"PDF"** para gerar a folha de treino pronta para levar para o campo.
 
 ### 2. Como Criar e Gerir Exercícios na Prancheta Tática
-1. No menu lateral, aceda à aba **"Prancheta Tática"**.
-2. **Biblioteca de Exercícios (Esquerda)**:
+1. No menu principal ou no topo, aceda a **"Prancheta Tática"**.
+2. **Área Máxima de Desenho**: O relvado de jogo ocupa agora todo o espaço do seu monitor para total comodidade ao posicionar atletas, balizas e trajetórias.
+3. **Menu Hambúrguer da Biblioteca de Exercícios**:
+   - Clique no botão `[☰ Exercícios (X)]` no canto superior esquerdo para abrir a gaveta lateral retrátil.
    - Pesquise por nome ou filtre por categoria (*Aquecimento, Técnico, Tático, Físico, Guarda-Redes, Lúdico*).
-   - Clique em qualquer exercício existente para carregar o seu desenho tático e ficha técnica.
-3. **Desenhar e Configurar o Exercício (Direita)**:
-   - Clique em **"+ Novo"** para começar um exercício do zero.
-   - Preencha o Nome, Categoria, Espaço (ex: *40x30m*), Jogadores Envolvidos, Dificuldade (1 a 5) e Instruções/Objetivos.
-   - Utilize a prancheta interativa para posicionar jogadores (vermelhos/azuis), bolas, cones, balizas e desenhar trajetórias de passe, corrida ou zonas táticas.
-   - Clique em **"Guardar Exercício"**.
-4. **Duplicação Inteligente**:
-   - Se abrir um exercício existente e quiser criar uma variação sem estragar o original, clique em **"Duplicar"**. É criada uma cópia independente pronta para edição!
+   - Ao selecionar um exercício ou criar um novo (`+ Novo`), o menu recolhe-se suavemente para libertar toda a largura da prancheta.
+4. **Ficha Técnica Horizontal**:
+   - Clique no botão `[📋 Ficha Técnica]` no cabeçalho para exibir a barra horizontal compacta no topo.
+   - Configure rapidamente: **Nome do Exercício**, **Categoria**, **Espaço** (ex: *50x40m*), **Nº Atletas**, **Dificuldade (1 a 5)** e **Objetivos / Foco do Exercício**.
+   - Clique novamente em `[Ocultar Ficha]` para dar prioridade visual total ao relvado quando estiver a desenhar.
+5. **Desenhar, Guardar e Duplicar**:
+   - Utilize a barra de ferramentas inferior da prancheta para alternar entre seleção, linhas de passe/condução, jogadores de equipa da casa/fora, balizas móveis e cones.
+   - Clique em **"Guardar"** no topo direito para persistir na base de dados.
+   - Para criar uma variante sem alterar o original, clique em **"Duplicar"**.
+

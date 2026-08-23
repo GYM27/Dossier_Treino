@@ -24,6 +24,10 @@ import {
   HelpCircle,
   Eye,
   SlidersHorizontal,
+  Menu,
+  X,
+  FolderKanban,
+  Target,
 } from "lucide-react";
 
 // Importação dinâmica da Prancheta Tática para evitar erros de SSR com o Canvas HTML5
@@ -56,6 +60,10 @@ export function PranchetaStudio() {
   const [searchTerm, setSearchTerm] = useState("");
   const [categoriaFilter, setCategoriaFilter] = useState("TODOS");
 
+  // Estados de Interface (Drawer e Ficha Técnica)
+  const [isDrawerOpen, setIsDrawerOpen] = useState(false);
+  const [showMetadataPanel, setShowMetadataPanel] = useState(false);
+
   // Estados do Formulário de Edição
   const [nome, setNome] = useState("Novo Exercício Tático");
   const [descricao, setDescricao] = useState("");
@@ -69,7 +77,6 @@ export function PranchetaStudio() {
   // Estados de Operação / Feedback
   const [isSaving, setIsSaving] = useState(false);
   const [saveSuccess, setSaveSuccess] = useState(false);
-  const [showMetadataPanel, setShowMetadataPanel] = useState(true);
   const [errorMsg, setErrorMsg] = useState<string | null>(null);
 
   // Carregar lista de exercícios do servidor
@@ -120,6 +127,7 @@ export function PranchetaStudio() {
     setObjetivosEspecificos("");
     setTacticData(null);
     setErrorMsg(null);
+    setIsDrawerOpen(false);
   };
 
   // Callback chamado quando a prancheta desenha ou altera algo
@@ -233,19 +241,32 @@ export function PranchetaStudio() {
   });
 
   return (
-    <div className="flex h-[calc(100vh-80px)] w-full overflow-hidden bg-[#070b14] border border-slate-800/80 rounded-2xl shadow-2xl select-none">
-      {/* 📁 PAINEL ESQUERDO: Catálogo de Exercícios */}
-      <aside className="w-80 md:w-88 flex flex-col bg-[#111827] border-r border-slate-800 h-full shrink-0">
-        {/* Topo do Catálogo com Ação Novo */}
+    <div className="relative flex flex-col h-full w-full overflow-hidden bg-[#070b14] border border-slate-800/80 rounded-2xl shadow-2xl select-none">
+      
+      {/* 📁 DRAWER RETRÁTIL (HAMBÚRGUER): Catálogo de Exercícios */}
+      {isDrawerOpen && (
+        <div
+          onClick={() => setIsDrawerOpen(false)}
+          className="absolute inset-0 bg-slate-950/70 backdrop-blur-xs z-40 transition-opacity animate-in fade-in duration-200"
+        />
+      )}
+
+      <aside
+        className={cn(
+          "absolute top-0 left-0 bottom-0 z-50 w-80 md:w-96 flex flex-col bg-[#111827] border-r border-slate-800 shadow-2xl transition-transform duration-300 ease-in-out",
+          isDrawerOpen ? "translate-x-0" : "-translate-x-full pointer-events-none"
+        )}
+      >
+        {/* Topo do Catálogo com Botão Fechar e Ação Novo */}
         <div className="p-4 border-b border-slate-800 flex flex-col gap-3 bg-[#0d131f]">
           <div className="flex items-center justify-between">
             <div className="flex items-center gap-2">
               <div className="w-8 h-8 rounded-lg bg-cyan-500/10 border border-cyan-500/20 flex items-center justify-center text-cyan-400">
-                <Sparkles className="w-4 h-4" />
+                <FolderKanban className="w-4 h-4" />
               </div>
               <div>
                 <h2 className="text-sm font-bold text-white tracking-wide uppercase">
-                  Exercícios
+                  Biblioteca
                 </h2>
                 <p className="text-[11px] text-slate-400 font-medium">
                   {exercicios.length} {exercicios.length === 1 ? "exercício criado" : "exercícios criados"}
@@ -253,14 +274,24 @@ export function PranchetaStudio() {
               </div>
             </div>
 
-            <button
-              onClick={handleNovoExercicio}
-              className="flex items-center gap-1.5 px-3 py-1.5 rounded-lg bg-cyan-500 hover:bg-cyan-400 text-slate-950 font-bold text-xs transition-all shadow-lg shadow-cyan-500/20 active:scale-95"
-              title="Criar novo exercício na prancheta"
-            >
-              <Plus className="w-4 h-4 stroke-[2.5]" />
-              <span>Novo</span>
-            </button>
+            <div className="flex items-center gap-2">
+              <button
+                onClick={handleNovoExercicio}
+                className="flex items-center gap-1.5 px-3 py-1.5 rounded-lg bg-cyan-500 hover:bg-cyan-400 text-slate-950 font-bold text-xs transition-all shadow-lg shadow-cyan-500/20 active:scale-95"
+                title="Criar novo exercício na prancheta"
+              >
+                <Plus className="w-4 h-4 stroke-[2.5]" />
+                <span>Novo</span>
+              </button>
+
+              <button
+                onClick={() => setIsDrawerOpen(false)}
+                className="w-8 h-8 rounded-lg bg-slate-800 hover:bg-slate-700 text-slate-400 hover:text-white flex items-center justify-center transition-colors"
+                title="Fechar Menu"
+              >
+                <X className="w-4 h-4" />
+              </button>
+            </div>
           </div>
 
           {/* Barra de Pesquisa */}
@@ -324,7 +355,10 @@ export function PranchetaStudio() {
               return (
                 <div
                   key={ex.id}
-                  onClick={() => carregarDetalhesExercicio(ex)}
+                  onClick={() => {
+                    carregarDetalhesExercicio(ex);
+                    setIsDrawerOpen(false);
+                  }}
                   className={cn(
                     "group relative p-3 rounded-xl border transition-all cursor-pointer flex flex-col gap-2",
                     isSelected
@@ -375,44 +409,58 @@ export function PranchetaStudio() {
       </aside>
 
       {/* 🎨 PAINEL PRINCIPAL: Estúdio da Prancheta Tática */}
-      <main className="flex-1 flex flex-col overflow-hidden bg-[#0a0f1d]">
+      <main className="flex-1 flex flex-col h-full overflow-hidden bg-[#0a0f1d]">
         {/* Barra Superior do Estúdio */}
-        <header className="p-4 border-b border-slate-800 bg-[#0d131f] flex flex-col md:flex-row md:items-center justify-between gap-3 shrink-0">
+        <header className="px-4 py-2.5 border-b border-slate-800 bg-[#0d131f] flex flex-wrap items-center justify-between gap-3 shrink-0">
           <div className="flex items-center gap-3">
-            <div className="w-8 h-8 rounded-lg bg-cyan-500/10 border border-cyan-500/20 flex items-center justify-center text-cyan-400">
-              <Sparkles className="w-4 h-4" />
-            </div>
-            <div>
-              <div className="flex items-center gap-2">
-                <h1 className="text-base font-bold text-white tracking-wide">
-                  {nome || "Novo Exercício"}
-                </h1>
-                {selectedExercicio ? (
-                  <Badge variant="cyan" className="text-[10px] py-0.5">
-                    Guardado na BD
-                  </Badge>
-                ) : (
-                  <Badge variant="amber" className="text-[10px] py-0.5">
-                    Novo (Não Gravado)
-                  </Badge>
-                )}
-              </div>
-              <p className="text-xs text-slate-400">
-                Desenhe esquemas táticos interativos e organize a biblioteca do clube
-              </p>
+            {/* Botão Menu Hambúrguer para Abrir a Biblioteca */}
+            <button
+              onClick={() => setIsDrawerOpen(true)}
+              className="flex items-center gap-2 px-3 py-1.5 rounded-lg bg-slate-800 hover:bg-slate-700 border border-slate-700/80 text-white text-xs font-bold transition-all shadow-sm active:scale-95"
+              title="Abrir Biblioteca de Exercícios"
+            >
+              <Menu className="w-4 h-4 text-cyan-400" />
+              <span>Exercícios ({exercicios.length})</span>
+            </button>
+
+            <button
+              onClick={handleNovoExercicio}
+              className="flex items-center gap-1.5 px-3 py-1.5 rounded-lg bg-cyan-500/10 hover:bg-cyan-500/20 border border-cyan-500/30 text-cyan-400 text-xs font-bold transition-all active:scale-95"
+              title="Criar Novo Exercício"
+            >
+              <Plus className="w-3.5 h-3.5" />
+              <span>Novo</span>
+            </button>
+
+            <div className="h-5 w-px bg-slate-800 hidden sm:block" />
+
+            <div className="flex items-center gap-2">
+              <h1 className="text-sm md:text-base font-bold text-white tracking-wide truncate max-w-[200px] md:max-w-[340px]">
+                {nome || "Novo Exercício"}
+              </h1>
+              {selectedExercicio ? (
+                <Badge variant="cyan" className="text-[10px] py-0.5 hidden sm:inline-flex">
+                  Guardado
+                </Badge>
+              ) : (
+                <Badge variant="amber" className="text-[10px] py-0.5 hidden sm:inline-flex">
+                  Não Gravado
+                </Badge>
+              )}
             </div>
           </div>
 
           {/* Botões de Ação */}
-          <div className="flex items-center gap-2 flex-wrap">
+          <div className="flex items-center gap-2">
             <Button
-              variant="dark"
+              variant={showMetadataPanel ? "cyan" : "dark"}
               size="sm"
               onClick={() => setShowMetadataPanel(!showMetadataPanel)}
-              title="Mostrar/Esconder dados do exercício"
+              title="Mostrar/Esconder dados da Ficha Técnica na horizontal"
+              className="h-8 text-xs font-semibold"
             >
-              <SlidersHorizontal className="w-3.5 h-3.5 mr-1 text-slate-400" />
-              <span>{showMetadataPanel ? "Esconder Ficha" : "Ficha Técnica"}</span>
+              <SlidersHorizontal className="w-3.5 h-3.5 mr-1.5" />
+              <span>{showMetadataPanel ? "Ocultar Ficha" : "Ficha Técnica"}</span>
             </Button>
 
             {selectedExercicio && (
@@ -423,9 +471,10 @@ export function PranchetaStudio() {
                   onClick={handleDuplicarExercicio}
                   disabled={isSaving}
                   title="Criar uma cópia deste exercício"
+                  className="h-8 text-xs"
                 >
                   <Copy className="w-3.5 h-3.5 mr-1 text-slate-400" />
-                  <span>Duplicar</span>
+                  <span className="hidden md:inline">Duplicar</span>
                 </Button>
 
                 <Button
@@ -434,9 +483,10 @@ export function PranchetaStudio() {
                   onClick={handleEliminarExercicio}
                   disabled={isSaving}
                   title="Eliminar exercício do catálogo"
+                  className="h-8 text-xs"
                 >
                   <Trash2 className="w-3.5 h-3.5 mr-1" />
-                  <span>Eliminar</span>
+                  <span className="hidden md:inline">Eliminar</span>
                 </Button>
               </>
             )}
@@ -447,6 +497,7 @@ export function PranchetaStudio() {
               onClick={handleGuardarExercicio}
               disabled={isSaving}
               title="Guardar alterações no catálogo"
+              className="h-8 text-xs font-bold"
             >
               {isSaving ? (
                 <div className="w-3.5 h-3.5 border-2 border-slate-950 border-t-transparent rounded-full animate-spin mr-1" />
@@ -455,54 +506,37 @@ export function PranchetaStudio() {
               ) : (
                 <Save className="w-3.5 h-3.5 mr-1" />
               )}
-              <span>{saveSuccess ? "Gravado com Sucesso!" : "Guardar Exercício"}</span>
+              <span>{saveSuccess ? "Gravado!" : "Guardar"}</span>
             </Button>
           </div>
         </header>
 
-        {/* Mensagem de Erro se houver */}
-        {errorMsg && (
-          <div className="mx-4 mt-3 p-3 bg-rose-500/10 border border-rose-500/20 rounded-xl text-rose-400 text-xs flex items-center gap-2">
-            <AlertCircle className="w-4 h-4 shrink-0" />
-            <span>{errorMsg}</span>
-          </div>
-        )}
-
-        {/* Corpo do Estúdio: Ficha Técnica (Esquerda/Colapsável) + Prancheta Tática (Direita) */}
-        <div className="flex-1 overflow-hidden flex flex-col lg:flex-row">
-          {showMetadataPanel && (
-            <div className="w-full lg:w-84 bg-[#0f172a] border-r border-slate-800 p-5 overflow-y-auto flex flex-col gap-4 shrink-0 animate-in slide-in-from-left duration-200">
-              <div className="flex items-center justify-between border-b border-slate-800 pb-2">
-                <span className="text-xs font-bold text-slate-300 uppercase tracking-wider">
-                  Ficha do Exercício
-                </span>
-                <span className="text-[10px] text-cyan-400 font-mono">
-                  {categoria}
-                </span>
-              </div>
-
-              {/* Nome */}
-              <div className="space-y-1">
-                <label className="text-[11px] font-semibold text-slate-400 uppercase tracking-wider block">
+        {/* 📋 FICHA TÉCNICA HORIZONTAL (EXPANSÍVEL / COLAPSÁVEL) */}
+        {showMetadataPanel && (
+          <div className="bg-[#0f172a]/95 backdrop-blur-md border-b border-slate-800 p-3 px-4 shrink-0 animate-in slide-in-from-top-2 duration-200">
+            <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-12 gap-3 items-end">
+              {/* Nome do Exercício */}
+              <div className="md:col-span-3 space-y-1">
+                <label className="text-[10px] font-bold text-slate-400 uppercase tracking-wider block">
                   Nome do Exercício *
                 </label>
                 <Input
                   value={nome}
                   onChange={(e) => setNome(e.target.value)}
                   placeholder="Ex: Saída de Pressão 3v2"
-                  className="text-xs"
+                  className="text-xs h-8 bg-[#162032]"
                 />
               </div>
 
               {/* Categoria */}
-              <div className="space-y-1">
-                <label className="text-[11px] font-semibold text-slate-400 uppercase tracking-wider block">
+              <div className="md:col-span-2 space-y-1">
+                <label className="text-[10px] font-bold text-slate-400 uppercase tracking-wider block">
                   Categoria
                 </label>
                 <select
                   value={categoria}
                   onChange={(e) => setCategoria(e.target.value as any)}
-                  className="w-full bg-[#162032] border border-slate-700/80 rounded-xl px-3 py-2 text-xs text-white focus:outline-none focus:border-cyan-500 font-semibold"
+                  className="w-full bg-[#162032] border border-slate-700/80 rounded-lg px-2.5 h-8 text-xs text-white focus:outline-none focus:border-cyan-500 font-semibold"
                 >
                   <option value="AQUECIMENTO">Aquecimento</option>
                   <option value="TECNICO">Técnico</option>
@@ -513,47 +547,47 @@ export function PranchetaStudio() {
                 </select>
               </div>
 
-              {/* Espaço e Jogadores */}
-              <div className="grid grid-cols-2 gap-3">
-                <div className="space-y-1">
-                  <label className="text-[11px] font-semibold text-slate-400 uppercase tracking-wider block">
-                    Espaço
-                  </label>
-                  <Input
-                    value={espaco}
-                    onChange={(e) => setEspaco(e.target.value)}
-                    placeholder="40x30m"
-                    className="text-xs"
-                  />
-                </div>
-                <div className="space-y-1">
-                  <label className="text-[11px] font-semibold text-slate-400 uppercase tracking-wider block">
-                    Nº Jogadores
-                  </label>
-                  <Input
-                    type="number"
-                    min={1}
-                    max={40}
-                    value={jogadoresEnvolvidos}
-                    onChange={(e) => setJogadoresEnvolvidos(parseInt(e.target.value) || 14)}
-                    className="text-xs font-mono"
-                  />
-                </div>
+              {/* Espaço */}
+              <div className="md:col-span-2 space-y-1">
+                <label className="text-[10px] font-bold text-slate-400 uppercase tracking-wider block">
+                  Espaço
+                </label>
+                <Input
+                  value={espaco}
+                  onChange={(e) => setEspaco(e.target.value)}
+                  placeholder="Ex: 50x40m"
+                  className="text-xs h-8 bg-[#162032]"
+                />
+              </div>
+
+              {/* Nº Jogadores */}
+              <div className="md:col-span-1 space-y-1">
+                <label className="text-[10px] font-bold text-slate-400 uppercase tracking-wider block">
+                  Nº Atletas
+                </label>
+                <Input
+                  type="number"
+                  min={1}
+                  max={40}
+                  value={jogadoresEnvolvidos}
+                  onChange={(e) => setJogadoresEnvolvidos(parseInt(e.target.value) || 14)}
+                  className="text-xs font-mono h-8 bg-[#162032]"
+                />
               </div>
 
               {/* Dificuldade */}
-              <div className="space-y-1">
-                <label className="text-[11px] font-semibold text-slate-400 uppercase tracking-wider block">
-                  Nível de Dificuldade (1 a 5)
+              <div className="md:col-span-2 space-y-1">
+                <label className="text-[10px] font-bold text-slate-400 uppercase tracking-wider block">
+                  Dificuldade (1-5)
                 </label>
-                <div className="flex items-center gap-1.5">
+                <div className="flex items-center gap-1">
                   {[1, 2, 3, 4, 5].map((lvl) => (
                     <button
                       key={lvl}
                       type="button"
                       onClick={() => setNivelDificuldade(lvl)}
                       className={cn(
-                        "flex-1 py-1.5 rounded-lg text-xs font-bold transition-all",
+                        "flex-1 h-8 rounded-lg text-xs font-bold transition-all",
                         nivelDificuldade >= lvl
                           ? "bg-cyan-500 text-slate-950 shadow-sm"
                           : "bg-slate-800 text-slate-500 hover:bg-slate-700"
@@ -565,34 +599,42 @@ export function PranchetaStudio() {
                 </div>
               </div>
 
-              {/* Objetivos Específicos */}
-              <div className="space-y-1">
-                <label className="text-[11px] font-semibold text-slate-400 uppercase tracking-wider block">
+              {/* Objetivos / Comportamentos Específicos */}
+              <div className="md:col-span-2 space-y-1">
+                <label className="text-[10px] font-bold text-slate-400 uppercase tracking-wider block">
                   Objetivos / Comportamentos
                 </label>
-                <Textarea
-                  rows={4}
+                <Input
                   value={objetivosEspecificos}
                   onChange={(e) => setObjetivosEspecificos(e.target.value)}
-                  placeholder="Ex: Foco na velocidade de circulação, desmarques de apoio e atração do adversário..."
-                  className="text-xs resize-none"
+                  placeholder="Ex: Circulação rápida..."
+                  className="text-xs h-8 bg-[#162032]"
                 />
               </div>
             </div>
-          )}
+          </div>
+        )}
 
-          {/* 🕹️ Quadro Tático Interativo */}
-          <div className="flex-1 bg-[#070b14] p-3 overflow-hidden flex flex-col items-center justify-center relative">
-            <div className="w-full h-full max-h-[820px] flex items-center justify-center">
-              <TacticalBoard
-                key={selectedExercicio?.id || "novo-exercicio"}
-                initialTacticData={tacticData}
-                onSave={handleSaveTacticBoard}
-              />
-            </div>
+        {/* Mensagem de Erro se houver */}
+        {errorMsg && (
+          <div className="mx-4 mt-2 p-2.5 bg-rose-500/10 border border-rose-500/20 rounded-xl text-rose-400 text-xs flex items-center gap-2 shrink-0">
+            <AlertCircle className="w-4 h-4 shrink-0" />
+            <span>{errorMsg}</span>
+          </div>
+        )}
+
+        {/* 🕹️ Quadro Tático Interativo (Ocupa 100% da Área Útil) */}
+        <div className="flex-1 w-full h-full min-h-0 bg-[#070b14] p-2 md:p-3 overflow-hidden flex flex-col items-center justify-center relative">
+          <div className="w-full h-full flex items-center justify-center">
+            <TacticalBoard
+              key={selectedExercicio?.id || "novo-exercicio"}
+              initialTacticData={tacticData}
+              onSave={handleSaveTacticBoard}
+            />
           </div>
         </div>
       </main>
     </div>
   );
 }
+
