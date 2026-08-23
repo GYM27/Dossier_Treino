@@ -10,7 +10,8 @@ import {
   CheckSquare,
   Shield,
   Dumbbell,
-  type LucideIcon,
+  Search,
+  Sparkles,
 } from "lucide-react";
 
 export type NavKey =
@@ -18,14 +19,16 @@ export type NavKey =
   | "clube"
   | "plantel"
   | "calendario"
-  | "assiduidade"
   | "treinos"
-  | "config";
+  | "prancheta"
+  | "assiduidade"
+  | "config"
+  | "scouting";
 
 type NavItem = {
   key: NavKey;
   label: string;
-  icon: LucideIcon;
+  icon: React.ComponentType<{ className?: string }>;
 };
 
 const navItems: NavItem[] = [
@@ -33,8 +36,10 @@ const navItems: NavItem[] = [
   { key: "clube", label: "Clube", icon: Shield },
   { key: "plantel", label: "Plantel", icon: Users },
   { key: "calendario", label: "Calendário", icon: Calendar },
-  { key: "treinos", label: "Treinos", icon: Dumbbell },
+  { key: "treinos", label: "Planos de Treino", icon: Dumbbell },
+  { key: "prancheta", label: "Prancheta Tática", icon: Sparkles },
   { key: "assiduidade", label: "Assiduidade", icon: CheckSquare },
+  { key: "scouting", label: "Scouting", icon: Search },
   { key: "config", label: "Configurações", icon: Settings },
 ];
 

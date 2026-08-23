@@ -10,7 +10,7 @@ import {
 } from "lucide-react";
 import { SessaoTreinoExercicio } from "@/models/sessao-treino";
 import { cn } from "@/lib/utils";
-import { TacticalBoardThumbnail } from "../prancheta/TacticalBoardThumbnail";
+import { TacticalBoardThumbnail } from "@/components/prancheta/TacticalBoardThumbnail";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Textarea } from "@/components/ui/textarea";

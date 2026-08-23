@@ -269,6 +269,58 @@ O objetivo da Fase 5 era aplicar o padrão de separação de responsabilidades (
 ### 2. Arquitetura Resultante
 - **`TacticalBoard.tsx`**: Torna-se um componente "contentor" que orquestra a visualização, usando os hooks para state management e rendering.
 - **`useTacticalCanvasRenderer.ts`**: Motor de desenho puro, receives stateRef e ctx, returns drawing functions.
+  -  ssiduidadeService: Registo e consulta de assiduidade semanal/mensal.
+- Centralização de tipos e contratos de dados nos serviços, evitando rotas hardcoded na camada de apresentação (React).
+
+## Extração de Custom Hooks e Desacoplamento da Apresentação (Fase 3)
+
+### 1. Padrão Container / Presentational & Custom Hooks
+- Eliminação de componentes monolíticos superiores a 200 linhas:
+  - components/calendario/: usePlaneamentoSemanal desacoplado em CalendarioHeader, CalendarioWeekView, CalendarioMonthView, CalendarioDayView.
+  - components/treinos/: useTreinoDetailStudio desacoplado em TreinoStudioHeader, TreinoStudioMetadataForm, TreinoExercicioCard.
+  - components/assiduidade/: useAttendance desacoplado em AttendanceHeader, AttendanceModal.
+- Componentes React tornaram-se estritamente "dumb components", garantindo facilidade de manutenção e testes de interface isolados.
+
+---
+
+## Fase 4: Fragmentação de Componentes (Dividir para Conquistar)
+
+### 1. Desmembramento de Modais e Isolação de Hooks Form (Novidade da Fase 4)
+O objetivo foi reduzir ainda mais a complexidade dos componentes de modal ao aplicar o padrão de responsabilidade única:
+- **`useEventoForm.ts`**: Hook customizado responsável por gerenciar todo o estado interno do formulário de eventos do calendário (`formData`, `duracao`, `localOption`, `availableTeams`, flags de equipas personalizadas, e lógica de inicialização).
+- **`EventoFormEquipas.tsx`**: Sub-componente dedicado exclusivamente à renderização e interação dos seletores de equipa da casa e fora para eventos do tipo `JOGO`, encapsulando a lógica de alternância entre seleção de equipas existentes e criação de novas equipas.
+- **`EventoFormModal.tsx`**: Reduzido a um componente "contentor" (dumb component) que apenas orquestra a apresentação visual e delegue a lógica para o `useEventoForm` e o `EventoFormEquipas`. Isso garante que o modal é simples, focado apenas em layout e eventos de save/cancel.
+
+### 2. Arquitetura de Vistas Dedicadas no Calendário
+O `PlaneamentoSemanal.tsx` mantém a arquitetura orquestradora pura:
+- Consome apenas o hook `usePlaneamentoSemanal` e delega toda a renderização para sub-módulos totalmente independentes.
+- **`CalendarioHeader.tsx`**: Controlos de navegação, troca de vista e morfociclos.
+- **`CalendarioWeekView.tsx`**: Renderização da grelha de 7 dias com cards de eventos.
+- **`CalendarioMonthView.tsx`**: Renderização mensal de 42 dias com scroll customizado.
+- **`CalendarioDayView.tsx`**: Vista diária detalhada com horários.
+- **`EventoFormModal.tsx`**: Modal de formulário de evento (refatorado com o hook `useEventoForm` e sub-componente `EventoFormEquipas`).
+- **`CalendarioSyncModal.tsx`**: Modal de sincronização iCal isolado.
+
+**Resultado**: Cada componente visual assume responsabilidade exclusiva sobre o seu domínio de renderização. Nenhum ficheiro da área de calendário excede os limites de complexidade, garantindo facilidade de teste unitário e prevenção de regressões visuais.
+
+---
+
+## Fase 5: Refatoramento da Prancheta Tática (O Desafio Final)
+
+### 1. Desmembramento de Responsabilidades (Novidade da Fase 5)
+O objetivo da Fase 5 era aplicar o padrão de separação de responsabilidades (SoC) ao `TacticalBoard.tsx`, dividindo a lógica em hooks especializados:
+
+- **Motor Gráfico (`useTacticalCanvasRenderer.ts`)**: Responsável exclusivamente pela renderização da Canvas API - drawField, drawSingleDrawing, getDrawingBounds. Isola a lógica de desenho puro da componente visual.
+
+- **Gestor de Interações (`useTacticalActions.ts`)**: Isola os eventos de rato, as teclas de atalho e a máquina de estados (operações de undo/redo) em um hook independente. Contém:
+  - Gestão de histórico (saveStateToHistory, undo, redo)
+  - Atalhos de teclado (Ctrl+Z, Ctrl+Y, Ctrl+C, Ctrl+V, Delete, Backspace, 'R' key)
+  - Eventos de ponteiro e coordenadas de canvas
+  - Área de transferência (clipboard) para copiar/colar elementos
+
+### 2. Arquitetura Resultante
+- **`TacticalBoard.tsx`**: Torna-se um componente "contentor" que orquestra a visualização, usando os hooks para state management e rendering.
+- **`useTacticalCanvasRenderer.ts`**: Motor de desenho puro, receives stateRef e ctx, returns drawing functions.
 - **`useTacticalActions.ts`**: Gerencia todo o estado interactivo e de histórico, retornando funções de ação e helpers.
 
 **Desafio Técnico**: A integração completa enfrentou limitações com o bundler Turbopack na configuração atual, especificamente relacionados com conflitos de nomes de módulos e resolução de caminhos. A arquitetura em si é sólida e modular, mas requer ajustes de configuração ou nomenclatura para plena integração.
@@ -279,3 +331,41 @@ O objetivo da Fase 5 era aplicar o padrão de separação de responsabilidades (
 - Verificar compatibilidade com todos os modos de relvado (Full/Half/Free)
 
 ---
+
+## Fase 6: Separação Especializada de Páginas (Exercícios vs Planos de Treino vs Calendário)
+
+### 1. Visão Geral e Princípio de Desenho (Single Responsibility Principle)
+Eliminou-se a redundância de formulários de criação de treinos, separando a aplicação em três domínios funcionais claros:
+- **Calendário**: Módulo de agendamento e logística temporal/espacial.
+- **Planos de Treino**: Estúdio de estruturação técnica da sessão, pré-alimentado pelo agendamento do calendário.
+- **Prancheta Tática**: Laboratório de criação, edição e gestão do catálogo de exercícios do clube.
+
+### 2. Diagrama de Fluxo e Interação de Módulos
+```
+[📅 Calendário]
+     │
+     ├─► Agenda: Data, Hora, Local, Nº Treino
+     │        │
+     │        ▼
+     │   (EventoCalendario + SessaoTreino no PostgreSQL)
+     │        │
+     └─► [⚡ Botão "Planear Treino"]
+              │
+              ▼
+    [📋 Planos de Treino (TreinosOrchestrator)]
+              │
+              ├─► Pré-preenche Data, Hora, Local, Microciclo
+              ├─► Define: Objetivo, Nº Atletas, Intensidade, Material
+              └─► Importa Exercícios da Biblioteca ◄──────┐
+                                                         │
+    [🎨 Prancheta Tática (PranchetaStudio)] ─────────────┘
+              │
+              ├─► Desenho 2D no TacticalBoard (jogadores, setas, cones, balizas)
+              ├─► Ficha Técnica (Nome, Categoria, Espaço, Dificuldade, Instruções)
+              └─► Persiste no Catálogo Central (/api/exercicios)
+```
+
+### 3. Padrão DTO e Mapeamento de Transporte
+- **`SessaoTreinoResponseDTO`**: Expandido com `local` e `eventoId` para eliminar consultas secundárias do frontend.
+- **`SessaoTreinoMapper`**: Resolve a associação `@OneToOne` de `EventoCalendario` com segurança transacional.
+- **Navegação com Estado**: O `app/page.tsx` gere o `selectedTreinoId`, permitindo transições fluidas e contextualizadas entre o Calendário e o Estúdio de Treino.

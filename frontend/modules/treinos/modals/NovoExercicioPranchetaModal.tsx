@@ -4,7 +4,7 @@ import React from "react";
 import dynamic from "next/dynamic";
 import { X, Save, Clock, Sparkles, Copy, RefreshCw } from "lucide-react";
 import { Exercicio } from "@/models/exercicio";
-import { useNovoExercicioPrancheta } from "./useNovoExercicioPrancheta";
+import { useNovoExercicioPrancheta } from "../hooks/useNovoExercicioPrancheta";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Textarea } from "@/components/ui/textarea";

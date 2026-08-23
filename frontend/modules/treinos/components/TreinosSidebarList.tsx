@@ -8,7 +8,8 @@ import {
   Clock, 
   ChevronRight, 
   Dumbbell, 
-  Layers
+  Layers,
+  MapPin
 } from "lucide-react";
 import { SessaoTreino } from "@/models/sessao-treino";
 import { cn } from "@/lib/utils";
@@ -140,8 +141,8 @@ export function TreinosSidebarList({
                   )} />
                 </div>
 
-                {/* Detalhes de Data e Hora */}
-                <div className="flex items-center gap-3 text-[11px] text-slate-400">
+                {/* Detalhes de Data, Hora e Local */}
+                <div className="flex flex-wrap items-center gap-x-3 gap-y-1 text-[11px] text-slate-400">
                   <div className="flex items-center gap-1">
                     <Calendar className="w-3 h-3 text-slate-500" />
                     <span>{t.data || "Sem data"}</span>
@@ -150,6 +151,12 @@ export function TreinosSidebarList({
                     <div className="flex items-center gap-1">
                       <Clock className="w-3 h-3 text-slate-500" />
                       <span>{t.hora}</span>
+                    </div>
+                  )}
+                  {t.local && (
+                    <div className="flex items-center gap-1">
+                      <MapPin className="w-3 h-3 text-cyan-400/80" />
+                      <span className="truncate max-w-[110px]">{t.local}</span>
                     </div>
                   )}
                 </div>

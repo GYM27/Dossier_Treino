@@ -1,3 +1,5 @@
+export type DrawingHandleType = "tl" | "tr" | "bl" | "br" | "radius" | "p0" | "p1" | "rotate_line" | "rotate_shape";
+
 export interface Point {
   x: number;
   y: number;

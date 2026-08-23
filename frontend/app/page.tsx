@@ -9,7 +9,8 @@ import { Sidebar, type NavKey } from "@/components/layout/Sidebar";
 import { TopHeader } from "@/components/layout/TopHeader";
 import { MobileDrawer } from "@/components/layout/MobileDrawer";
 import { PlaneamentoSemanal } from "@/components/calendario/PlaneamentoSemanal";
-import { TreinosOrchestrator } from "@/components/treinos/TreinosOrchestrator";
+import { TreinosOrchestrator } from "@/modules/treinos/TreinosOrchestrator";
+import { PranchetaStudio } from "@/components/prancheta/PranchetaStudio";
 import { apiFetch } from "@/lib/api";
 import { cn } from "@/lib/utils";
 import {
@@ -23,27 +24,32 @@ import { Team } from "@/models/team";
 import { Utilizador } from "@/models/utilizador";
 import { useState, useEffect, useCallback } from "react";
 import { Settings } from "@/components/settings/Settings";
+import ScoutingPage from "@/app/scouting/page";
 import { TeamForm } from "@/components/settings/TeamForm";
 
 export default function Page() {
-  const [active, setActive] = useState<NavKey>("dashboard");
+  // Inicializa o estado a partir do localStorage se existir, senão usa "dashboard" por defeito
+  const savedTab = typeof window !== "undefined" ? localStorage.getItem("activeTab") as NavKey : undefined;
+  const [active, setActive] = useState<NavKey>(savedTab ? savedTab : "dashboard");
+  const [selectedTreinoId, setSelectedTreinoId] = useState<string | null>(null);
   const [teams, setTeams] = useState<Team[]>([]);
   const [activeTeam, setActiveTeam] = useState<Team | null>(null);
   const [me, setMe] = useState<Utilizador | null>(null);
   const [mobileOpen, setMobileOpen] = useState(false);
   const [loading, setLoading] = useState(true);
 
-  // Recuperar o último separador aberto quando a página carrega
-  useEffect(() => {
-    const saved = localStorage.getItem("activeTab") as NavKey;
-    if (saved) setActive(saved);
-  }, []);
-
-  // Gravar o separador atual sempre que mudamos de página
+  // Gravar o separador atual sempre que mudamos de página (sempre que o utilizador navega)
   useEffect(() => {
     localStorage.setItem("activeTab", active);
   }, [active]);
 
+  const handlePlanTreino = (evento: any) => {
+    setSelectedTreinoId(evento.id);
+    setActive("treinos");
+  };
+
+  // Sincronizar o me/teams APENAS se não houver um tab salvo (evita que o login redirecione e perca o tab)
+  // Ou seja: se já há um tab salvo (refresh), não sobrescrevemos com novo fetchData a menos que seja necessário
   const fetchData = useCallback(async () => {
     setLoading(true);
     try {
@@ -129,9 +135,15 @@ export default function Page() {
                 )
               ) : null}
               {active === "assiduidade" && <Attendance activeTeam={activeTeam} />}
-              {active === "calendario" && <PlaneamentoSemanal activeTeam={activeTeam} />}
-              {active === "treinos" && <TreinosOrchestrator activeTeam={activeTeam} />}
+              {active === "calendario" && (
+                <PlaneamentoSemanal activeTeam={activeTeam} onPlanTreino={handlePlanTreino} />
+              )}
+              {active === "treinos" && (
+                <TreinosOrchestrator activeTeam={activeTeam} initialTreinoId={selectedTreinoId} />
+              )}
+              {active === "prancheta" && <PranchetaStudio />}
               {active === "config" && <Settings />}
+              {active === "scouting" && <ScoutingPage />}
             </>
           )}
         </main>

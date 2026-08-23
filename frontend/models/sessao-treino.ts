@@ -10,8 +10,10 @@ export interface SessaoTreinoExercicio {
 
 export interface SessaoTreino {
   id: string;
+  eventoId?: string;
   data: string;
   hora?: string;
+  local?: string;
   morfociclo?: number;
   microciclo?: number;
   fase?: string;

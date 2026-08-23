@@ -3,13 +3,13 @@
 import React from "react";
 import { SessaoTreino } from "@/models/sessao-treino";
 import { Team } from "@/models/team";
-import { useTreinoDetailStudio } from "./useTreinoDetailStudio";
+import { useTreinoDetailStudio } from "../hooks/useTreinoDetailStudio";
 import { TreinoStudioHeader } from "./TreinoStudioHeader";
 import { TreinoStudioMetadataForm } from "./TreinoStudioMetadataForm";
 import { TreinoExercicioCard } from "./TreinoExercicioCard";
-import { CatalogoExerciciosModal } from "./CatalogoExerciciosModal";
-import { NovoExercicioPranchetaModal } from "./NovoExercicioPranchetaModal";
-import { TreinoPrintPreviewModal } from "./TreinoPrintPreviewModal";
+import { CatalogoExerciciosModal } from "../modals/CatalogoExerciciosModal";
+import { NovoExercicioPranchetaModal } from "../modals/NovoExercicioPranchetaModal";
+import { TreinoPrintPreviewModal } from "../modals/TreinoPrintPreviewModal";
 import { Dumbbell, Library, Sparkles } from "lucide-react";
 import { Button } from "@/components/ui/button";
 

@@ -1,6 +1,6 @@
 import React from "react";
 import { EventoCalendario } from "@/models/planeamento";
-import { Calendar, MapPin, Edit2, Trash2 } from "lucide-react";
+import { Calendar, MapPin, Edit2, Trash2, Dumbbell } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { cn } from "@/lib/utils";
 
@@ -10,6 +10,7 @@ interface CalendarioDayViewProps {
   onNewEvent: (dayDate: Date) => void;
   onEditEvent: (evento: EventoCalendario) => void;
   onDeleteEvent: (eventoId: string) => void;
+  onPlanTreino?: (evento: EventoCalendario) => void;
 }
 
 const DIAS_SEMANA = ["DOM", "SEG", "TER", "QUA", "QUI", "SEX", "SAB"];
@@ -24,6 +25,7 @@ export function CalendarioDayView({
   onNewEvent,
   onEditEvent,
   onDeleteEvent,
+  onPlanTreino,
 }: CalendarioDayViewProps) {
   const dataIso = dia.toISOString().split("T")[0];
   const eventosDia = eventos.filter((e) => e.dataHoraInicio.startsWith(dataIso));
@@ -110,6 +112,20 @@ export function CalendarioDayView({
                   <div className="flex items-center text-xs text-slate-400">
                     <MapPin className="w-3.5 h-3.5 mr-1.5 text-slate-500" />
                     <span>{evt.local}</span>
+                  </div>
+                )}
+
+                {evt.tipoEvento === "TREINO" && onPlanTreino && (
+                  <div className="mt-3 pt-3 border-t border-slate-800">
+                    <Button
+                      variant="cyan"
+                      size="sm"
+                      onClick={() => onPlanTreino(evt)}
+                      className="text-xs"
+                    >
+                      <Dumbbell className="w-3.5 h-3.5 mr-1.5" />
+                      <span>Planear Treino no Estúdio</span>
+                    </Button>
                   </div>
                 )}
               </div>

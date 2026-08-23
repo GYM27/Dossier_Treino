@@ -1,6 +1,6 @@
 import React from "react";
 import { EventoCalendario } from "@/models/planeamento";
-import { Hotel, Trophy, Target, Clock, MapPin, Edit2, Trash2 } from "lucide-react";
+import { Hotel, Trophy, Target, Clock, MapPin, Edit2, Trash2, Dumbbell } from "lucide-react";
 import { cn } from "@/lib/utils";
 
 interface CalendarioWeekViewProps {
@@ -9,6 +9,7 @@ interface CalendarioWeekViewProps {
   onNewEvent: (dayDate: Date) => void;
   onEditEvent: (evento: EventoCalendario) => void;
   onDeleteEvent: (eventoId: string) => void;
+  onPlanTreino?: (evento: EventoCalendario) => void;
 }
 
 const DIAS_SEMANA = ["SEG", "TER", "QUA", "QUI", "SEX", "SAB", "DOM"];
@@ -20,6 +21,7 @@ export function CalendarioWeekView({
   onNewEvent,
   onEditEvent,
   onDeleteEvent,
+  onPlanTreino,
 }: CalendarioWeekViewProps) {
   const renderIconForEvento = (tipo: string) => {
     switch (tipo) {
@@ -134,6 +136,17 @@ export function CalendarioWeekView({
                                 <MapPin className="w-3 h-3 mr-1 text-slate-500" />
                                 <span className="font-mono truncate">{evt.local}</span>
                               </div>
+                            )}
+
+                            {evt.tipoEvento === "TREINO" && onPlanTreino && (
+                              <button
+                                onClick={() => onPlanTreino(evt)}
+                                className="mt-2 w-full py-1 px-2 rounded-lg bg-cyan-500/10 hover:bg-cyan-500/20 text-cyan-400 border border-cyan-500/20 text-[10px] font-bold flex items-center justify-center gap-1.5 transition-all active:scale-95 shadow-sm"
+                                title="Abrir estúdio para planear exercícios deste treino"
+                              >
+                                <Dumbbell className="w-3 h-3" />
+                                <span>Planear Treino</span>
+                              </button>
                             )}
                           </div>
                         </>

@@ -39,6 +39,7 @@ public class SessaoTreinoMapper {
                 .eventoId(entity.getEventoCalendario() != null ? entity.getEventoCalendario().getId() : null)
                 .data(entity.getEventoCalendario() != null ? entity.getEventoCalendario().getDataHoraInicio().toLocalDate() : null)
                 .hora(entity.getEventoCalendario() != null ? entity.getEventoCalendario().getDataHoraInicio().toLocalTime() : null)
+                .local(entity.getEventoCalendario() != null ? entity.getEventoCalendario().getLocal() : null)
                 .morfociclo(null) // TODO: Implementar mapeamento correto de Morfociclo
                 .microciclo(entity.getEventoCalendario() != null ? entity.getEventoCalendario().getNumeroTreino() : null)
                 .fase(null) // TODO: Implementar mapeamento correto de Fase

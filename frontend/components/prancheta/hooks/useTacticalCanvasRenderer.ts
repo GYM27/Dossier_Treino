@@ -1,7 +1,8 @@
 "use client"
 
 import { useRef } from "react";
-import { TacticalDrawing, TacticalState, Point, CANVAS_WIDTH, CANVAS_HEIGHT, FIELD_BG } from "@/components/prancheta/types";
+import { TacticalDrawing, TacticalState, Point } from "@/components/prancheta/types";
+import { CANVAS_WIDTH, CANVAS_HEIGHT, FIELD_BG } from "@/components/prancheta/constants";
 
 export function useTacticalCanvasRenderer(stateRef: React.MutableRefObject<TacticalState>) {
   const canvasRef = useRef<HTMLCanvasElement>(null);

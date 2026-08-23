@@ -12,9 +12,10 @@ import { CalendarioSyncModal } from "./CalendarioSyncModal";
 
 interface PlaneamentoSemanalProps {
   activeTeam: Team | null;
+  onPlanTreino?: (evento: any) => void;
 }
 
-export function PlaneamentoSemanal({ activeTeam }: PlaneamentoSemanalProps) {
+export function PlaneamentoSemanal({ activeTeam, onPlanTreino }: PlaneamentoSemanalProps) {
   const {
     baseDate,
     viewType,
@@ -70,6 +71,7 @@ export function PlaneamentoSemanal({ activeTeam }: PlaneamentoSemanalProps) {
           onNewEvent={openNewEventModal}
           onEditEvent={openEditEventModal}
           onDeleteEvent={handleDeleteEvent}
+          onPlanTreino={onPlanTreino}
         />
       ) : viewType === "month" ? (
         <CalendarioMonthView
@@ -78,6 +80,7 @@ export function PlaneamentoSemanal({ activeTeam }: PlaneamentoSemanalProps) {
           eventos={eventos}
           onNewEvent={openNewEventModal}
           onEditEvent={openEditEventModal}
+          onPlanTreino={onPlanTreino}
         />
       ) : (
         <CalendarioDayView
@@ -86,6 +89,7 @@ export function PlaneamentoSemanal({ activeTeam }: PlaneamentoSemanalProps) {
           onNewEvent={openNewEventModal}
           onEditEvent={openEditEventModal}
           onDeleteEvent={handleDeleteEvent}
+          onPlanTreino={onPlanTreino}
         />
       )}
 
