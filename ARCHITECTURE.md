@@ -438,6 +438,13 @@ Eliminou-se a redundância de formulários de criação de treinos, separando a 
 - **Renderizadores Gráficos Desacoplados (`canvasDrawers.ts`)**:
   - Isolamento dos procedimentos de pintura em Canvas 2D, permitindo otimizações e reutilização futura em previews estáticos e exportações de relatórios.
 
+### 22. Sprint 4: Arquitetura de Agregação de Indicadores no Dashboard
+- **Padrão de Agregação Concorrente e Resiliente (`useDashboardData`)**:
+  - Encapsulamento do pipeline de dados assíncronos (`Atletas`, `EventosCalendario`, `RegistosAssiduidade`) num único hook especializado.
+  - Utilização de `Promise.allSettled` para garantir que falhas parciais de rede não impedem a visualização dos restantes cartões e métricas.
+  - Eliminação de dados mock estáticos (`constants.ts`), consolidando a base de dados como fonte única de verdade (*Single Source of Truth*).
+
+
 
 
 

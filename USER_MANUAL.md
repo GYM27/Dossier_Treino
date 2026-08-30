@@ -439,17 +439,22 @@ Agora pode rodar livremente **todas as Formas Geométricas** (Quadrados, Círcul
 3. **Alternar de Equipa com 1 Clique**:
    - No separador do clube ou no menu suspenso do topo da página, clique sobre qualquer outro escalão registado para alternar instantaneamente todo o dossier para esse plantel.
 
-### 6. Prancheta Tática de Alta Precisão (Sprint 3)
+### 7. Novo Dashboard Operacional da Equipa Ativa (Sprint 4)
 
-1. **Arrastamento Livre e Edição Precisa**:
-   - **Mover Jogadores e Linhas**: Arraste qualquer jogador, cone, bola ou linha livremente pelo relvado com resposta instantânea e sem obstruções visuais.
-   - **Barra de Edição Contextual com Toque Rápido (Tap / Click)**: Dê um clique simples parado sobre qualquer jogador ou forma para abrir a barra lateral de personalização rápida (alterar cor, número da camisola, tamanho, rotação ou estilo de traço).
+1. **Indicadores em Tempo Real**:
+   - **Atletas no Plantel**: Número total de jogadores ativos na equipa selecionada.
+   - **Taxa Média de Assiduidade**: Cálculo automático da percentagem de presenças dos treinos e jogos dos últimos 30 dias.
+   - **Próximo Evento da Equipa**: Data, hora e indicação se é Treino ou Jogo Oficial.
+   - **Atrasos do Mês**: Registo do total de atrasos reportados na assiduidade.
 
-2. **Atalhos Rápidos de Teclado**:
-   - **`R`**: Roda instantaneamente o elemento ou baliza selecionada (+90°).
-   - **`Delete` / `Backspace`**: Remove de imediato o jogador, desenho ou baliza selecionada.
-   - **`Ctrl + C` / `Ctrl + V`** (ou `Cmd` no Mac): Duplica o jogador ou linha selecionada com deslocamento automático de +25px para não sobrepor.
-   - **`Ctrl + Z` / `Ctrl + Y`**: Desfaz e refaz qualquer jogada tática com histórico de até 50 passos.
+2. **Próximos Treinos e Jogos**:
+   - Cartões cronológicos com dia, mês, hora e campo de treino/estádio.
+   - Botão direto **"Ver Calendário Completo"** para aceder ao planeamento semanal.
+
+3. **Distribuição do Plantel & Aniversários do Mês**:
+   - Barras gráficas interativas de Guarda-Redes, Defesas, Médios e Avançados.
+   - Cartão comemorativo de **Aniversários do Mês** com a data e idade de cada atleta aniversariante.
+
 
 
 

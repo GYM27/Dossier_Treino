@@ -6,11 +6,11 @@ import { useActiveTeam } from "@/context/ActiveTeamContext";
 import { Placeholder } from "@/components/ui/Placeholder";
 
 export default function DashboardPage() {
-  const { activeTeam, me } = useActiveTeam();
+  const { activeTeam } = useActiveTeam();
 
   if (!activeTeam) {
     return <Placeholder title="Selecione uma equipa no topo para ver o resumo do Dashboard" />;
   }
 
-  return <Dashboard activeTeam={activeTeam} me={me} />;
+  return <Dashboard />;
 }

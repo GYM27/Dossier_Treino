@@ -1383,6 +1383,35 @@ Anteriormente, a página de estatísticas do clube exibia números fixos inscrit
   - `drawElement(ctx, el, isSelected)`: Renderiza jogadores com cores da equipa, números nítidos e bola 3D vetorial com gradientes esféricos.
   - `drawSingleDrawing(ctx, drawing)`: Renderiza setas táticas, passes tracejados, corridas onduladas e formas geométricas com preenchimento translúcido.
 
+---
+
+## 13. Sprint 4: Dashboard Dinâmico e Agregação de Indicadores Reais
+
+### 13.1 Hook de Agregação e Composição Paralela (`useDashboardData.ts`)
+- **Problema Anterior**: O Dashboard continha dados mock fixos num ficheiro `constants.ts` (ex: "Treino a 15 OUT", assiduidade estática de 92%).
+- **Solução**: O hook consome o `equipaId` da equipa ativa e efetua carregamento concorrente resiliente com `Promise.allSettled`:
+  ```typescript
+  const [atletasRes, eventosRes, registosRes] = await Promise.allSettled([
+    atletaService.getAtletasByEquipa(equipaId),
+    calendarioService.getEventosSemana(equipaId, start.toISOString(), end.toISOString()),
+    assiduidadeService.getRegistosByEquipaEMes(equipaId, currentYear, currentMonth),
+  ]);
+  ```
+- **Resiliência a Falhas**: Caso um dos serviços falhe (por exemplo, falha pontual de rede na assiduidade), as outras secções do Dashboard continuam operacionais sem quebrar o ecrã do treinador.
+
+### 13.2 Métricas Calculadas em Tempo Real
+1. **Total de Atletas e Distribuição Posicional**:
+   - Conta e agrupa em tempo real guarda-redes, defesas, médios e avançados com cálculo de percentagem relativa.
+2. **Taxa Real de Assiduidade**:
+   - Fórmula: $\frac{\text{Presentes} + \text{Atrasados}}{\text{Total de Registos do Mês}} \times 100\%$.
+   - Identifica também o volume absoluto de atrasos registados no mês.
+3. **Próximos Eventos Formatados e Link Direto**:
+   - Ordena cronologicamente os treinos e jogos das próximas duas semanas.
+   - Atribui cores temáticas distintas (Ciano para Treinos, Âmbar para Jogos Oficiais).
+4. **Aniversários do Mês**:
+   - Compara o mês da `dataNascimento` de cada atleta com o mês do sistema e calcula a idade que o atleta completará.
+
+
 
 
 
