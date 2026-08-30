@@ -485,12 +485,24 @@ Agora pode rodar livremente **todas as Formas Geométricas** (Quadrados, Círcul
    - Selecione um quadro e clique em **`[Criar Alternativa]`** (ex: *"Opção A: Passe Interior"* ou *"Opção B: Cruzamento Longo"*).
    - Durante a reprodução (Play), quando a animação atinge esse momento, pausa e apresenta uma janela de escolha para simular as opções de jogo com os atletas.
 
-3. **Controlo Temporal & Anotações**:
-   - Regule a velocidade de transição entre quadros ($0.8\text{s}$ para ritmo de jogo real até $3.0\text{s}$ para explicações didáticas).
-   - Abra a gaveta de **`[Notas]`** para registar orientações táticas específicas de cada momento.
+### 13. Formas Geométricas e Personalização Completa na Prancheta Dinâmica
 
-4. **Exportação de Vídeo em Alta Definição (.webm)**:
-   - Clique em **`[Exportar Vídeo]`** no topo da página. O estúdio compila a animação completa a 30 FPS e descarrega o ficheiro de vídeo diretamente para o seu computador, pronto para partilhar com os jogadores nas palestras táticas ou redes sociais.
+1. **Desenho de Formas Geométricas**:
+   - Na barra inferior de ferramentas, selecione **`[Quadrado]`**, **`[Círculo]`** ou **`[Triângulo]`**.
+   - Arraste o cursor sobre o campo para definir a área tática ou zona de pressão pretendida.
+   - O traçado surge com pré-visualização em tempo real e preenchimento suave translúcido.
+
+2. **Personalização e Barra Lateral Contextual (`TacticalEditSidebar`)**:
+   - **Jogadores**: Clique em qualquer jogador para abrir a barra lateral e alterar:
+     - Número da camisola ou sigla tática (ex: *GR, MC, DC, PL, 7, 10*).
+     - Tamanho do jogador (*Pequeno, Médio, Grande*).
+     - Cor principal e cor de contorno/secundária.
+     - Botão de duplicação rápida e eliminação.
+   - **Formas e Linhas**: Clique numa forma ou traço no campo para regular:
+     - Opacidade da cor de fundo de $0\%$ (totalmente transparente) a $100\%$ (sólido).
+     - Cor de contorno e cor de preenchimento.
+     - Espessura do traço e estilo (linha contínua ou tracejada).
+
 
 
 

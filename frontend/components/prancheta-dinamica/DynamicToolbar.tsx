@@ -5,6 +5,9 @@ import {
   MousePointer,
   ArrowRight,
   TrendingUp,
+  Square,
+  Circle,
+  Triangle,
   CircleDot,
   Cone,
   Eraser,
@@ -108,9 +111,54 @@ export function DynamicToolbar({
 
           <button
             type="button"
+            onClick={() => onSetDrawingMode("rect")}
+            className={cn(
+              "flex flex-col items-center justify-center p-2 rounded-xl text-xs font-semibold transition-all border",
+              drawingMode === "rect"
+                ? "bg-cyan-500/20 text-cyan-300 border-cyan-500/50 shadow-md"
+                : "bg-slate-900/80 text-slate-400 border-slate-800 hover:bg-slate-800 hover:text-slate-200"
+            )}
+            title="Desenhar Quadrado / Retângulo"
+          >
+            <Square className="w-4 h-4 mb-0.5" />
+            <span className="text-[10px]">Quadrado</span>
+          </button>
+
+          <button
+            type="button"
+            onClick={() => onSetDrawingMode("circle")}
+            className={cn(
+              "flex flex-col items-center justify-center p-2 rounded-xl text-xs font-semibold transition-all border",
+              drawingMode === "circle"
+                ? "bg-cyan-500/20 text-cyan-300 border-cyan-500/50 shadow-md"
+                : "bg-slate-900/80 text-slate-400 border-slate-800 hover:bg-slate-800 hover:text-slate-200"
+            )}
+            title="Desenhar Círculo"
+          >
+            <Circle className="w-4 h-4 mb-0.5" />
+            <span className="text-[10px]">Círculo</span>
+          </button>
+
+          <button
+            type="button"
+            onClick={() => onSetDrawingMode("triangle")}
+            className={cn(
+              "flex flex-col items-center justify-center p-2 rounded-xl text-xs font-semibold transition-all border",
+              drawingMode === "triangle"
+                ? "bg-cyan-500/20 text-cyan-300 border-cyan-500/50 shadow-md"
+                : "bg-slate-900/80 text-slate-400 border-slate-800 hover:bg-slate-800 hover:text-slate-200"
+            )}
+            title="Desenhar Triângulo"
+          >
+            <Triangle className="w-4 h-4 mb-0.5" />
+            <span className="text-[10px]">Triângulo</span>
+          </button>
+
+          <button
+            type="button"
             onClick={onClearDrawings}
             className="flex flex-col items-center justify-center p-2 rounded-xl bg-slate-900/80 text-slate-400 border border-slate-800 hover:bg-rose-500/10 hover:text-rose-400 hover:border-rose-500/30 text-xs font-semibold transition-all"
-            title="Limpar Linhas Táticas"
+            title="Limpar Linhas e Formas Táticas"
           >
             <Eraser className="w-4 h-4 mb-0.5" />
             <span className="text-[10px]">Limpar</span>

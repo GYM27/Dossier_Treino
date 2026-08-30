@@ -514,6 +514,12 @@ Eliminou-se a redundância de formulários de criação de treinos, separando a 
   - Isolamento do Canvas 2D e do módulo de MediaRecorder através de `next/dynamic(..., { ssr: false })` na rota `/prancheta-dinamica`.
   - Esta abordagem protege o processo de Server-Side Rendering (SSR) e Static Site Generation (SSG) de dependências exclusivas do DOM do navegador, mantendo o build 100% verde.
 
+### 33. Reutilização de Componentes de Edição Contextual e Formas Geométricas
+- **Princípio DRY (Don't Repeat Yourself) entre Prancheta Estática e Dinâmica**:
+  - Reutilização direta do componente `TacticalEditSidebar.tsx` e dos seus submódulos (`PlayerEditSection`, `ShapeEditSection`, `LineEditSection`) no estúdio dinâmico.
+  - O motor do `DynamicTacticalCanvas` integra os renderizadores de formas (`drawSingleDrawing`, `drawDrawingSelection`) e funções puras de deteção de colisão (`findHoveredDrawing`, `getDrawingBounds`), garantindo que tanto formas como jogadores têm as mesmas opções completas de personalização (tamanho, cores, opacidade, numeração, sigla).
+
+
 
 
 

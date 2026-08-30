@@ -11,23 +11,50 @@ export const DEFAULT_FIELD_BG = "#1b4332";
 export const DEFAULT_HOME_COLOR = "#facc15";
 export const DEFAULT_AWAY_COLOR = "#3b82f6";
 
-export type TacticalElementType = "home" | "away" | "ball" | "cone";
+export type TacticalElementType = "home" | "away" | "ball" | "cone" | "mini_goal";
 
 export interface TacticalElement {
   id: string;
   type: TacticalElementType;
-  number?: number;
   x: number;
   y: number;
+  number?: number;
+  label?: string;
   color?: string;
+  secondaryColor?: string;
+  rotation?: number;
+  size?: "sm" | "md" | "lg";
+  goalSize?: "mini" | "fut7" | "fut11";
 }
 
+export interface DrawingConfig {
+  color?: string;
+  fillColor?: string;
+  size?: number;
+  opacity?: number;
+  lineStyle?: "solid" | "dashed";
+}
+
+export type TacticalDrawingType =
+  | "select"
+  | "run"
+  | "pass"
+  | "pen"
+  | "rect"
+  | "circle"
+  | "triangle"
+  | "pentagon"
+  | "hexagon"
+  | "line";
+
 export interface TacticalDrawing {
-  id: string;
-  type: "line" | "pass" | "run" | "arrow";
+  id?: string;
+  type: TacticalDrawingType;
   points: { x: number; y: number }[];
-  color: string;
-  width: number;
+  color?: string;
+  width?: number;
+  config?: DrawingConfig;
+  rotation?: number;
 }
 
 export interface TacticalFrame {

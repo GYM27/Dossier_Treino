@@ -1606,6 +1606,28 @@ Anteriormente, a página de estatísticas do clube exibia números fixos inscrit
 ### 23.2 Navegação e Menu Lateral (`Sidebar.tsx`)
 - Adição da entrada "Prancheta Dinâmica" (`/prancheta-dinamica`) na lista de navegação global `NAV_ITEMS`, permitindo alternar instantaneamente entre a prancheta de exercícios estáticos e o estúdio dinâmico com keyframes.
 
+---
+
+## 24. Prancheta Dinâmica: Formas Geométricas e Barra Lateral de Edição Contextual
+
+### 24.1 Desenho e Interação de Formas Geométricas (`DynamicTacticalCanvas.tsx` e `DynamicToolbar.tsx`)
+- **Suporte a Formas 2D**:
+  - Quadrados / Retângulos (`rect`), Círculos (`circle`) e Triângulos (`triangle`) adicionados à barra de ferramentas inferior.
+  - O utilizador pode arrastar no campo para pré-visualizar a forma com opacidade dinâmica e contorno em tempo real.
+  - Ao soltar o ponteiro, o desenho é armazenado na árvore do quadro ativo com identificador único e configuração completa (`config.opacity`, `config.fillColor`, `config.color`, `config.size`, `config.lineStyle`).
+
+### 24.2 Reutilização da Barra Lateral de Edição (`TacticalEditSidebar.tsx`)
+- **Edição Contextual e Unificada**:
+  - Clicar num jogador abre a secção `PlayerEditSection`, permitindo ajustar:
+    - Sigla / Número da camisola (ex: *GR, MC, DC, 7, 10*).
+    - Tamanho do jogador (*Pequeno [sm], Médio [md], Grande [lg]*).
+    - Cores primárias e secundárias do equipamento.
+    - Duplicação e eliminação rápida.
+  - Clicar numa forma geométrica ou linha abre a secção `ShapeEditSection` ou `LineEditSection`, permitindo alterar opacidade ($0\%$ a $100\%$), cor de preenchimento, espessura e estilo do traço.
+- **Não-Duplicação de Código**:
+  - Reutilização dos componentes de `frontend/components/prancheta/edit-sidebar/` e funções puras de geometria de `tacticalGeometry.ts` (`findHoveredDrawing`, `getDrawingBounds`), garantindo arquitetura limpa e 100% testada.
+
+
 
 
 

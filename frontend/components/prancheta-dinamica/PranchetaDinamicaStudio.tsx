@@ -13,6 +13,9 @@ import {
   ArrowRight,
   TrendingUp,
   Minus,
+  Square,
+  Circle,
+  Triangle,
   CircleDot,
   Cone,
   Eraser,
@@ -24,6 +27,7 @@ import { DynamicTacticalCanvas } from "./DynamicTacticalCanvas";
 import { DynamicTimeline } from "./DynamicTimeline";
 import { DynamicBranchModal } from "./DynamicBranchModal";
 import { DynamicExportOverlay } from "./DynamicExportOverlay";
+import { TacticalEditSidebar } from "@/components/prancheta/TacticalEditSidebar";
 import { TacticalPlayData, TacticalFrame, getFullPath } from "@/models/tacticplay";
 import { cn } from "@/lib/utils";
 
@@ -92,6 +96,10 @@ export function PranchetaDinamicaStudio({
     [play]
   );
 
+  const isSidebarOpen =
+    play.selectedElement !== null ||
+    (play.selectedDrawingIdx !== null && play.drawings[play.selectedDrawingIdx] !== undefined);
+
   return (
     <div className="w-full h-full min-h-0 bg-[#0a0f1c] text-slate-300 font-sans flex flex-col gap-2 p-1.5 md:p-2.5 rounded-xl border border-slate-800 shadow-2xl relative overflow-hidden select-none">
       {/* Área Central: Canvas Fullscreen com Overlays Flutuantes */}
@@ -139,20 +147,25 @@ export function PranchetaDinamicaStudio({
 
           {/* Feedback de Gravação */}
           {saveFeedback && (
-            <div className="flex items-center gap-1.5 px-3 py-1.5 rounded-xl bg-emerald-500/20 border border-emerald-500/40 text-emerald-300 text-xs font-bold shadow-lg animate-in fade-in">
+            <div className="flex items-center gap-1.5 px-3 py-1.5 rounded-xl bg-emerald-500/20 border border-emerald-500/50 text-emerald-300 text-xs font-semibold shadow-xl animate-in fade-in zoom-in-95">
               <CheckCircle2 className="w-3.5 h-3.5" />
               <span>{saveFeedback}</span>
             </div>
           )}
         </div>
 
-        {/* 2. Barra Flutuante Superior Direita (Undo, Redo, Gravar, Exportar Vídeo) */}
+        {/* 2. Botões Flutuantes Topo Direito (Undo, Redo, Vídeo, Gravar) */}
         <div className="absolute top-3 right-3 z-10 flex items-center gap-1.5">
           <button
             type="button"
             onClick={play.undo}
             disabled={!play.canUndo}
-            className="flex items-center justify-center p-2 rounded-xl bg-slate-900/90 backdrop-blur-md border border-slate-700/60 hover:bg-slate-800 text-slate-300 disabled:opacity-30 disabled:hover:bg-slate-900/90 shadow-xl transition-all active:scale-95"
+            className={cn(
+              "p-2 rounded-xl border backdrop-blur-md transition-all shadow-xl",
+              play.canUndo
+                ? "bg-slate-900/90 border-slate-700/60 text-slate-200 hover:bg-slate-800 hover:text-white"
+                : "bg-slate-900/40 border-slate-800/40 text-slate-600 cursor-not-allowed"
+            )}
             title="Desfazer Ação (Ctrl+Z)"
           >
             <Undo2 className="w-4 h-4" />
@@ -162,37 +175,68 @@ export function PranchetaDinamicaStudio({
             type="button"
             onClick={play.redo}
             disabled={!play.canRedo}
-            className="flex items-center justify-center p-2 rounded-xl bg-slate-900/90 backdrop-blur-md border border-slate-700/60 hover:bg-slate-800 text-slate-300 disabled:opacity-30 disabled:hover:bg-slate-900/90 shadow-xl transition-all active:scale-95"
+            className={cn(
+              "p-2 rounded-xl border backdrop-blur-md transition-all shadow-xl",
+              play.canRedo
+                ? "bg-slate-900/90 border-slate-700/60 text-slate-200 hover:bg-slate-800 hover:text-white"
+                : "bg-slate-900/40 border-slate-800/40 text-slate-600 cursor-not-allowed"
+            )}
             title="Refazer Ação (Ctrl+Y)"
           >
             <Redo2 className="w-4 h-4" />
           </button>
 
-          {/* Botão Gravar */}
-          <button
-            type="button"
-            onClick={handleSave}
-            className="flex items-center gap-1.5 px-3 py-2 rounded-xl bg-amber-500 hover:bg-amber-400 text-slate-950 text-xs font-bold shadow-xl shadow-amber-500/20 transition-all active:scale-95"
-            title="Guardar a jogada tática"
-          >
-            <Save className="w-4 h-4" />
-            <span className="hidden md:inline">Gravar</span>
-          </button>
+          <div className="h-5 w-px bg-slate-700/50 mx-0.5 hidden sm:block" />
 
-          {/* Botão Exportar Vídeo WebM */}
           <button
             type="button"
             onClick={handleStartVideoExport}
             disabled={exportTool.isRecording}
-            className="flex items-center gap-1.5 px-3 py-2 rounded-xl bg-gradient-to-r from-emerald-600 to-teal-500 hover:from-emerald-500 hover:to-teal-400 text-white text-xs font-bold shadow-xl shadow-emerald-500/20 transition-all active:scale-95 disabled:opacity-50"
-            title="Exportar animação completa da jogada em vídeo WebM"
+            className="flex items-center gap-1.5 px-3 py-2 rounded-xl bg-purple-600/30 hover:bg-purple-600/50 border border-purple-500/50 text-purple-200 text-xs font-semibold backdrop-blur-md shadow-xl transition-all hover:scale-105 active:scale-95"
+            title="Exportar Animação em Vídeo HD (WebM)"
           >
-            <Video className="w-4 h-4" />
-            <span className="hidden md:inline">Exportar Vídeo</span>
+            <Video className="w-4 h-4 text-purple-400" />
+            <span className="hidden md:inline">Vídeo</span>
+          </button>
+
+          <button
+            type="button"
+            onClick={handleSave}
+            className="flex items-center gap-1.5 px-3.5 py-2 rounded-xl bg-cyan-600 hover:bg-cyan-500 text-slate-950 text-xs font-bold shadow-xl shadow-cyan-950/40 transition-all hover:scale-105 active:scale-95"
+            title="Gravar Jogada Tática"
+          >
+            <Save className="w-4 h-4" />
+            <span>Gravar</span>
           </button>
         </div>
 
-        {/* Canvas de Desenho e Interpolação */}
+        {/* 3. Barra Lateral de Edição Contextual (Reutilizada e Flutuante) */}
+        {isSidebarOpen && (
+          <div className="absolute top-0 left-0 bottom-0 z-30 flex">
+            <TacticalEditSidebar
+              selectedDrawing={
+                play.selectedDrawingIdx !== null && play.drawings[play.selectedDrawingIdx]
+                  ? (play.drawings[play.selectedDrawingIdx] as any)
+                  : null
+              }
+              selectedDrawingIdx={play.selectedDrawingIdx}
+              selectedElement={play.selectedElement as any}
+              onUpdateDrawing={(idx, updated) => play.updateDrawing(idx, updated as any)}
+              onDeleteDrawing={play.deleteDrawing}
+              onDuplicateDrawing={(d) => play.duplicateDrawing(d as any)}
+              onUpdateElement={play.updateElement}
+              onDeleteElement={play.deleteElement}
+              onDuplicateElement={play.duplicateElement}
+              onRotateElement={play.rotateElement}
+              onClose={() => {
+                play.setSelectedElementId(null);
+                play.setSelectedDrawingIdx(null);
+              }}
+            />
+          </div>
+        )}
+
+        {/* Canvas de Desenho e Interpolação a 60 FPS */}
         <DynamicTacticalCanvas
           canvasRef={canvasRef}
           tree={play.tree}
@@ -203,7 +247,9 @@ export function PranchetaDinamicaStudio({
           drawingMode={play.drawingMode}
           isEditMode={play.isEditMode}
           selectedElementId={play.selectedElementId}
+          selectedDrawingIdx={play.selectedDrawingIdx}
           onSelectElement={play.setSelectedElementId}
+          onSelectDrawing={play.setSelectedDrawingIdx}
           onUpdateElementPosition={play.updateElementPosition}
           onCommitHistory={play.commitHistory}
           onAddDrawing={play.addDrawing}
@@ -217,7 +263,7 @@ export function PranchetaDinamicaStudio({
         />
       </div>
 
-      {/* 3. Barra Flutuante Inferior: Linha do Tempo e Keyframes */}
+      {/* Linha do Tempo e Keyframes */}
       <div className="shrink-0 w-full">
         <DynamicTimeline
           tree={play.tree}
@@ -235,9 +281,9 @@ export function PranchetaDinamicaStudio({
         />
       </div>
 
-      {/* 4. Barra Flutuante de Ferramentas e Peças Táticas */}
+      {/* Barra Flutuante de Ferramentas, Formas e Peças Táticas */}
       <div className="shrink-0 w-full flex items-center justify-between gap-2 px-3 py-2 bg-[#0b1120]/95 backdrop-blur-md border border-slate-800/90 rounded-xl shadow-2xl text-xs overflow-x-auto">
-        {/* Ferramentas de Traço */}
+        {/* Ferramentas de Seleção, Linhas e Formas */}
         <div className="flex items-center gap-1.5">
           <button
             type="button"
@@ -248,7 +294,7 @@ export function PranchetaDinamicaStudio({
                 ? "bg-cyan-500/20 text-cyan-300 border-cyan-500/50"
                 : "bg-slate-900 text-slate-400 border-slate-800 hover:bg-slate-800 hover:text-slate-200"
             )}
-            title="Modo Seleção"
+            title="Modo Seleção e Mover"
           >
             <MousePointer2 className="w-3.5 h-3.5" />
             <span className="hidden sm:inline">Mover</span>
@@ -256,8 +302,7 @@ export function PranchetaDinamicaStudio({
 
           <span className="text-slate-600">|</span>
 
-          <span className="text-[11px] font-semibold text-slate-400 hidden sm:inline">Linhas:</span>
-
+          {/* Linhas */}
           <button
             type="button"
             onClick={() => play.setDrawingMode("line")}
@@ -299,6 +344,51 @@ export function PranchetaDinamicaStudio({
           >
             <ArrowRight className="w-3.5 h-3.5" />
           </button>
+
+          <span className="text-slate-600">|</span>
+
+          {/* Formas Geométricas */}
+          <button
+            type="button"
+            onClick={() => play.setDrawingMode("rect")}
+            className={cn(
+              "p-1.5 rounded-lg border transition-all",
+              play.drawingMode === "rect"
+                ? "bg-cyan-500/20 text-cyan-300 border-cyan-500/50"
+                : "bg-slate-900 text-slate-400 border-slate-800 hover:bg-slate-800 hover:text-slate-200"
+            )}
+            title="Desenhar Quadrado / Retângulo"
+          >
+            <Square className="w-3.5 h-3.5" />
+          </button>
+
+          <button
+            type="button"
+            onClick={() => play.setDrawingMode("circle")}
+            className={cn(
+              "p-1.5 rounded-lg border transition-all",
+              play.drawingMode === "circle"
+                ? "bg-cyan-500/20 text-cyan-300 border-cyan-500/50"
+                : "bg-slate-900 text-slate-400 border-slate-800 hover:bg-slate-800 hover:text-slate-200"
+            )}
+            title="Desenhar Círculo"
+          >
+            <Circle className="w-3.5 h-3.5" />
+          </button>
+
+          <button
+            type="button"
+            onClick={() => play.setDrawingMode("triangle")}
+            className={cn(
+              "p-1.5 rounded-lg border transition-all",
+              play.drawingMode === "triangle"
+                ? "bg-cyan-500/20 text-cyan-300 border-cyan-500/50"
+                : "bg-slate-900 text-slate-400 border-slate-800 hover:bg-slate-800 hover:text-slate-200"
+            )}
+            title="Desenhar Triângulo"
+          >
+            <Triangle className="w-3.5 h-3.5" />
+          </button>
         </div>
 
         {/* Campo e Presets */}
@@ -334,8 +424,6 @@ export function PranchetaDinamicaStudio({
 
         {/* Peças no Campo */}
         <div className="flex items-center gap-1.5">
-          <span className="text-[11px] font-semibold text-slate-400 hidden sm:inline">Peças:</span>
-
           <button
             type="button"
             onClick={() => play.addPlayer("home")}
@@ -378,7 +466,7 @@ export function PranchetaDinamicaStudio({
             type="button"
             onClick={play.clearDrawings}
             className="flex items-center gap-1 px-2 py-1 rounded-lg bg-slate-900 border border-slate-800 hover:bg-rose-500/10 hover:text-rose-400 hover:border-rose-500/30 text-slate-400 text-[11px] font-semibold transition-all"
-            title="Limpar Linhas Táticas"
+            title="Limpar Linhas e Formas Táticas"
           >
             <Eraser className="w-3.5 h-3.5" />
             <span className="hidden sm:inline">Limpar</span>

@@ -24,7 +24,17 @@ export interface UseTacticalPlayOptions {
   onSave?: (data: TacticalPlayData) => void;
 }
 
-export type DrawingMode = "select" | "pass" | "run" | "line";
+export type DrawingMode =
+  | "select"
+  | "pass"
+  | "run"
+  | "line"
+  | "rect"
+  | "circle"
+  | "triangle"
+  | "pentagon"
+  | "hexagon"
+  | "pen";
 export type PitchStyle = "full" | "half";
 
 export function useTacticalPlay(options: UseTacticalPlayOptions = {}) {
@@ -51,6 +61,7 @@ export function useTacticalPlay(options: UseTacticalPlayOptions = {}) {
   const [pitchStyle, setPitchStyle] = useState<PitchStyle>(() => initialData?.pitchStyle || "full");
   const [drawingMode, setDrawingMode] = useState<DrawingMode>("select");
   const [selectedElementId, setSelectedElementId] = useState<string | null>(null);
+  const [selectedDrawingIdx, setSelectedDrawingIdx] = useState<number | null>(null);
   const [statusMessage, setStatusMessage] = useState<string>("Pronto.");
   const [isEditMode, setIsEditMode] = useState(true);
 
@@ -558,6 +569,151 @@ export function useTacticalPlay(options: UseTacticalPlayOptions = {}) {
     [initialData?.id, pitchStyle, tree, transitionSpeed]
   );
 
+  const updateDrawing = useCallback(
+    (index: number, updated: TacticalDrawing) => {
+      setTree((prevTree) => {
+        const activeId = prevTree.activePath[prevTree.currentFrameIdx] || prevTree.rootId;
+        const node = prevTree.framesMap[activeId];
+        const drws = node?.drawings || [];
+
+        const newDrawings = [...drws];
+        if (index >= 0 && index < newDrawings.length) {
+          newDrawings[index] = updated;
+        }
+
+        const updatedFrame: TacticalFrame = {
+          ...node,
+          drawings: newDrawings,
+        };
+
+        const updatedTree: TacticalTree = {
+          ...prevTree,
+          framesMap: {
+            ...prevTree.framesMap,
+            [activeId]: updatedFrame,
+          },
+        };
+
+        recordHistory(updatedTree);
+        return updatedTree;
+      });
+    },
+    [recordHistory]
+  );
+
+  const deleteDrawing = useCallback(
+    (index: number) => {
+      setTree((prevTree) => {
+        const activeId = prevTree.activePath[prevTree.currentFrameIdx] || prevTree.rootId;
+        const node = prevTree.framesMap[activeId];
+        const drws = node?.drawings || [];
+
+        const newDrawings = drws.filter((_, i) => i !== index);
+
+        const updatedFrame: TacticalFrame = {
+          ...node,
+          drawings: newDrawings,
+        };
+
+        const updatedTree: TacticalTree = {
+          ...prevTree,
+          framesMap: {
+            ...prevTree.framesMap,
+            [activeId]: updatedFrame,
+          },
+        };
+
+        recordHistory(updatedTree);
+        return updatedTree;
+      });
+      setSelectedDrawingIdx(null);
+    },
+    [recordHistory]
+  );
+
+  const duplicateDrawing = useCallback(
+    (drawing: TacticalDrawing) => {
+      const cloned: TacticalDrawing = {
+        ...JSON.parse(JSON.stringify(drawing)),
+        id: `draw_${Date.now()}_${Math.random().toString(36).substr(2, 4)}`,
+        points: (drawing.points || []).map((p: any) => ({ x: p.x + 20, y: p.y + 20 })),
+      };
+      addDrawing(cloned);
+    },
+    [addDrawing]
+  );
+
+  const updateElement = useCallback(
+    (updates: Partial<TacticalElement>) => {
+      if (selectedElementId) {
+        updateElementDetails(selectedElementId, updates);
+      }
+    },
+    [selectedElementId, updateElementDetails]
+  );
+
+  const deleteElement = useCallback(
+    (id?: string) => {
+      const targetId = id || selectedElementId;
+      if (targetId) {
+        removeElement(targetId);
+      }
+    },
+    [selectedElementId, removeElement]
+  );
+
+  const duplicateElement = useCallback(
+    (id?: string) => {
+      const targetId = id || selectedElementId;
+      if (!targetId) return;
+
+      const el = currentElements.find((e) => e.id === targetId);
+      if (!el) return;
+
+      const newId = `${el.type}_${Date.now() % 10000}`;
+      const cloned: TacticalElement = {
+        ...JSON.parse(JSON.stringify(el)),
+        id: newId,
+        x: Math.min(CANVAS_WIDTH - 20, el.x + 25),
+        y: Math.min(CANVAS_HEIGHT - 20, el.y + 25),
+      };
+
+      setTree((prevTree) => {
+        const activeId = prevTree.activePath[prevTree.currentFrameIdx] || prevTree.rootId;
+        const node = prevTree.framesMap[activeId];
+        const elements = node?.elements || [];
+
+        const updatedFrame: TacticalFrame = {
+          ...node,
+          elements: [...elements, cloned],
+        };
+
+        const updatedTree: TacticalTree = {
+          ...prevTree,
+          framesMap: {
+            ...prevTree.framesMap,
+            [activeId]: updatedFrame,
+          },
+        };
+
+        recordHistory(updatedTree);
+        return updatedTree;
+      });
+      setSelectedElementId(newId);
+    },
+    [selectedElementId, currentElements, recordHistory]
+  );
+
+  const rotateElement = useCallback(
+    (angle: number, id?: string) => {
+      const targetId = id || selectedElementId;
+      if (targetId) {
+        updateElementDetails(targetId, { rotation: angle });
+      }
+    },
+    [selectedElementId, updateElementDetails]
+  );
+
   return {
     tree,
     currentFrame,
@@ -566,6 +722,7 @@ export function useTacticalPlay(options: UseTacticalPlayOptions = {}) {
     drawings,
     selectedElement,
     selectedElementId,
+    selectedDrawingIdx,
     currentFrameIdx: tree.currentFrameIdx,
     activePath: tree.activePath,
     isPlaying,
@@ -579,6 +736,7 @@ export function useTacticalPlay(options: UseTacticalPlayOptions = {}) {
     canRedo: historyIndex < history.length - 1,
     // Ações
     setSelectedElementId,
+    setSelectedDrawingIdx,
     setDrawingMode,
     setPitchStyle,
     setTransitionSpeed,
@@ -601,8 +759,15 @@ export function useTacticalPlay(options: UseTacticalPlayOptions = {}) {
     removeElement,
     updateElementPosition,
     updateElementDetails,
+    updateElement,
+    deleteElement,
+    duplicateElement,
+    rotateElement,
     loadTacticalPreset,
     addDrawing,
+    updateDrawing,
+    deleteDrawing,
+    duplicateDrawing,
     clearDrawings,
     setFrameNotes,
     saveTactic,

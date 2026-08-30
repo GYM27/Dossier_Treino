@@ -135,6 +135,71 @@ describe("useTacticalPlay Hook - Gestão de Estado da Prancheta Dinâmica (TDD)"
     expect(result.current.isPlaying).toBe(false);
   });
 
+  it("deve atualizar detalhes de um jogador como nome/label, tamanho e cores", () => {
+    const { result } = renderHook(() => useTacticalPlay({ initialPreset: "bench" }));
+
+    act(() => {
+      result.current.setSelectedElementId("H1");
+      result.current.updateElementDetails("H1", {
+        label: "GR",
+        size: "lg",
+        color: "#10b981",
+        secondaryColor: "#000000",
+      });
+    });
+
+    const h1 = result.current.currentElements.find((e) => e.id === "H1");
+    expect(h1?.label).toBe("GR");
+    expect(h1?.size).toBe("lg");
+    expect(h1?.color).toBe("#10b981");
+    expect(h1?.secondaryColor).toBe("#000000");
+  });
+
+  it("deve permitir adicionar, atualizar e eliminar formas geométricas", () => {
+    const { result } = renderHook(() => useTacticalPlay());
+
+    // 1. Adicionar retângulo / quadrado
+    act(() => {
+      result.current.addDrawing({
+        id: "rect_1",
+        type: "rect",
+        points: [{ x: 100, y: 100 }, { x: 300, y: 250 }],
+        color: "#38bdf8",
+        width: 3,
+        config: {
+          color: "#38bdf8",
+          fillColor: "#38bdf8",
+          opacity: 40,
+        },
+      });
+    });
+
+    expect(result.current.drawings.length).toBe(1);
+    expect(result.current.drawings[0].type).toBe("rect");
+
+    // 2. Atualizar opacidade e cor da forma
+    act(() => {
+      result.current.updateDrawing(0, {
+        ...result.current.drawings[0],
+        config: {
+          ...result.current.drawings[0].config,
+          opacity: 80,
+          fillColor: "#ef4444",
+        },
+      });
+    });
+
+    expect(result.current.drawings[0].config?.opacity).toBe(80);
+    expect(result.current.drawings[0].config?.fillColor).toBe("#ef4444");
+
+    // 3. Eliminar a forma
+    act(() => {
+      result.current.deleteDrawing(0);
+    });
+
+    expect(result.current.drawings.length).toBe(0);
+  });
+
   it("deve suportar Undo e Redo de ações", () => {
     const { result } = renderHook(() => useTacticalPlay());
 

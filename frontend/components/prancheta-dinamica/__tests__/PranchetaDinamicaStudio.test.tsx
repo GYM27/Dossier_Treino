@@ -10,7 +10,11 @@ describe("PranchetaDinamicaStudio Orchestrator (TDD)", () => {
     // Deve exibir o campo de nome da jogada
     expect(screen.getByPlaceholderText("Nome da Jogada Tática...")).toBeDefined();
     // Deve exibir botão de exportação de vídeo
-    expect(screen.getByText("Exportar Vídeo")).toBeDefined();
+    expect(screen.getByTitle("Exportar Animação em Vídeo HD (WebM)")).toBeDefined();
+    // Deve exibir botões de formas geométricas
+    expect(screen.getByTitle("Desenhar Quadrado / Retângulo")).toBeDefined();
+    expect(screen.getByTitle("Desenhar Círculo")).toBeDefined();
+    expect(screen.getByTitle("Desenhar Triângulo")).toBeDefined();
     // Deve exibir a timeline com o nó "Início"
     expect(screen.getByText("Início")).toBeDefined();
   });
