@@ -1411,6 +1411,25 @@ Anteriormente, a página de estatísticas do clube exibia números fixos inscrit
 4. **Aniversários do Mês**:
    - Compara o mês da `dataNascimento` de cada atleta com o mês do sistema e calcula a idade que o atleta completará.
 
+---
+
+## 14. Sprint 5: Modularização do PranchetaStudio (1360 Linhas -> Arquitetura Coesa)
+
+### 14.1 Hook de Pastas Hierárquicas (`usePranchetaPastas.ts`)
+- **Responsabilidade Única**: Gestão da árvore de pastas, subpastas aninhadas, persistência em `localStorage` e colapso/expansão no acordeão.
+- **Isolamento de Estado**: Encapsula `pastas`, `expandedPastas`, `drawerMode` ("PASTAS" | "TODOS"), criação e eliminação com confirmação.
+
+### 14.2 Hook de Ciclo de Vida CRUD e Variantes (`usePranchetaGestao.ts`)
+- **Responsabilidade Única**: Ciclo de vida completo do exercício (novo, carregar, gravar original, criar nova variante, duplicar e eliminar).
+- **Sincronização com Treinos**: Quando o estúdio é acedido a partir de um treino (`treinoId` e `assocId`), atualiza a duração do exercício ou re-associa a variante criada exclusivamente àquela posição do treino.
+
+### 14.3 Sub-componentes Visuais Extraídos
+1. `PranchetaSidebarPastas.tsx`: Gaveta retrátil com pesquisa em tempo real, alternância de modos e árvore hierárquica.
+2. `PranchetaMetadataBar.tsx`: Barra horizontal de metadados técnicos (nome, categoria, espaço, tempo, atletas e dificuldade).
+3. `PranchetaHeader.tsx`: Barra superior com botões de gravação, duplicação e menu hambúrguer de acesso rápido.
+4. `PranchetaStudio.tsx`: Componente orquestrador limpo e legível com menos de 200 linhas.
+
+
 
 
 

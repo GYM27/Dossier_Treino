@@ -439,21 +439,16 @@ Agora pode rodar livremente **todas as Formas Geométricas** (Quadrados, Círcul
 3. **Alternar de Equipa com 1 Clique**:
    - No separador do clube ou no menu suspenso do topo da página, clique sobre qualquer outro escalão registado para alternar instantaneamente todo o dossier para esse plantel.
 
-### 7. Novo Dashboard Operacional da Equipa Ativa (Sprint 4)
+### 8. Estúdio da Prancheta Tática e Catálogo de Pastas (Sprint 5)
 
-1. **Indicadores em Tempo Real**:
-   - **Atletas no Plantel**: Número total de jogadores ativos na equipa selecionada.
-   - **Taxa Média de Assiduidade**: Cálculo automático da percentagem de presenças dos treinos e jogos dos últimos 30 dias.
-   - **Próximo Evento da Equipa**: Data, hora e indicação se é Treino ou Jogo Oficial.
-   - **Atrasos do Mês**: Registo do total de atrasos reportados na assiduidade.
+1. **Biblioteca e Pastas Hierárquicas**:
+   - **Organização por Escalão e Fase do Jogo**: Organize exercícios em pastas temáticas (*Organização Ofensiva*, *Transição Defensiva*, *Bolas Paradas*, etc.) e crie subpastas ilimitadas através do botão `[+]`.
+   - **Pesquisa Rápida e Filtros**: Encontre qualquer exercício em tempo real pelo nome, objetivos ou categoria técnica.
 
-2. **Próximos Treinos e Jogos**:
-   - Cartões cronológicos com dia, mês, hora e campo de treino/estádio.
-   - Botão direto **"Ver Calendário Completo"** para aceder ao planeamento semanal.
+2. **Ficha Técnica e Ações Rápidas**:
+   - **Ficha Técnica Retrátil**: Exiba ou oculte a barra de propriedades (nome, categoria, espaço, duração e número de atletas) com 1 clique.
+   - **Duplicação e Variantes**: Crie variantes de exercícios mantendo a estrutura base sem alterar o exercício original.
 
-3. **Distribuição do Plantel & Aniversários do Mês**:
-   - Barras gráficas interativas de Guarda-Redes, Defesas, Médios e Avançados.
-   - Cartão comemorativo de **Aniversários do Mês** com a data e idade de cada atleta aniversariante.
 
 
 

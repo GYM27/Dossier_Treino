@@ -444,6 +444,16 @@ Eliminou-se a redundância de formulários de criação de treinos, separando a 
   - Utilização de `Promise.allSettled` para garantir que falhas parciais de rede não impedem a visualização dos restantes cartões e métricas.
   - Eliminação de dados mock estáticos (`constants.ts`), consolidando a base de dados como fonte única de verdade (*Single Source of Truth*).
 
+### 23. Sprint 5: Desacoplamento e Decomposição do PranchetaStudio
+- **Separação de Preocupações (Separation of Concerns)**:
+  - O componente `PranchetaStudio.tsx` (1360 linhas) foi reduzido para um orquestrador enxuto com delegação completa.
+- **Hooks Especializados de Domínio**:
+  - `usePranchetaPastas.ts`: Encapsula a árvore de navegação, persistência em `localStorage` e modos de visualização.
+  - `usePranchetaGestao.ts`: Gerencia o ciclo de vida assíncrono dos exercícios e a integração com planos de treino.
+- **Componentes Visuais Modulares**:
+  - `PranchetaSidebarPastas.tsx`, `PranchetaMetadataBar.tsx` e `PranchetaHeader.tsx`.
+
+
 
 
 
