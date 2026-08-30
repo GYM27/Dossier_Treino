@@ -466,6 +466,17 @@ Eliminou-se a redundância de formulários de criação de treinos, separando a 
 - **Desacoplamento Visual e Performance**:
   - `TacticalBoardThumbnail` isolado para renderização de miniaturas leves no catálogo sem instanciar a engine completa do canvas 2D interativo.
 
+### 26. Hardening de Segurança: Arquitetura de Autorização de Objetos e Validação
+- **Defesa contra IDOR/BOLA via `EquipaSecurityService`**:
+  - Camada de serviço de segurança injetada no ecossistema Spring Security, assegurando validação de posse sobre entidades associadas a equipas.
+- **Validação Estrita de DTOs**:
+  - Aplicação de Bean Validation em todos os fluxos de autenticação e registo, impedindo payloads malformados ou incompletos.
+- **Tratamento Uniforme de Erros de Segurança (403 Forbidden)**:
+  - Centralização no `GlobalExceptionHandler` de exceções de autorização, padronizando a resposta `ErrorResponse` em conformidade com as diretrizes da API REST.
+- **Injeção Dinâmica de Segredos**:
+  - Suporte a variáveis de ambiente para segredos criptográficos (JWT) e flags de cookies seguros em produção.
+
+
 
 
 

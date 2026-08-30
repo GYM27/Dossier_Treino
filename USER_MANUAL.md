@@ -464,6 +464,17 @@ Agora pode rodar livremente **todas as Formas Geométricas** (Quadrados, Círcul
    - **Navegação por Pastas e Tags**: Filtre diretamente por pastas táticas (*Organização Ofensiva*, *Bolas Paradas*, etc.) ou filtre por categorias (*Aquecimento*, *Técnico*, *Tático*, *Físico*, *Guarda-Redes*).
    - **Pré-visualização Instantânea**: O cartão apresenta a miniatura vetorial da prancheta, tempo previsto em minutos, número de atletas envolvidos e dimensões do campo.
 
+### 11. Segurança e Privacidade dos Dados do Clube
+
+1. **Isolamento e Proteção de Dados por Equipa**:
+   - Cada treinador acede exclusivamente aos atletas, treinos, relatórios clínicos e planos táticos das suas respetivas equipas.
+   - A plataforma bloqueia tentativas de acesso cruzado não autorizado através de validações em tempo real no servidor.
+
+2. **Autenticação e Sessões Seguras**:
+   - A sua sessão é protegida por tokens encriptados guardados em cookies seguros (*HttpOnly*), que não podem ser intercetados por extensões do navegador ou páginas externas.
+   - Ao registar uma nova conta de membro da equipa técnica, as palavras-passe são validadas com um mínimo de 6 caracteres e encriptadas com algoritmos de hashing modernos.
+
+
 
 
 

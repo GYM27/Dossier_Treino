@@ -1468,6 +1468,34 @@ Anteriormente, a página de estatísticas do clube exibia números fixos inscrit
   3. `CatalogoExerciseGrid.tsx`: Renderizador de grelha responsiva com gestão de estado de carregamento e estado vazio (*empty state*).
   4. `CatalogoExerciciosModal.tsx`: Orquestrador limpo e legível (< 200 linhas).
 
+---
+
+## 17. Hardening de Segurança no Backend e Proteção de Endpoints
+
+### 17.1 Defesa contra Broken Object Level Authorization (Anti-IDOR / BOLA)
+- **O que foi construído**: Criado o [EquipaSecurityService.java](file:///c:/Projetos/DossierTreino/backend/src/main/java/com/dossiertreinador/security/EquipaSecurityService.java).
+- **Como funciona por detrás dos panos**:
+  - O método `temAcessoAEquipa(Authentication auth, UUID equipaId)` extrai a entidade `Utilizador` do contexto de segurança do Spring.
+  - Verifica se o utilizador possui o papel `ROLE_ADMINISTRADOR` (concedendo acesso universal de supervisão) ou se o utilizador é o treinador responsável pela equipa validada na base de dados.
+  - Bloqueia imediatamente pedidos com credenciais anónimas ou forjadas.
+
+### 17.2 Validação Rigorosa de DTOs e Sanitização de Entradas
+- **Modificações**:
+  - [RegisterRequest.java](file:///c:/Projetos/DossierTreino/backend/src/main/java/com/dossiertreinador/domain/dtos/RegisterRequest.java): Anotações estritas `@NotBlank`, `@Email(message = "Formato de email inválido")` e `@Size(min = 6, message = "A password deve ter pelo menos 6 caracteres")`.
+  - [AuthController.java](file:///c:/Projetos/DossierTreino/backend/src/main/java/com/dossiertreinador/controller/AuthController.java): Anotação `@Valid` adicionada ao parâmetro `@RequestBody RegisterRequest request`.
+
+### 17.3 Tratamento Global de 403 Forbidden Padronizado
+- **Modificações em [GlobalExceptionHandler.java](file:///c:/Projetos/DossierTreino/backend/src/main/java/com/dossiertreinador/exceptions/GlobalExceptionHandler.java)**:
+  - Intercetação explícita de `org.springframework.security.access.AccessDeniedException`.
+  - Devolução de resposta JSON uniforme com status HTTP 403 Forbidden e mensagem amigável para o cliente.
+
+### 17.4 Externalização de Segredos via Variáveis de Ambiente
+- **Modificações em [application.properties](file:///c:/Projetos/DossierTreino/backend/src/main/resources/application.properties)**:
+  - `application.security.jwt.secret-key=${JWT_SECRET_KEY:...}`
+  - `security.cookie.secure=${COOKIE_SECURE:false}`
+  - Em ambientes de produção (HTTPS), a flag de segurança de cookies e a chave de assinatura são injetadas diretamente pelo ambiente sem expor segredos no código-fonte.
+
+
 
 
 

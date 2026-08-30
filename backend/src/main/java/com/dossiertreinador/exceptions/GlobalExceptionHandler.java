@@ -64,4 +64,15 @@ public class GlobalExceptionHandler {
                 
         return new ResponseEntity<>(erroFormatado, HttpStatus.BAD_REQUEST);
     }
+
+    @ExceptionHandler(org.springframework.security.access.AccessDeniedException.class)
+    public ResponseEntity<ErrorResponse> handleAccessDenied(org.springframework.security.access.AccessDeniedException ex) {
+        ErrorResponse erroFormatado = ErrorResponse.builder()
+                .timestamp(LocalDateTime.now())
+                .status(HttpStatus.FORBIDDEN.value()) // Código 403
+                .error("Acesso Negado")
+                .message(ex.getMessage() != null ? ex.getMessage() : "Não possui permissão para aceder ou modificar este recurso.")
+                .build();
+        return new ResponseEntity<>(erroFormatado, HttpStatus.FORBIDDEN);
+    }
 }

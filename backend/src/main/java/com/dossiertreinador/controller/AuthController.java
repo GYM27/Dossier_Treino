@@ -37,7 +37,7 @@ public class AuthController {
 
     @PostMapping("/registar")
     @PreAuthorize("hasRole('TREINADOR') or hasRole('ADMINISTRADOR')")
-    public ResponseEntity<AuthenticationResponse> registar(@RequestBody RegisterRequest request) {
+    public ResponseEntity<AuthenticationResponse> registar(@jakarta.validation.Valid @RequestBody RegisterRequest request) {
         var authResult = authenticationService.register(request);
         return construirRespostaComCookie(authResult);
     }
