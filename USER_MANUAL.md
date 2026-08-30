@@ -474,6 +474,25 @@ Agora pode rodar livremente **todas as Formas Geométricas** (Quadrados, Círcul
    - A sua sessão é protegida por tokens encriptados guardados em cookies seguros (*HttpOnly*), que não podem ser intercetados por extensões do navegador ou páginas externas.
    - Ao registar uma nova conta de membro da equipa técnica, as palavras-passe são validadas com um mínimo de 6 caracteres e encriptadas com algoritmos de hashing modernos.
 
+### 12. Prancheta Tática Dinâmica & Animação de Jogadas (TacticPlay)
+
+1. **Criação de Jogadas com Quadros-Chave (Keyframes)**:
+   - No menu lateral, aceda a **"Prancheta Dinâmica"**.
+   - Posicione os jogadores da Equipa Principal (Amarelo) e Adversária (Azul), a bola de futebol e cones de treino.
+   - Clique em **`[Inserir Quadro]`** para criar o passo seguinte da jogada. O motor regista a nova posição e calcula automaticamente o movimento fluido entre os quadros.
+
+2. **Ramificações e Tomada de Decisão (Alternativas Táticas)**:
+   - Selecione um quadro e clique em **`[Criar Alternativa]`** (ex: *"Opção A: Passe Interior"* ou *"Opção B: Cruzamento Longo"*).
+   - Durante a reprodução (Play), quando a animação atinge esse momento, pausa e apresenta uma janela de escolha para simular as opções de jogo com os atletas.
+
+3. **Controlo Temporal & Anotações**:
+   - Regule a velocidade de transição entre quadros ($0.8\text{s}$ para ritmo de jogo real até $3.0\text{s}$ para explicações didáticas).
+   - Abra a gaveta de **`[Notas]`** para registar orientações táticas específicas de cada momento.
+
+4. **Exportação de Vídeo em Alta Definição (.webm)**:
+   - Clique em **`[Exportar Vídeo]`** no topo da página. O estúdio compila a animação completa a 30 FPS e descarrega o ficheiro de vídeo diretamente para o seu computador, pronto para partilhar com os jogadores nas palestras táticas ou redes sociais.
+
+
 
 
 

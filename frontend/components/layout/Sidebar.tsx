@@ -15,6 +15,7 @@ import {
   Dumbbell,
   Search,
   Sparkles,
+  Film,
 } from "lucide-react";
 
 export type NavKey =
@@ -24,6 +25,7 @@ export type NavKey =
   | "calendario"
   | "treinos"
   | "prancheta"
+  | "prancheta-dinamica"
   | "assiduidade"
   | "config"
   | "scouting";
@@ -42,6 +44,7 @@ export const NAV_ITEMS: NavItem[] = [
   { key: "calendario", label: "Calendário", href: "/calendario", icon: Calendar },
   { key: "treinos", label: "Planos de Treino", href: "/treinos", icon: Dumbbell },
   { key: "prancheta", label: "Prancheta Tática", href: "/prancheta", icon: Sparkles },
+  { key: "prancheta-dinamica", label: "Prancheta Dinâmica", href: "/prancheta-dinamica", icon: Film },
   { key: "assiduidade", label: "Assiduidade", href: "/assiduidade", icon: CheckSquare },
   { key: "scouting", label: "Scouting", href: "/scouting", icon: Search },
   { key: "config", label: "Configurações", href: "/config", icon: Settings },

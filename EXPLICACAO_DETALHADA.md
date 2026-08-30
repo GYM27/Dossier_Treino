@@ -1594,6 +1594,19 @@ Anteriormente, a página de estatísticas do clube exibia números fixos inscrit
 - Integração unificada dos hooks de estado (`useTacticalPlay`), gravação (`useTacticalExport`), canvas 2D e overlays modais.
 - Bateria de testes de integração TDD validada a 100% (100 testes na suite).
 
+---
+
+## 23. Prancheta Dinâmica — Fase 5: Rota Next.js, Navegação na Sidebar e SSR-Safety
+
+### 23.1 Rota Dinâmica no App Router (`app/(dashboard)/prancheta-dinamica/page.tsx`)
+- **Estratégia SSR-Safe (`next/dynamic` com `ssr: false`)**:
+  - Motores gráficos em Canvas HTML5 e APIs de gravação de média (`MediaRecorder`, `captureStream`) acedem a primitivas globais do browser (`window`, `HTMLCanvasElement`).
+  - A importação via `next/dynamic(..., { ssr: false })` encapsulada com `<Suspense>` garante que a renderização do servidor ocorre sem exceções de *hydration* e apresenta um *spinner* elegante durante o carregamento inicial.
+
+### 23.2 Navegação e Menu Lateral (`Sidebar.tsx`)
+- Adição da entrada "Prancheta Dinâmica" (`/prancheta-dinamica`) na lista de navegação global `NAV_ITEMS`, permitindo alternar instantaneamente entre a prancheta de exercícios estáticos e o estúdio dinâmico com keyframes.
+
+
 
 
 

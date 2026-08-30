@@ -17,7 +17,8 @@ describe("Sidebar (TDD)", () => {
     expect(screen.getByRole("link", { name: /Plantel/i })).toHaveAttribute("href", "/plantel");
     expect(screen.getByRole("link", { name: /Calendário/i })).toHaveAttribute("href", "/calendario");
     expect(screen.getByRole("link", { name: /Planos de Treino/i })).toHaveAttribute("href", "/treinos");
-    expect(screen.getByRole("link", { name: /Prancheta Tática/i })).toHaveAttribute("href", "/prancheta");
+    expect(screen.getByRole("link", { name: /^Prancheta Tática$/i })).toHaveAttribute("href", "/prancheta");
+    expect(screen.getByRole("link", { name: /Prancheta Dinâmica/i })).toHaveAttribute("href", "/prancheta-dinamica");
     expect(screen.getByRole("link", { name: /Assiduidade/i })).toHaveAttribute("href", "/assiduidade");
     expect(screen.getByRole("link", { name: /Scouting/i })).toHaveAttribute("href", "/scouting");
     expect(screen.getByRole("link", { name: /Configurações/i })).toHaveAttribute("href", "/config");

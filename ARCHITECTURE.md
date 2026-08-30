@@ -509,6 +509,12 @@ Eliminou-se a redundância de formulários de criação de treinos, separando a 
 - **Padrão de Diálogo de Decisão Tática (`DynamicBranchModal`)**:
   - Tratamento de bifurcações como eventos desacoplados: o canvas emite `onDecisionPoint(node)` sem conhecer a implementação visual da interface, delegando ao orquestrador `PranchetaDinamicaStudio` a apresentação do modal e a atualização da rota ativa.
 
+### 32. Roteamento Next.js e Estratégia de Isolamento SSR
+- **Lazy Loading e Renderização Exclusiva no Cliente**:
+  - Isolamento do Canvas 2D e do módulo de MediaRecorder através de `next/dynamic(..., { ssr: false })` na rota `/prancheta-dinamica`.
+  - Esta abordagem protege o processo de Server-Side Rendering (SSR) e Static Site Generation (SSG) de dependências exclusivas do DOM do navegador, mantendo o build 100% verde.
+
+
 
 
 
