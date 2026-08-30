@@ -1,6 +1,6 @@
 "use client";
 
-import React, { useState } from "react";
+import React, { useState, useCallback } from "react";
 import dynamic from "next/dynamic";
 import { useSearchParams } from "next/navigation";
 import { buildHierarchicalOptions } from "@/models/pasta";
@@ -59,15 +59,21 @@ export function PranchetaStudio({ initialExercicioId }: PranchetaStudioProps = {
   // 1. Hook de Pastas Hierárquicas
   const pastasState = usePranchetaPastas();
 
+  // Callback estável para seleção de pastas
+  const handlePastaSelect = useCallback(
+    (p: string) => {
+      pastasState.setPasta(p);
+      pastasState.setExpandedPastas((prev) => ({ ...prev, [p]: true }));
+    },
+    [pastasState.setPasta, pastasState.setExpandedPastas]
+  );
+
   // 2. Hook de Gestão de Exercícios
   const gestao = usePranchetaGestao({
     initialExercicioId: targetExercicioId,
     treinoId,
     assocId,
-    onPastaSelect: (p) => {
-      pastasState.setPasta(p);
-      pastasState.setExpandedPastas((prev) => ({ ...prev, [p]: true }));
-    },
+    onPastaSelect: handlePastaSelect,
   });
 
   // Confirmação para eliminar pasta

@@ -1495,6 +1495,29 @@ Anteriormente, a página de estatísticas do clube exibia números fixos inscrit
   - `security.cookie.secure=${COOKIE_SECURE:false}`
   - Em ambientes de produção (HTTPS), a flag de segurança de cookies e a chave de assinatura são injetadas diretamente pelo ambiente sem expor segredos no código-fonte.
 
+---
+
+## 18. Resolução do Loop Infinito e Flickering na Biblioteca de Exercícios
+
+### 18.1 Diagnóstico do Problema ("A piscar e a carregar")
+- **Sintoma**: Ao abrir a gaveta da biblioteca de exercícios na prancheta ou ao alternar modos, a interface entrava num ciclo perpétuo de piscar entre o *spinner* de carregamento e a lista de exercícios.
+- **Causa Raiz (Dependency Loop em Hooks React)**:
+  1. No `PranchetaStudio.tsx`, a propriedade `onPastaSelect` era passada ao hook `usePranchetaGestao` como uma arrow function inline não-memoizada (`(p) => { pastasState.setPasta(p); ... }`).
+  2. A cada render do `PranchetaStudio`, o JavaScript criava uma nova referência em memória dessa função.
+  3. No `usePranchetaGestao.ts`, a função `carregarDetalhesExercicio` tinha `onPastaSelect` na sua lista de dependências do `useCallback`, sendo recriada.
+  4. Por sua vez, `carregarExercicios` dependia de `carregarDetalhesExercicio` e também era recriada.
+  5. O `useEffect(() => { carregarExercicios(); }, [carregarExercicios])` disparava imediatamente, ativando `setIsLoading(true)`, o que forçava outro render do componente pai, recriando a função `onPastaSelect` e fechando o ciclo infinito.
+
+### 18.2 A Solução de Engenharia (Padrão Mutable Ref & Memoização Estrita)
+- **Uso de `useRef` para Callbacks Opcionais**:
+  - Armazenamento da referência `onPastaSelect` num `useRef` (`onPastaSelectRef.current = onPastaSelect`).
+  - O `useCallback` de `carregarDetalhesExercicio` passa a ter dependências vazias `[]`, tornando-se 100% estável ao longo de todo o ciclo de vida do componente.
+- **Memoização de Filtros com `useMemo`**:
+  - A lista `exerciciosFiltrados` foi envolvida em `useMemo(() => ..., [exercicios, searchTerm, categoriaFilter])`, evitando computações desnecessárias durante animações de abertura de gaveta.
+- **`useCallback` no Componente Pai**:
+  - `handlePastaSelect` no `PranchetaStudio.tsx` foi encapsulado com `useCallback`, garantindo estabilidade referencial completa.
+
+
 
 
 

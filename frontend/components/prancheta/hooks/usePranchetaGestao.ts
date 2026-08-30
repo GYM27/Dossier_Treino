@@ -1,6 +1,6 @@
 "use client";
 
-import { useState, useEffect, useCallback } from "react";
+import { useState, useEffect, useCallback, useMemo, useRef } from "react";
 import { toast } from "sonner";
 import { Exercicio } from "@/models/exercicio";
 import { exercicioService } from "@/services/exercicioService";
@@ -80,6 +80,12 @@ export function usePranchetaGestao({
   const [searchTerm, setSearchTerm] = useState("");
   const [categoriaFilter, setCategoriaFilter] = useState("TODOS");
 
+  // Manter referência estável da função onPastaSelect para não quebrar memoização
+  const onPastaSelectRef = useRef(onPastaSelect);
+  useEffect(() => {
+    onPastaSelectRef.current = onPastaSelect;
+  }, [onPastaSelect]);
+
   // Campos do formulário
   const [nome, setNome] = useState("Novo Exercício Tático");
   const [descricao, setDescricao] = useState("");
@@ -100,40 +106,37 @@ export function usePranchetaGestao({
   const [pendingDirectTacticData, setPendingDirectTacticData] = useState<any>(null);
   const [reassociatedInTreino, setReassociatedInTreino] = useState(false);
 
-  const carregarDetalhesExercicio = useCallback(
-    (ex: Exercicio) => {
-      const rawObjetivos = ex.objetivosEspecificos || ex.dadosTaticos?.objetivoEspecifico || "";
-      const rawCarga = ex.carga || ex.dadosTaticos?.carga || "";
-      const rawDescricao = ex.descricao || ex.dadosTaticos?.descricaoMetodologica || "";
-      const rawTempo = ex.dadosTaticos?.tempo || "";
-      const rawPasta = ex.dadosTaticos?.pasta || ex.dadosTaticos?.pastaId || "Organização Ofensiva";
+  const carregarDetalhesExercicio = useCallback((ex: Exercicio) => {
+    const rawObjetivos = ex.objetivosEspecificos || ex.dadosTaticos?.objetivoEspecifico || "";
+    const rawCarga = ex.carga || ex.dadosTaticos?.carga || "";
+    const rawDescricao = ex.descricao || ex.dadosTaticos?.descricaoMetodologica || "";
+    const rawTempo = ex.dadosTaticos?.tempo || "";
+    const rawPasta = ex.dadosTaticos?.pasta || ex.dadosTaticos?.pastaId || "Organização Ofensiva";
 
-      setSelectedExercicio(ex);
-      setNome(ex.nome || "Sem Nome");
-      setDescricao(rawDescricao);
-      setCategoria(ex.categoria || "TATICO");
-      setNivelDificuldade(ex.nivelDificuldade || 3);
-      setEspaco(ex.espaco || "Meio-Campo");
-      setTempo(rawTempo);
-      setJogadoresEnvolvidos(ex.jogadoresEnvolvidos || 14);
-      setObjetivosEspecificos(rawObjetivos);
-      setCarga(rawCarga);
+    setSelectedExercicio(ex);
+    setNome(ex.nome || "Sem Nome");
+    setDescricao(rawDescricao);
+    setCategoria(ex.categoria || "TATICO");
+    setNivelDificuldade(ex.nivelDificuldade || 3);
+    setEspaco(ex.espaco || "Meio-Campo");
+    setTempo(rawTempo);
+    setJogadoresEnvolvidos(ex.jogadoresEnvolvidos || 14);
+    setObjetivosEspecificos(rawObjetivos);
+    setCarga(rawCarga);
 
-      if (onPastaSelect) {
-        onPastaSelect(rawPasta);
-      }
+    if (onPastaSelectRef.current) {
+      onPastaSelectRef.current(rawPasta);
+    }
 
-      const mergedTactic = ex.dadosTaticos ? { ...ex.dadosTaticos } : {};
-      mergedTactic.objetivoEspecifico = rawObjetivos;
-      mergedTactic.carga = rawCarga;
-      mergedTactic.descricaoMetodologica = rawDescricao;
-      mergedTactic.tempo = rawTempo;
-      mergedTactic.pasta = rawPasta;
-      setTacticData(mergedTactic);
-      setErrorMsg(null);
-    },
-    [onPastaSelect]
-  );
+    const mergedTactic = ex.dadosTaticos ? { ...ex.dadosTaticos } : {};
+    mergedTactic.objetivoEspecifico = rawObjetivos;
+    mergedTactic.carga = rawCarga;
+    mergedTactic.descricaoMetodologica = rawDescricao;
+    mergedTactic.tempo = rawTempo;
+    mergedTactic.pasta = rawPasta;
+    setTacticData(mergedTactic);
+    setErrorMsg(null);
+  }, []);
 
   const carregarExercicios = useCallback(async () => {
     setIsLoading(true);
@@ -405,15 +408,17 @@ export function usePranchetaGestao({
     }
   }, [carregarDetalhesExercicio, handleNovoExercicio]);
 
-  // Filtros
-  const exerciciosFiltrados = exercicios.filter((ex) => {
-    const matchesSearch =
-      (ex.nome || "").toLowerCase().includes(searchTerm.toLowerCase()) ||
-      (ex.descricao || "").toLowerCase().includes(searchTerm.toLowerCase()) ||
-      (ex.objetivosEspecificos || "").toLowerCase().includes(searchTerm.toLowerCase());
-    const matchesCat = categoriaFilter === "TODOS" || ex.categoria === categoriaFilter;
-    return matchesSearch && matchesCat;
-  });
+  // Filtros com useMemo para performance e renderizações suaves
+  const exerciciosFiltrados = useMemo(() => {
+    return exercicios.filter((ex) => {
+      const matchesSearch =
+        (ex.nome || "").toLowerCase().includes(searchTerm.toLowerCase()) ||
+        (ex.descricao || "").toLowerCase().includes(searchTerm.toLowerCase()) ||
+        (ex.objetivosEspecificos || "").toLowerCase().includes(searchTerm.toLowerCase());
+      const matchesCat = categoriaFilter === "TODOS" || ex.categoria === categoriaFilter;
+      return matchesSearch && matchesCat;
+    });
+  }, [exercicios, searchTerm, categoriaFilter]);
 
   return {
     exercicios,

@@ -476,6 +476,14 @@ Eliminou-se a redundância de formulários de criação de treinos, separando a 
 - **Injeção Dinâmica de Segredos**:
   - Suporte a variáveis de ambiente para segredos criptográficos (JWT) e flags de cookies seguros em produção.
 
+### 27. Estabilidade de Renderização e Prevenção de Dependency Loops em Hooks Customizados
+- **Padrão de Callback Ref (`useRef`)**:
+  - Funções de retorno (*callbacks*) opcionais injetadas por componentes pais em hooks especializados (`usePranchetaGestao`) são sincronizadas via `useRef`.
+  - Isto previne a invalidação em cadeia de dependências de `useCallback` e `useEffect`, eliminando re-buscas assíncronas concorrentes e cintilações (*flickering*) na interface do utilizador.
+- **Memoização Derivada com `useMemo`**:
+  - Filtros de coleções em tempo real mantidos com `useMemo` para evitar recalcular filtros de texto durante eventos de layout e transições de drawer.
+
+
 
 
 
