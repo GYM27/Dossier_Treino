@@ -453,6 +453,13 @@ Eliminou-se a redundância de formulários de criação de treinos, separando a 
 - **Componentes Visuais Modulares**:
   - `PranchetaSidebarPastas.tsx`, `PranchetaMetadataBar.tsx` e `PranchetaHeader.tsx`.
 
+### 24. Sprint 6: Arquitetura de Edição Contextual e Sub-secções Modulares
+- **Padrão de Decomposição Vertical por Tipo de Elemento**:
+  - Em vez de um bloco condicional monolítico no mesmo ficheiro, cada entidade gráfica tática possui o seu componente de edição isolado (`PlayerEditSection`, `GoalEditSection`, `LineEditSection`, `ShapeEditSection`, `EquipmentEditSection`).
+- **Reutilização de Constantes Visuais**:
+  - Extração de `constants.ts` com paletas de cores táticas e presets de espessura/opacidade partilhados entre o canvas e as ferramentas laterais.
+
+
 
 
 

@@ -1429,6 +1429,34 @@ Anteriormente, a página de estatísticas do clube exibia números fixos inscrit
 3. `PranchetaHeader.tsx`: Barra superior com botões de gravação, duplicação e menu hambúrguer de acesso rápido.
 4. `PranchetaStudio.tsx`: Componente orquestrador limpo e legível com menos de 200 linhas.
 
+---
+
+## 15. Sprint 6: Decomposição da Barra Lateral de Edição Contextual (`TacticalEditSidebar.tsx`)
+
+### 15.1 Problema do Monolito Original
+- A barra `TacticalEditSidebar.tsx` acumulava mais de 850 linhas com lógica misturada de jogadores, balizas, cones, bolas, linhas e formas geométricas, tornando qualquer ajuste de interface frágil e propenso a regressões.
+
+### 15.2 Sub-secções Modulares Especializadas (`components/prancheta/edit-sidebar/`)
+1. **`PlayerEditSection.tsx`**:
+   - Gestão do número da camisola/sigla (GR, MC, 10, etc.).
+   - Seletor de dimensões relativas do marcador de jogador (`sm`, `md`, `lg`).
+   - Paleta de cores rápidas (Equipa A, Equipa B, Coringa/Neutro) e seletor HEX nativo.
+2. **`GoalEditSection.tsx`**:
+   - Tipo de baliza tática (`mini`, `fut7`, `fut11`).
+   - Controlo de rotação angular com botão de atalho `+90° (R)` e botões cardinais (Cima, Baixo, Esquerda, Direita).
+3. **`LineEditSection.tsx`**:
+   - Linha simples, passe tracejado com seta, corrida contínua ou traço livre.
+   - Estilo de traço (contínuo vs tracejado), espessuras (1px a 12px) e cor do traço.
+4. **`ShapeEditSection.tsx`**:
+   - Geometrias primitivas: retângulo, círculo, triângulo e hexágono.
+   - Cor de contorno, cor de fundo (preenchimento) e opacidade fracionada (0%, 25%, 50%, 75%, 100%).
+5. **`EquipmentEditSection.tsx`**:
+   - Cores temáticas para cones de treino e física do elemento bola.
+
+### 15.3 Orquestrador Enxuto (`TacticalEditSidebar.tsx`)
+- Reduzido de 859 linhas para menos de 150 linhas, atuando apenas como contentor com cabeçalho contextual e botões globais de `Duplicar` e `Apagar`.
+
+
 
 
 

@@ -449,6 +449,15 @@ Agora pode rodar livremente **todas as Formas Geométricas** (Quadrados, Círcul
    - **Ficha Técnica Retrátil**: Exiba ou oculte a barra de propriedades (nome, categoria, espaço, duração e número de atletas) com 1 clique.
    - **Duplicação e Variantes**: Crie variantes de exercícios mantendo a estrutura base sem alterar o exercício original.
 
+### 9. Edição Contextual e Personalização na Prancheta (Sprint 6)
+
+1. **Edição Inteligente por Tipo de Elemento**:
+   - **Jogadores**: Clique num jogador para alterar o número da camisola/sigla (ex: GR, MC, 7, 10), tamanho (`Pequeno`, `Médio`, `Grande`) e a cor do colete/equipamento.
+   - **Balizas**: Alterne entre `Mini Baliza`, `Baliza Fut 7` e `Baliza Oficial Fut 11`, e rode a orientação com 1 clique ou pressionando a tecla `R` (`+90°`).
+   - **Linhas e Passes**: Alterne entre linha simples, passe tracejado com seta e corrida de deslocamento com ajuste fino de espessura (1px a 12px) e cor.
+   - **Formas e Zonas**: Defina retângulos, círculos, triângulos e hexágonos com regulação precisa de opacidade (0% a 100%) e cor de preenchimento.
+
+
 
 
 
