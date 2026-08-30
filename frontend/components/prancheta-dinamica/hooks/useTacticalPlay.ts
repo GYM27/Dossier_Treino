@@ -41,6 +41,8 @@ export function useTacticalPlay(options: UseTacticalPlayOptions = {}) {
   // Histórico de Undo / Redo
   const [history, setHistory] = useState<TacticalTree[]>([tree]);
   const [historyIndex, setHistoryIndex] = useState(0);
+  const historyIndexRef = useRef(0);
+  historyIndexRef.current = historyIndex;
 
   // Estados de reprodução e visualização
   const [isPlaying, setIsPlaying] = useState(false);
@@ -78,11 +80,20 @@ export function useTacticalPlay(options: UseTacticalPlayOptions = {}) {
   // Função auxiliar para registar novo estado no histórico
   const recordHistory = useCallback((newTree: TacticalTree) => {
     setHistory((prev) => {
-      const trimmed = prev.slice(0, historyIndex + 1);
+      const currentIdx = historyIndexRef.current;
+      const trimmed = prev.slice(0, currentIdx + 1);
+      if (trimmed.length > 50) trimmed.shift();
       return [...trimmed, newTree];
     });
     setHistoryIndex((prev) => prev + 1);
-  }, [historyIndex]);
+  }, []);
+
+  const commitHistory = useCallback(() => {
+    setTree((currentTree) => {
+      recordHistory(currentTree);
+      return currentTree;
+    });
+  }, [recordHistory]);
 
   // Desfazer (Undo)
   const undo = useCallback(() => {
@@ -360,7 +371,8 @@ export function useTacticalPlay(options: UseTacticalPlayOptions = {}) {
       setTree((prevTree) => {
         const activeId = prevTree.activePath[prevTree.currentFrameIdx] || prevTree.rootId;
         const node = prevTree.framesMap[activeId];
-        const elements = node?.elements || [];
+        if (!node) return prevTree;
+        const elements = node.elements || [];
 
         const existingEl = elements.find((e) => e.id === elementId);
         if (!existingEl) return prevTree;
@@ -372,23 +384,25 @@ export function useTacticalPlay(options: UseTacticalPlayOptions = {}) {
           el.id === elementId ? { ...el, x: Math.round(newX), y: Math.round(newY) } : el
         );
 
-        const newFramesMap: Record<string, TacticalFrame> = JSON.parse(JSON.stringify(prevTree.framesMap));
-        newFramesMap[activeId].elements = updatedElements;
+        const newFramesMap: Record<string, TacticalFrame> = {
+          ...prevTree.framesMap,
+          [activeId]: {
+            ...node,
+            elements: updatedElements,
+          },
+        };
 
         if (propagate && (dx !== 0 || dy !== 0)) {
           propagateMovement(activeId, elementId, dx, dy, newFramesMap);
         }
 
-        const updatedTree: TacticalTree = {
+        return {
           ...prevTree,
           framesMap: newFramesMap,
         };
-
-        recordHistory(updatedTree);
-        return updatedTree;
       });
     },
-    [propagateMovement, recordHistory]
+    [propagateMovement]
   );
 
   const updateElementDetails = useCallback(
@@ -592,5 +606,6 @@ export function useTacticalPlay(options: UseTacticalPlayOptions = {}) {
     clearDrawings,
     setFrameNotes,
     saveTactic,
+    commitHistory,
   };
 }

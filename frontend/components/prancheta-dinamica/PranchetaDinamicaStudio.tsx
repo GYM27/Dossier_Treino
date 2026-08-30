@@ -205,6 +205,7 @@ export function PranchetaDinamicaStudio({
           selectedElementId={play.selectedElementId}
           onSelectElement={play.setSelectedElementId}
           onUpdateElementPosition={play.updateElementPosition}
+          onCommitHistory={play.commitHistory}
           onAddDrawing={play.addDrawing}
           onDecisionPoint={(node) => {
             play.setIsPlaying(false);

@@ -13,6 +13,8 @@ import {
   interpolateElements,
 } from "@/models/tacticplay";
 import { DrawingMode, PitchStyle } from "./hooks/useTacticalPlay";
+import { findHoveredElement } from "@/components/prancheta/utils/tacticalGeometry";
+import { cn } from "@/lib/utils";
 
 export interface DynamicTacticalCanvasProps {
   tree: TacticalTree;
@@ -26,6 +28,7 @@ export interface DynamicTacticalCanvasProps {
   canvasRef?: React.RefObject<HTMLCanvasElement | null>;
   onSelectElement?: (id: string | null) => void;
   onUpdateElementPosition?: (id: string, x: number, y: number, propagate?: boolean) => void;
+  onCommitHistory?: () => void;
   onAddDrawing?: (drawing: TacticalDrawing) => void;
   onDecisionPoint?: (node: TacticalFrame) => void;
   onAdvanceFrame?: () => void;
@@ -45,6 +48,7 @@ export function DynamicTacticalCanvas({
   canvasRef: externalCanvasRef,
   onSelectElement,
   onUpdateElementPosition,
+  onCommitHistory,
   onAddDrawing,
   onDecisionPoint,
   onAdvanceFrame,
@@ -78,6 +82,7 @@ export function DynamicTacticalCanvas({
   // Interação de Drag-and-Drop e Desenho
   const isDraggingRef = useRef(false);
   const draggedElementIdRef = useRef<string | null>(null);
+  const dragOffsetRef = useRef<{ x: number; y: number }>({ x: 0, y: 0 });
   const isDrawingRef = useRef(false);
   const currentDrawingPointsRef = useRef<{ x: number; y: number }[]>([]);
 
@@ -96,6 +101,9 @@ export function DynamicTacticalCanvas({
 
   const onUpdateElementPositionRef = useRef(onUpdateElementPosition);
   onUpdateElementPositionRef.current = onUpdateElementPosition;
+
+  const onCommitHistoryRef = useRef(onCommitHistory);
+  onCommitHistoryRef.current = onCommitHistory;
 
   const onAddDrawingRef = useRef(onAddDrawing);
   onAddDrawingRef.current = onAddDrawing;
@@ -434,32 +442,33 @@ export function DynamicTacticalCanvas({
     const canvas = canvasRef.current;
     if (!canvas) return;
 
-    e.currentTarget.setPointerCapture(e.pointerId);
+    try {
+      e.currentTarget.setPointerCapture(e.pointerId);
+    } catch (_) {}
+
     const rect = canvas.getBoundingClientRect();
     const coords = calculateScaledCoordinates(e.clientX, e.clientY, rect);
 
-    if (drawingMode === "select") {
-      // Detetar se clicou num elemento
-      const elements = currentFrameRef.current?.elements || [];
-      const clickedEl = [...elements].reverse().find((el) => {
-        const dx = el.x - coords.x;
-        const dy = el.y - coords.y;
-        return Math.sqrt(dx * dx + dy * dy) <= 22;
-      });
+    const elements = currentFrameRef.current?.elements || [];
+    const hoveredEl = findHoveredElement(coords, elements);
 
-      if (clickedEl) {
-        isDraggingRef.current = true;
-        draggedElementIdRef.current = clickedEl.id;
-        if (onSelectElementRef.current) {
-          onSelectElementRef.current(clickedEl.id);
-        }
-      } else {
-        if (onSelectElementRef.current) {
-          onSelectElementRef.current(null);
-        }
+    // Se clicou num elemento (prioritário) ou se estiver no modo de seleção
+    if (hoveredEl) {
+      isDraggingRef.current = true;
+      draggedElementIdRef.current = hoveredEl.id;
+      dragOffsetRef.current = { x: coords.x - hoveredEl.x, y: coords.y - hoveredEl.y };
+      if (onSelectElementRef.current) {
+        onSelectElementRef.current(hoveredEl.id);
+      }
+      return;
+    }
+
+    if (drawingMode === "select") {
+      if (onSelectElementRef.current) {
+        onSelectElementRef.current(null);
       }
     } else {
-      // Iniciar traçado
+      // Iniciar traçado de linha tática
       isDrawingRef.current = true;
       currentDrawingPointsRef.current = [{ x: coords.x, y: coords.y }];
     }
@@ -474,8 +483,10 @@ export function DynamicTacticalCanvas({
     const coords = calculateScaledCoordinates(e.clientX, e.clientY, rect);
 
     if (isDraggingRef.current && draggedElementIdRef.current) {
+      const newX = Math.max(15, Math.min(CANVAS_WIDTH - 15, coords.x - dragOffsetRef.current.x));
+      const newY = Math.max(15, Math.min(CANVAS_HEIGHT - 15, coords.y - dragOffsetRef.current.y));
       if (onUpdateElementPositionRef.current) {
-        onUpdateElementPositionRef.current(draggedElementIdRef.current, coords.x, coords.y, false);
+        onUpdateElementPositionRef.current(draggedElementIdRef.current, newX, newY, false);
       }
     } else if (isDrawingRef.current) {
       currentDrawingPointsRef.current.push({ x: coords.x, y: coords.y });
@@ -485,13 +496,14 @@ export function DynamicTacticalCanvas({
   const handlePointerUp = (e: React.PointerEvent<HTMLCanvasElement>) => {
     try {
       e.currentTarget.releasePointerCapture(e.pointerId);
-    } catch {
-      // Ignorar se já não estiver capturado
-    }
+    } catch (_) {}
 
-    if (isDraggingRef.current && draggedElementIdRef.current) {
+    if (isDraggingRef.current) {
       isDraggingRef.current = false;
       draggedElementIdRef.current = null;
+      if (onCommitHistoryRef.current) {
+        onCommitHistoryRef.current();
+      }
     }
 
     if (isDrawingRef.current) {
@@ -499,10 +511,10 @@ export function DynamicTacticalCanvas({
       const pts = currentDrawingPointsRef.current;
       if (pts.length > 2) {
         const newDrawing: TacticalDrawing = {
-          id: `draw_${Date.now()}`,
+          id: `draw_${Date.now()}_${Math.random().toString(36).substr(2, 4)}`,
           type: drawingMode as "pass" | "run" | "line",
           points: [...pts],
-          color: drawingMode === "pass" ? "#38bdf8" : "#facc15",
+          color: drawingMode === "pass" ? "#38bdf8" : drawingMode === "run" ? "#facc15" : "#ffffff",
           width: 3.5,
         };
 
@@ -515,7 +527,7 @@ export function DynamicTacticalCanvas({
   };
 
   return (
-    <div className="relative w-full h-full flex items-center justify-center select-none bg-[#050811] rounded-2xl overflow-hidden p-1 shadow-2xl border border-slate-800/80">
+    <div className="w-full h-full relative flex items-center justify-center select-none overflow-hidden">
       <canvas
         ref={canvasRef}
         width={CANVAS_WIDTH}
@@ -524,10 +536,10 @@ export function DynamicTacticalCanvas({
         onPointerMove={handlePointerMove}
         onPointerUp={handlePointerUp}
         onPointerCancel={handlePointerUp}
-        className="w-full h-full max-h-[82vh] object-contain rounded-xl cursor-crosshair touch-none shadow-inner"
-        style={{
-          aspectRatio: `${CANVAS_WIDTH} / ${CANVAS_HEIGHT}`,
-        }}
+        className={cn(
+          "w-full h-full max-h-full object-contain touch-none select-none",
+          isPlaying ? "cursor-default" : drawingMode === "select" ? "cursor-default" : "cursor-crosshair"
+        )}
       />
     </div>
   );
