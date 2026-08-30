@@ -1,0 +1,27 @@
+body {
+        font-family: "Inter", sans-serif;
+        background-color: #0b0f19;
+      }
+      /* Custom scrollbar for tactical timeline and tactics list */
+      ::-webkit-scrollbar {
+        height: 8px;
+        width: 8px;
+      }
+      ::-webkit-scrollbar-track {
+        background: #0f172a;
+      }
+      ::-webkit-scrollbar-thumb {
+        background: #334155;
+        border-radius: 9999px;
+      }
+      ::-webkit-scrollbar-thumb:hover {
+        background: #475569;
+      }
+      .canvas-container {
+        aspect-ratio: 16 / 10;
+      }
+      /* Color input pointer */
+      .color-selected {
+        outline: 3px solid #10b981;
+        transform: scale(1.1);
+      }

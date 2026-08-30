@@ -483,6 +483,13 @@ Eliminou-se a redundância de formulários de criação de treinos, separando a 
 - **Memoização Derivada com `useMemo`**:
   - Filtros de coleções em tempo real mantidos com `useMemo` para evitar recalcular filtros de texto durante eventos de layout e transições de drawer.
 
+### 28. Prancheta Dinâmica: Arquitetura de Árvore de Jogadas e Animação Temporal
+- **Desacoplamento de Estado com Funções Puras (`models/tacticplay.ts`)**:
+  - Toda a lógica de inserção de nós (`addFrameToTree`, `addAlternativeToTree`), remoção e navegação na timeline opera sobre estruturas de dados imutáveis.
+- **Interpolação de Movimento Paramétrica**:
+  - Separação entre a estrutura de frames discretos e a renderização contínua através de funções matemáticas de interpolação linear, permitindo taxas de atualização dinâmicas (30 a 60 FPS) sem distorções de coordenadas.
+
+
 
 
 

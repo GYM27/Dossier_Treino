@@ -1517,6 +1517,26 @@ Anteriormente, a página de estatísticas do clube exibia números fixos inscrit
 - **`useCallback` no Componente Pai**:
   - `handlePastaSelect` no `PranchetaStudio.tsx` foi encapsulado com `useCallback`, garantindo estabilidade referencial completa.
 
+---
+
+## 19. Prancheta Dinâmica (TacticPlay) — Fase 1: Modelos e Algoritmos Puros
+
+### 19.1 Arquitetura da Árvore de Jogadas (`models/tacticplay.ts`)
+- **O que foi construído**:
+  - `TacticalElement`: Representação de jogadores, bola e cones com tipo, coordenadas $(x, y)$, número e cor.
+  - `TacticalFrame`: Cada nó da árvore tática contém a lista de elementos posicionados, desenhos auxiliares, anotações metodológicas e referências bidirecionais (`children` e `parentId`).
+  - `TacticalTree`: Orquestra o mapa de frames (`framesMap`), o caminho ativo da jogada (`activePath`) e o índice do frame selecionado (`currentFrameIdx`).
+
+### 19.2 Interpolação Linear e Transformações Afins
+- **Interpolação de Movimento (`interpolateElements`)**:
+  - Calcula a transição contínua de posições entre dois quadros para um dado $progress \in [0.0, 1.0]$:
+    $$x(t) = x_{\text{start}} + (x_{\text{end}} - x_{\text{start}}) \times t$$
+    $$y(t) = y_{\text{start}} + (y_{\text{end}} - y_{\text{start}}) \times t$$
+- **Cálculo de Coordenadas Escaladas (`calculateScaledCoordinates`)**:
+  - Garante a conversão exata entre o tamanho físico no ecrã (responsivo) e a matriz virtual do canvas ($1000 \times 625$).
+- **Cobertura de Testes TDD**: 12 testes unitários em [tacticplay.test.ts](file:///c:/Projetos/DossierTreino/frontend/models/__tests__/tacticplay.test.ts) validando percursos de árvore, criação de ramificações e interpolação.
+
+
 
 
 
