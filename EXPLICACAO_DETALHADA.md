@@ -1550,6 +1550,26 @@ Anteriormente, a página de estatísticas do clube exibia números fixos inscrit
   - Sistema de *snapshots* imutáveis permitindo recuar e avançar em qualquer ponto da criação tática.
 - **Bateria de Testes Unitários TDD**: 8 testes em [useTacticalPlay.test.ts](file:///c:/Projetos/DossierTreino/frontend/components/prancheta-dinamica/hooks/__tests__/useTacticalPlay.test.ts) cobrindo criação, alternativas, propagação de movimento, remoção e Undo/Redo.
 
+---
+
+## 21. Prancheta Dinâmica — Fase 3: Motor Canvas 2D, Interpolação a 60 FPS e Gravação de Vídeo
+
+### 21.1 Motor de Renderização com Interpolação Paramétrica (`DynamicTacticalCanvas.tsx`)
+- **Loop com `requestAnimationFrame` e Gestão de Memória**:
+  - Utilização de `requestRef` para armazenar o ID do quadro de animação e cancelamento estrito em `cancelAnimationFrame(requestRef.current)` na função de limpeza do `useEffect`.
+- **Cálculo de Progresso em Tempo Real**:
+  - A cada tick do browser: $t = \min\left(1.0, \frac{\text{tempoAtual} - \text{tempoInicio}}{\text{transitionSpeed}}\right)$.
+  - Os elementos são desenhados nas suas coordenadas interpoladas em tempo real.
+  - Ao atingir $t \ge 1.0$, o canvas avança para o próximo nó da rota ativa e, caso o nó possua múltiplas alternativas (`children.length > 1`), o loop é pausado e o diálogo de tomada de decisão é acionado.
+- **Gestão Robusta de Pointer Capture**:
+  - `setPointerCapture` e `releasePointerCapture` garantem que o arrasto não se perde mesmo em movimentos ultrarrápidos para fora da área visível.
+
+### 21.2 Exportação de Vídeo Vetorial em WebM (`useTacticalExport.ts`)
+- **Gravação Direta do Stream**:
+  - Utilização de `HTMLCanvasElement.captureStream(30)` e `MediaRecorder` com codec `video/webm;codecs=vp9`.
+  - O hook orquestra a reprodução contínua da jogada desde o início, capturando cada frame e gerando o download automático do ficheiro `.webm` com overlay visual de progresso (`DynamicExportOverlay.tsx`).
+
+
 
 
 

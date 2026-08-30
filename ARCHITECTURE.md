@@ -497,6 +497,13 @@ Eliminou-se a redundância de formulários de criação de treinos, separando a 
 - **Histórico Linear Imutável com Ponto de Ramificação**:
   - O histórico de Undo/Redo armazena referências imutáveis da árvore inteira, assegurando que o retrocesso a um ponto anterior e a subsequente criação de uma nova ramificação poda os estados obsoletos sem efeitos secundários.
 
+### 30. Motor de Renderização Canvas 2D e Gravação com MediaRecorder
+- **Sincronização de Estado via `useRef` no `requestAnimationFrame`**:
+  - Para evitar re-iniciar o loop de renderização do canvas desnecessariamente, o componente `DynamicTacticalCanvas` espelha as referências mutáveis (`treeRef`, `currentFrameRef`, `pitchStyleRef`) diretamente no loop gráfico.
+- **Isolamento do Módulo de Gravação (`useTacticalExport.ts`)**:
+  - Desacoplamento da lógica de gravação em stream do Canvas via `captureStream(30)` e `MediaRecorder`, permitindo exportações determinísticas com fallbacks de formatos WebM/MP4 e barra de progresso unificada.
+
+
 
 
 
