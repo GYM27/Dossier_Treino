@@ -489,6 +489,15 @@ Eliminou-se a redundância de formulários de criação de treinos, separando a 
 - **Interpolação de Movimento Paramétrica**:
   - Separação entre a estrutura de frames discretos e a renderização contínua através de funções matemáticas de interpolação linear, permitindo taxas de atualização dinâmicas (30 a 60 FPS) sem distorções de coordenadas.
 
+### 29. Hook Reativo `useTacticalPlay`: Gestão de Linha do Tempo e Propagação de Movimento
+- **Atualizações de Estado Funcionais Atómicas**:
+  - Adoção sistemática de `setTree((prev) => ...)` para eliminar atrasos de encerramento (*closure lag*) e inconsistências de renderização em chamadas sequenciais de frames.
+- **Árvore de Propagação Dinâmica ($\Delta x, \Delta y$)**:
+  - Algoritmo de travessia em profundidade (DFS) que atualiza as coordenadas dos elementos em ramificações derivadas de forma consistente com a intenção do utilizador.
+- **Histórico Linear Imutável com Ponto de Ramificação**:
+  - O histórico de Undo/Redo armazena referências imutáveis da árvore inteira, assegurando que o retrocesso a um ponto anterior e a subsequente criação de uma nova ramificação poda os estados obsoletos sem efeitos secundários.
+
+
 
 
 

@@ -1536,6 +1536,21 @@ Anteriormente, a página de estatísticas do clube exibia números fixos inscrit
   - Garante a conversão exata entre o tamanho físico no ecrã (responsivo) e a matriz virtual do canvas ($1000 \times 625$).
 - **Cobertura de Testes TDD**: 12 testes unitários em [tacticplay.test.ts](file:///c:/Projetos/DossierTreino/frontend/models/__tests__/tacticplay.test.ts) validando percursos de árvore, criação de ramificações e interpolação.
 
+---
+
+## 20. Prancheta Dinâmica — Fase 2: Hook Reativo `useTacticalPlay.ts` e Linha do Tempo
+
+### 20.1 Arquitetura Reativa e Atualizações Funcionais Atómicas
+- **O Desafio da Concorrência de Estado**:
+  - Em aplicações complexas com keyframes, criar um novo quadro ou uma alternativa imediatamente após mudar o índice ativo (`selectFrame`) pode sofrer de *stale closures* se dependermos de variáveis estáticas no escopo.
+  - **Solução Implementada**: Todas as mutações (`addAnimationFrame`, `addAlternativeFrame`, `deleteCurrentFrame`, `addPlayer`, `addBall`, `addCone`, `updateElementPosition`) utilizam a forma funcional `setTree((prevTree) => ...)` garantindo atomicidade estrita.
+- **Propagação Recursiva de Deslocamento (`propagateMovement`)**:
+  - Ao arrastar um jogador no Quadro $1$, se a flag `propagate` estiver ativa, o hook calcula o vetor de deslocamento $(\Delta x, \Delta y)$ e propaga recursivamente a alteração para todos os nós descendentes na árvore de alternativas.
+- **Histórico Completo de Ações (Undo / Redo)**:
+  - Sistema de *snapshots* imutáveis permitindo recuar e avançar em qualquer ponto da criação tática.
+- **Bateria de Testes Unitários TDD**: 8 testes em [useTacticalPlay.test.ts](file:///c:/Projetos/DossierTreino/frontend/components/prancheta-dinamica/hooks/__tests__/useTacticalPlay.test.ts) cobrindo criação, alternativas, propagação de movimento, remoção e Undo/Redo.
+
+
 
 
 
