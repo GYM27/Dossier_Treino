@@ -439,27 +439,18 @@ Agora pode rodar livremente **todas as Formas Geométricas** (Quadrados, Círcul
 3. **Alternar de Equipa com 1 Clique**:
    - No separador do clube ou no menu suspenso do topo da página, clique sobre qualquer outro escalão registado para alternar instantaneamente todo o dossier para esse plantel.
 
-### 5. Navegação Direta por Endereço e Memória de Equipa (Sprint 2)
+### 6. Prancheta Tática de Alta Precisão (Sprint 3)
 
-1. **Navegação com URLs Reais e Favoritos**:
-   - Cada secção da plataforma tem agora um endereço web próprio e direto:
-     - `/` — Dashboard e Indicadores
-     - `/plantel` — Gestão de Atletas e Fichas de Jogadores
-     - `/calendario` — Planeamento Semanal e Morfociclo Padrão
-     - `/assiduidade` — Registo Diário de Presenças
-     - `/treinos` — Estúdio de Sessões e Exercícios
-     - `/prancheta` — Prancheta Tática Digital
-     - `/clube` — Gestão do Clube e Estatísticas
-     - `/scouting` — Análise de Equipas Adversárias
-     - `/config` — Configurações e Equipa Técnica
-   - O treinador pode agora guardar os seus ecrãs favoritos nos marcadores do browser ou partilhar links diretos com a sua equipa técnica.
+1. **Arrastamento Livre e Edição Precisa**:
+   - **Mover Jogadores e Linhas**: Arraste qualquer jogador, cone, bola ou linha livremente pelo relvado com resposta instantânea e sem obstruções visuais.
+   - **Barra de Edição Contextual com Toque Rápido (Tap / Click)**: Dê um clique simples parado sobre qualquer jogador ou forma para abrir a barra lateral de personalização rápida (alterar cor, número da camisola, tamanho, rotação ou estilo de traço).
 
-2. **Memória Inteligente da Equipa Selecionada**:
-   - Ao selecionar uma equipa (ex: *Sub-19*), a plataforma memoriza automaticamente a sua escolha.
-   - Pode navegar entre o calendário, a prancheta ou o estúdio de treinos, ou até fechar o browser e voltar mais tarde: a equipa selecionada mantém-se sempre ativa sem necessidade de voltar a selecioná-la!
+2. **Atalhos Rápidos de Teclado**:
+   - **`R`**: Roda instantaneamente o elemento ou baliza selecionada (+90°).
+   - **`Delete` / `Backspace`**: Remove de imediato o jogador, desenho ou baliza selecionada.
+   - **`Ctrl + C` / `Ctrl + V`** (ou `Cmd` no Mac): Duplica o jogador ou linha selecionada com deslocamento automático de +25px para não sobrepor.
+   - **`Ctrl + Z` / `Ctrl + Y`**: Desfaz e refaz qualquer jogada tática com histórico de até 50 passos.
 
-3. **Primeiros Passos Simplificados (Onboarding)**:
-   - Ao entrar pela primeira vez numa conta nova, o sistema apresenta um ecrã de boas-vindas claro para registar a primeira equipa do clube, orientando o treinador passo a passo.
 
 
 

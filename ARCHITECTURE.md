@@ -427,14 +427,17 @@ Eliminou-se a redundância de formulários de criação de treinos, separando a 
 - **Isolamento Estrito por Equipa Ativa (`activeTeam`)**:
   - Cada domínio de negócio (`Atletas`, `Treinos`, `Calendário`, `Assiduidade`, `Estatísticas`) opera sob um esquema de particionamento lógico amarrado à chave estrangeira `equipa_id`.
   - A alternância de equipa no estado global (`TopHeader`, `ClubePage`) desencadeia a re-execução de consultas isoladas, garantindo que nenhum dado de uma equipa (ex: Seniores) transborde para outra (ex: Sub-17).
-### 20. Sprint 2: Arquitetura de Navegação Next.js App Routes e ActiveTeamContext
-- **Padrão de Estado Global com React Context (`ActiveTeamContext`)**:
-  - Centralização de `activeTeam`, `teams`, `me` e `refreshData` na raiz da aplicação (`app/layout.tsx`).
-  - Prevenção de *hydration mismatch* através de leitura assíncrona do `localStorage` no ciclo de montagem (`useEffect`), garantindo consistência entre a renderização de servidor e a árvore do cliente.
-- **Transição de SPA Monolítica para Next.js App Router Nativo**:
-  - Adoção de Route Groups `(dashboard)` para encapsulamento do layout partilhado (`Sidebar`, `TopHeader`, `MobileDrawer`).
-  - Navegação declarativa com `next/link` e resolução ativa de rotas via `usePathname()`.
-  - Tratamento resiliente de novos utilizadores com renderização imediata do formulário de criação de equipa (`TeamForm`), eliminando estados nulos e ecrãs em branco.
+### 21. Sprint 3: Decomposição Modular do TacticalBoard e Separação de Preocupações (SoC)
+- **Princípio da Responsabilidade Única (Single Responsibility Principle)**:
+  - Decomposição do monolito `TacticalBoard.tsx` (1610 linhas) num componente orquestrador (< 450 linhas) com delegação total para módulos especializados.
+- **Camada de Geometria e Transformações Afins (`tacticalGeometry.ts`)**:
+  - Encapsulamento das funções matemáticas de projeção vetorial e rotação afim, com 100% de isolamento em relação ao DOM ou Canvas.
+- **Máquinas de Estados de Interação Especializadas (Hooks de UI)**:
+  - `useBoardInteraction.ts`: Orquestração de drag-and-drop, redimensionamento, rotação e seleção de elementos com gestão otimizada de pointer capture.
+  - `useBoardKeyboard.ts`: Desacoplamento da escuta de eventos do teclado e clipboard da aplicação.
+- **Renderizadores Gráficos Desacoplados (`canvasDrawers.ts`)**:
+  - Isolamento dos procedimentos de pintura em Canvas 2D, permitindo otimizações e reutilização futura em previews estáticos e exportações de relatórios.
+
 
 
 

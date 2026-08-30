@@ -1353,6 +1353,37 @@ Anteriormente, a página de estatísticas do clube exibia números fixos inscrit
 - `/scouting` -> [ScoutingPage](file:///c:/Projetos/DossierTreino/frontend/app/(dashboard)/scouting/page.tsx)
 - `/treinos` -> [TreinosPage](file:///c:/Projetos/DossierTreino/frontend/app/(dashboard)/treinos/page.tsx)
 
+---
+
+## 12. Sprint 3: Refactoring Modular do TacticalBoard (1610 Linhas -> Arquitetura Coesa)
+
+### 12.1 Geometria Tática Pura (`tacticalGeometry.ts`)
+- **Problema**: O cálculo de matrizes de rotação afim, projeções ortogonais e colisões estava espalhado por dezenas de `if-else` aninhados dentro dos manipuladores de eventos do componente React.
+- **Solução**: Extração de funções matemáticas determinísticas com 100% de cobertura de testes unitários:
+  - `rotatePoint(p, center, angle)`: Rotação 2D através de trigonometria direta ($x' = c_x + dx \cdot \cos\theta - dy \cdot \sin\theta$).
+  - `distanceToSegment(p, a, b)`: Menor distância ortogonal de um ponto a um segmento de reta utilizando produto escalar vetorial normalizado ($t = \text{clamp}(\vec{v} \cdot \vec{u} / \|\vec{u}\|^2, 0, 1)$).
+  - `findHoveredElement` e `findHoveredDrawing`: Testes de intersecção em profundidade Z (*topmost first*).
+
+### 12.2 Gestão de Interações e Distinção Tap vs Drag (`useBoardInteraction.ts`)
+- **Problema de UX**: Ao arrastar um jogador pelo relvado, a barra de edição lateral abria involuntariamente, tapando a visão tática do treinador.
+- **Solução**: Máquina de estados baseada no limiar de deslocamento ($\Delta d > 4\text{px}$):
+  - **Arrasto (Drag)**: Se o ponteiro se move mais de 4 pixels, o elemento ou linha é deslocado fluidamente e o estado é persistido no histórico apenas no `PointerUp`, **sem abrir a barra lateral**.
+  - **Toque Parado (Tap / Click)**: Se o utilizador clica sem mover, a intenção expressa de edição é confirmada e a `TacticalEditSidebar` abre de imediato.
+
+### 12.3 Atalhos Globais de Teclado (`useBoardKeyboard.ts`)
+- Desacoplamento da escuta de eventos globais (`window.addEventListener("keydown")`), ignorando inputs de texto e suportando:
+  - `R`: Rotação instantânea de +90° em balizas e jogadores.
+  - `Delete` / `Backspace`: Eliminação atómica do item selecionado com registo no histórico de Undo.
+  - `Ctrl+C` / `Ctrl+V` (ou `Cmd`): Duplicação inteligente com offset visual de +25px.
+  - `Ctrl+Z` / `Ctrl+Y`: Desfazer e refazer estados do histórico.
+
+### 12.4 Renderizadores Puros de Canvas 2D (`canvasDrawers.ts`)
+- Funções estáticas puras desacopladas do ciclo de renderização React:
+  - `drawPitch(ctx, pitchStyle)`: Renderiza relva em alta resolução com linhas de meio campo, grandes áreas e marcas de penálti.
+  - `drawElement(ctx, el, isSelected)`: Renderiza jogadores com cores da equipa, números nítidos e bola 3D vetorial com gradientes esféricos.
+  - `drawSingleDrawing(ctx, drawing)`: Renderiza setas táticas, passes tracejados, corridas onduladas e formas geométricas com preenchimento translúcido.
+
+
 
 
 

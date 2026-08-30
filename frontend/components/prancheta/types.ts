@@ -27,6 +27,7 @@ export interface DrawingConfig {
 }
 
 export interface TacticalDrawing {
+  id?: string;
   type: "select" | "run" | "pass" | "pen" | "rect" | "circle" | "triangle" | "pentagon" | "hexagon" | "line";
   points: Point[];
   config?: DrawingConfig;
