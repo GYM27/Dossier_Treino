@@ -188,7 +188,8 @@ export function interpolateElements(
 }
 
 /**
- * Converte coordenadas do ecrã do rato/toque para a matriz interna do Canvas (1000x625).
+ * Converte coordenadas do ecrã do rato/toque para a matriz interna do Canvas (1000x625),
+ * compensando letterbox e barras pretas do object-contain em qualquer formato de ecrã.
  */
 export function calculateScaledCoordinates(
   pointerX: number,
@@ -199,8 +200,28 @@ export function calculateScaledCoordinates(
 ): { x: number; y: number } {
   if (!rect.width || !rect.height) return { x: 0, y: 0 };
 
-  const x = (pointerX - rect.left) * (canvasWidth / rect.width);
-  const y = (pointerY - rect.top) * (canvasHeight / rect.height);
+  const containerAspect = rect.width / rect.height;
+  const canvasAspect = canvasWidth / canvasHeight;
+  let renderedWidth = rect.width;
+  let renderedHeight = rect.height;
+  let offsetX = 0;
+  let offsetY = 0;
+
+  if (containerAspect > canvasAspect) {
+    renderedHeight = rect.height;
+    renderedWidth = rect.height * canvasAspect;
+    offsetX = (rect.width - renderedWidth) / 2;
+  } else {
+    renderedWidth = rect.width;
+    renderedHeight = rect.width / canvasAspect;
+    offsetY = (rect.height - renderedHeight) / 2;
+  }
+
+  const relativeX = pointerX - (rect.left + offsetX);
+  const relativeY = pointerY - (rect.top + offsetY);
+
+  const x = relativeX * (canvasWidth / renderedWidth);
+  const y = relativeY * (canvasHeight / renderedHeight);
 
   return {
     x: Math.round(x * 10) / 10,

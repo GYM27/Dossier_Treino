@@ -438,7 +438,12 @@ export function DynamicTacticalCanvas({
 
   // Gestão de Eventos de Pointer (Drag & Drop + Linhas)
   const handlePointerDown = (e: React.PointerEvent<HTMLCanvasElement>) => {
-    if (isPlaying || !isEditMode) return;
+    if (isPlayingRef.current) {
+      if (onPlaybackEndRef.current) {
+        onPlaybackEndRef.current();
+      }
+    }
+    if (!isEditMode) return;
     const canvas = canvasRef.current;
     if (!canvas) return;
 
@@ -449,7 +454,11 @@ export function DynamicTacticalCanvas({
     const rect = canvas.getBoundingClientRect();
     const coords = calculateScaledCoordinates(e.clientX, e.clientY, rect);
 
-    const elements = currentFrameRef.current?.elements || [];
+    // Obter os elementos do quadro ativo da árvore mais recente
+    const currentTree = treeRef.current;
+    const activeFrameId = currentTree.activePath[currentTree.currentFrameIdx] || currentTree.rootId;
+    const activeFrame = currentTree.framesMap[activeFrameId];
+    const elements = activeFrame?.elements || [];
     const hoveredEl = findHoveredElement(coords, elements);
 
     // Se clicou num elemento (prioritário) ou se estiver no modo de seleção
