@@ -1569,6 +1569,32 @@ Anteriormente, a página de estatísticas do clube exibia números fixos inscrit
   - Utilização de `HTMLCanvasElement.captureStream(30)` e `MediaRecorder` com codec `video/webm;codecs=vp9`.
   - O hook orquestra a reprodução contínua da jogada desde o início, capturando cada frame e gerando o download automático do ficheiro `.webm` com overlay visual de progresso (`DynamicExportOverlay.tsx`).
 
+---
+
+## 22. Prancheta Dinâmica — Fase 4: Orquestração e Componentes Visuais
+
+### 22.1 Linha do Tempo e Navegação por Keyframes (`DynamicTimeline.tsx`)
+- **Visualização Sequencial de Quadros**:
+  - Renderiza nós de keyframes com indicação do quadro ativo (com realce `cyan` e pulsação visual) e crachás de contagem quando existem ramificações alternativas.
+  - Controlo de reprodução (Play, Pause, Anterior, Próximo) e seletor de cadência temporal ($0.8\text{s}$ a $3.0\text{s}$).
+  - Gaveta de anotações metodológicas por quadro (`notes`), permitindo ao treinador detalhar instruções de posicionamento para cada momento.
+
+### 22.2 Barra Lateral de Ferramentas (`DynamicToolbar.tsx`)
+- **Modularização de Peças e Traços**:
+  - Seleção de modos de traço (Seleção, Passe tracejado com seta, Corrida com seta, Linha).
+  - Adição instantânea de jogadores Equipa Casa (amarelo) / Equipa Fora (azul), bola e cones.
+  - Seletor de estilo de campo (Campo Completo vs Meio Campo Ofensivo) e carregamento de predefinições táticas ($4\text{-}3\text{-}3$, Banco lateral).
+  - Histórico de Undo / Redo com atalhos de teclado.
+
+### 22.3 Modal Interativo de Bifurcações (`DynamicBranchModal.tsx`)
+- **Tomada de Decisão em Tempo de Reprodução**:
+  - Quando o motor deteta que um nó possui mais de uma rota filha, a animação pausa e apresenta um diálogo elegante com as opções táticas disponíveis, permitindo ao treinador simular variações de jogo em tempo real.
+
+### 22.4 Orquestrador Principal (`PranchetaDinamicaStudio.tsx`)
+- Integração unificada dos hooks de estado (`useTacticalPlay`), gravação (`useTacticalExport`), canvas 2D e overlays modais.
+- Bateria de testes de integração TDD validada a 100% (100 testes na suite).
+
+
 
 
 

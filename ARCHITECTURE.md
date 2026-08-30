@@ -503,6 +503,13 @@ Eliminou-se a redundância de formulários de criação de treinos, separando a 
 - **Isolamento do Módulo de Gravação (`useTacticalExport.ts`)**:
   - Desacoplamento da lógica de gravação em stream do Canvas via `captureStream(30)` e `MediaRecorder`, permitindo exportações determinísticas com fallbacks de formatos WebM/MP4 e barra de progresso unificada.
 
+### 31. Arquitetura Modular do Estúdio Dinâmico (Orquestração e Decisão)
+- **Desacoplamento Visual Feature-Based**:
+  - Organização de componentes especializados na pasta `components/prancheta-dinamica/` (`DynamicToolbar`, `DynamicTimeline`, `DynamicBranchModal`, `DynamicExportOverlay`), comunicando através de interfaces estritas e callbacks puros.
+- **Padrão de Diálogo de Decisão Tática (`DynamicBranchModal`)**:
+  - Tratamento de bifurcações como eventos desacoplados: o canvas emite `onDecisionPoint(node)` sem conhecer a implementação visual da interface, delegando ao orquestrador `PranchetaDinamicaStudio` a apresentação do modal e a atualização da rota ativa.
+
+
 
 
 
