@@ -29,6 +29,7 @@ export function NovoTreinoModal({
   const [objetivo, setObjetivo] = useState("");
   const [numeroJogadores, setNumeroJogadores] = useState(20);
   const [intensidade, setIntensidade] = useState(3);
+  const [periodo, setPeriodo] = useState<string>("COMPETITIVO");
   const [material, setMaterial] = useState("Bolas, cones, coletes.");
   const [isSubmitting, setIsSubmitting] = useState(false);
   const [errorMsg, setErrorMsg] = useState<string | null>(null);
@@ -36,7 +37,7 @@ export function NovoTreinoModal({
   // Buscar último número de treino da equipa para autoincrementar
   useEffect(() => {
     if (isOpen && activeTeam) {
-      treinoService.getUltimoNumeroTreino(activeTeam.id)
+      calendarioService.getUltimoNumeroTreino(activeTeam.id)
         .then((num) => {
           if (typeof num === "number" && num > 0) {
             setNumeroTreino(num + 1);
@@ -82,6 +83,7 @@ export function NovoTreinoModal({
         objetivo: objetivo || `Treino #${numeroTreino}`,
         intensidadeGeral: intensidade,
         material: material,
+        periodo: periodo,
       });
 
       onTreinoCreated(sessaoCriada);
@@ -226,6 +228,23 @@ export function NovoTreinoModal({
               placeholder="Ex: Organização Ofensiva - Criação e Finalização"
               className="text-xs"
             />
+          </div>
+
+          {/* Período da Época */}
+          <div>
+            <label className="text-[11px] font-semibold text-slate-400 uppercase tracking-wider block mb-1.5 flex items-center gap-1">
+              <span className="w-2 h-2 rounded-full bg-emerald-400 inline-block animate-pulse" />
+              Período da Época
+            </label>
+            <select
+              value={periodo}
+              onChange={(e) => setPeriodo(e.target.value)}
+              className="h-9 text-xs font-bold bg-[#162032] border border-slate-700 text-slate-200 rounded-md px-3 w-full focus:outline-none focus:border-cyan-500 cursor-pointer"
+            >
+              <option value="PREPARATORIO">🟢 Preparatório (Pré-Época)</option>
+              <option value="COMPETITIVO">🔵 Competitivo (Época Regular)</option>
+              <option value="TRANSICAO">🟡 Transição (Pós-Época)</option>
+            </select>
           </div>
 
           {/* Jogadores e Intensidade */}

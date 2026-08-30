@@ -1,6 +1,7 @@
 "use client";
 
 import React, { useState, useEffect, useCallback } from "react";
+import { toast } from "sonner";
 import Link from "next/link";
 import dynamic from "next/dynamic";
 import { useSearchParams } from "next/navigation";
@@ -21,7 +22,10 @@ import { SaveExercicioOptionsModal } from "@/components/prancheta/SaveExercicioO
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Textarea } from "@/components/ui/textarea";
+import { CATEGORIAS_COM_TODOS as CATEGORIAS } from "@/models/categoria-exercicio";
 import { Badge } from "@/components/ui/badge";
+import { Spinner } from "@/components/ui/Spinner";
+import { ConfirmDialog } from "@/components/ui/ConfirmDialog";
 import { cn } from "@/lib/utils";
 import {
   Sparkles,
@@ -59,47 +63,13 @@ const TacticalBoard = dynamic(
     loading: () => (
       <div className="w-full h-full flex items-center justify-center bg-[#070b14] text-slate-500 text-xs">
         <div className="flex flex-col items-center gap-2">
-          <div className="w-6 h-6 border-2 border-cyan-500 border-t-transparent rounded-full animate-spin" />
+          <Spinner size="lg" color="cyan" />
           <span>A carregar Prancheta Tática...</span>
         </div>
       </div>
     ),
   },
 );
-
-const CATEGORIAS: Array<{ value: string; label: string; color: string }> = [
-  { value: "TODOS", label: "Todos", color: "bg-slate-700 text-slate-200" },
-  {
-    value: "AQUECIMENTO",
-    label: "Aquecimento",
-    color: "bg-amber-500/10 text-amber-400 border-amber-500/20",
-  },
-  {
-    value: "TECNICO",
-    label: "Técnico",
-    color: "bg-blue-500/10 text-blue-400 border-blue-500/20",
-  },
-  {
-    value: "TATICO",
-    label: "Tático",
-    color: "bg-cyan-500/10 text-cyan-400 border-cyan-500/20",
-  },
-  {
-    value: "FISICO",
-    label: "Físico",
-    color: "bg-rose-500/10 text-rose-400 border-rose-500/20",
-  },
-  {
-    value: "GUARDA_REDES",
-    label: "Guarda-Redes",
-    color: "bg-emerald-500/10 text-emerald-400 border-emerald-500/20",
-  },
-  {
-    value: "LUDICO",
-    label: "Lúdico",
-    color: "bg-purple-500/10 text-purple-400 border-purple-500/20",
-  },
-];
 
 interface PranchetaStudioProps {
   initialExercicioId?: string;
@@ -159,6 +129,17 @@ export function PranchetaStudio({ initialExercicioId }: PranchetaStudioProps = {
   const [showSaveOptionsModal, setShowSaveOptionsModal] = useState(false);
   const [pendingDirectTacticData, setPendingDirectTacticData] = useState<any>(null);
   const [reassociatedInTreino, setReassociatedInTreino] = useState(false);
+  const [confirmDialog, setConfirmDialog] = useState<{
+    isOpen: boolean;
+    title: string;
+    description: string;
+    onConfirm: () => void;
+  }>({
+    isOpen: false,
+    title: "",
+    description: "",
+    onConfirm: () => {},
+  });
 
   // Carregar pastas personalizadas do localStorage
   useEffect(() => {
@@ -224,7 +205,7 @@ export function PranchetaStudio({ initialExercicioId }: PranchetaStudioProps = {
           (p.parentId || null) === (creatingParentId || null)
       )
     ) {
-      alert("Já existe uma pasta com esse nome neste nível.");
+      toast.warning("Já existe uma pasta com esse nome neste nível.");
       return;
     }
     const newId = `pasta-${Date.now()}`;
@@ -261,18 +242,20 @@ export function PranchetaStudio({ initialExercicioId }: PranchetaStudioProps = {
   // Eliminar uma pasta personalizada
   const handleEliminarPasta = (e: React.MouseEvent, pastaId: string, nomePasta: string) => {
     e.stopPropagation();
-    if (
-      !confirm(
-        `Tem a certeza que deseja eliminar a pasta "${nomePasta}"? As subpastas e exercícios associados permanecerão intactos na biblioteca geral.`
-      )
-    )
-      return;
-
-    const atualizadas = pastas.filter((p) => p.id !== pastaId && p.parentId !== pastaId);
-    setPastas(atualizadas);
-    try {
-      localStorage.setItem("prancheta_pastas_hierarquia_v2", JSON.stringify(atualizadas));
-    } catch (_) {}
+    setConfirmDialog({
+      isOpen: true,
+      title: "Eliminar Pasta",
+      description: `Tem a certeza que deseja eliminar a pasta "${nomePasta}"? As subpastas e exercícios associados permanecerão intactos na biblioteca geral.`,
+      onConfirm: () => {
+        const atualizadas = pastas.filter((p) => p.id !== pastaId && p.parentId !== pastaId);
+        setPastas(atualizadas);
+        try {
+          localStorage.setItem("prancheta_pastas_hierarquia_v2", JSON.stringify(atualizadas));
+        } catch (_) {}
+        setConfirmDialog((prev) => ({ ...prev, isOpen: false }));
+        toast.success("Pasta eliminada com sucesso!");
+      },
+    });
   };
 
   // Alternar colapso de uma pasta no acordeão
@@ -542,30 +525,35 @@ export function PranchetaStudio({ initialExercicioId }: PranchetaStudioProps = {
   };
 
   // Eliminar exercício
-  const handleEliminarExercicio = async () => {
+  const handleEliminarExercicio = () => {
     if (!selectedExercicio?.id) return;
-    if (
-      !confirm(
-        `Tem a certeza que deseja eliminar o exercício "${selectedExercicio.nome}"?`,
-      )
-    )
-      return;
+    const exercicioParaEliminar = selectedExercicio;
 
-    try {
-      await exercicioService.eliminarExercicio(selectedExercicio.id);
-      const restantes = exercicios.filter((e) => e.id !== selectedExercicio.id);
-      setExercicios(restantes);
-      if (restantes.length > 0) {
-        carregarDetalhesExercicio(restantes[0]);
-      } else {
-        handleNovoExercicio();
-      }
-    } catch (err) {
-      console.error("Erro ao eliminar exercício:", err);
-      alert(
-        "Erro ao eliminar o exercício. Pode estar associado a um treino existente.",
-      );
-    }
+    setConfirmDialog({
+      isOpen: true,
+      title: "Eliminar Exercício",
+      description: `Tem a certeza que deseja eliminar o exercício "${exercicioParaEliminar.nome}"?`,
+      onConfirm: async () => {
+        try {
+          await exercicioService.eliminarExercicio(exercicioParaEliminar.id);
+          const restantes = exercicios.filter((e) => e.id !== exercicioParaEliminar.id);
+          setExercicios(restantes);
+          if (restantes.length > 0) {
+            carregarDetalhesExercicio(restantes[0]);
+          } else {
+            handleNovoExercicio();
+          }
+          toast.success("Exercício eliminado com sucesso!");
+        } catch (err) {
+          console.error("Erro ao eliminar exercício:", err);
+          toast.error(
+            "Erro ao eliminar o exercício. Pode estar associado a um treino existente.",
+          );
+        } finally {
+          setConfirmDialog((prev) => ({ ...prev, isOpen: false }));
+        }
+      },
+    });
   };
 
   // Filtros de Pesquisa e Categoria
@@ -777,7 +765,7 @@ export function PranchetaStudio({ initialExercicioId }: PranchetaStudioProps = {
         <div className="flex-1 overflow-y-auto p-3 space-y-2">
           {isLoading ? (
             <div className="flex flex-col items-center justify-center py-12 text-slate-500 text-xs gap-2">
-              <div className="w-5 h-5 border-2 border-cyan-500 border-t-transparent rounded-full animate-spin" />
+              <Spinner size="md" color="cyan" />
               <span>A carregar biblioteca...</span>
             </div>
           ) : drawerMode === "PASTAS" ? (
@@ -1159,7 +1147,7 @@ export function PranchetaStudio({ initialExercicioId }: PranchetaStudioProps = {
               className="h-8 text-xs font-bold"
             >
               {isSaving ? (
-                <div className="w-3.5 h-3.5 border-2 border-slate-950 border-t-transparent rounded-full animate-spin mr-1" />
+                <Spinner size="sm" color="slate" className="mr-1" />
               ) : saveSuccess ? (
                 <CheckCircle2 className="w-3.5 h-3.5 mr-1" />
               ) : (
@@ -1356,6 +1344,15 @@ export function PranchetaStudio({ initialExercicioId }: PranchetaStudioProps = {
             pastaFinal: novaPasta || pasta,
           });
         }}
+      />
+
+      {/* Modal de Confirmação Acessível */}
+      <ConfirmDialog
+        isOpen={confirmDialog.isOpen}
+        title={confirmDialog.title}
+        description={confirmDialog.description}
+        onConfirm={confirmDialog.onConfirm}
+        onCancel={() => setConfirmDialog((prev) => ({ ...prev, isOpen: false }))}
       />
     </div>
   );

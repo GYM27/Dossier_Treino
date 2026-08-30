@@ -89,7 +89,8 @@ class SessaoTreinoServiceTest {
                 4,
                 2, // Mesociclo #2
                 3, // Microciclo #3
-                8  // Unidade de Treino #8
+                8, // Unidade de Treino #8
+                "PREPARATORIO" // Período Preparatório
         );
 
         // Assert
@@ -100,6 +101,7 @@ class SessaoTreinoServiceTest {
         assertThat(atualizada.getMesociclo()).isEqualTo(2);
         assertThat(atualizada.getMicrociclo()).isEqualTo(3);
         assertThat(atualizada.getUnidadeTreino()).isEqualTo(8);
+        assertThat(atualizada.getPeriodo()).isEqualTo("PREPARATORIO");
         verify(sessaoTreinoRepository, times(1)).save(atualizada);
     }
 

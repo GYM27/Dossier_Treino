@@ -1,6 +1,7 @@
 "use client";
 
 import { useState, useEffect } from "react";
+import { toast } from "sonner";
 import { Button } from "@/components/ui/button";
 import { apiFetch } from "@/lib/api";
 
@@ -35,11 +36,11 @@ export function ProfileForm({ initialData, onSuccess }: ProfileFormProps) {
         body: JSON.stringify(formData),
       });
 
-      alert("Perfil atualizado com sucesso!");
+      toast.success("Perfil atualizado com sucesso!");
       setFormData(prev => ({...prev, novaPassword: ""}));
       onSuccess();
     } catch (err: any) {
-      alert("Erro ao atualizar perfil: " + err.message);
+      toast.error("Erro ao atualizar perfil: " + (err.message || "Erro desconhecido"));
     } finally {
       setLoading(false);
     }

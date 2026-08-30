@@ -11,10 +11,6 @@ export const assiduidadeService = {
     return apiFetch(`/assiduidade/equipa/${equipaId}/mes?ano=${ano}&mes=${mes}`);
   },
 
-  async getEventosSemana(equipaId: string, startIso: string, endIso: string): Promise<EventoCalendario[]> {
-    return apiFetch(`/eventos/equipa/${equipaId}/semana?start=${encodeURIComponent(startIso)}&end=${encodeURIComponent(endIso)}`);
-  },
-
   async getRegistosSemana(equipaId: string, startIso: string, endIso: string): Promise<RegistoAssiduidade[]> {
     return apiFetch(`/assiduidade/equipa/${equipaId}/semana?start=${encodeURIComponent(startIso)}&end=${encodeURIComponent(endIso)}`);
   },

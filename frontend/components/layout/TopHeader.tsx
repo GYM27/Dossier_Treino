@@ -1,54 +1,69 @@
-"use client"
+"use client";
 
-import { cn } from "@/lib/utils"
-import { type Team } from "@/models/team"
-import { type Utilizador } from "@/models/utilizador"
-import { Bell, Check, ChevronsUpDown, Menu, LogOut, ChevronDown, User, X } from "lucide-react"
-import { useEffect, useRef, useState } from "react"
-import { apiFetch } from "@/lib/api"
-import { ThemeToggle } from "./ThemeToggle"
-import { ProfileForm } from "../settings/ProfileForm"
+import React, { useEffect, useRef, useState } from "react";
+import { cn } from "@/lib/utils";
+import { type Team } from "@/models/team";
+import { type Utilizador } from "@/models/utilizador";
+import { Bell, Check, ChevronsUpDown, Menu, LogOut, ChevronDown, User, X, Plus } from "lucide-react";
+import { apiFetch } from "@/lib/api";
+import { ThemeToggle } from "./ThemeToggle";
+import { ProfileForm } from "../settings/ProfileForm";
+import { CreateTeamModal } from "../clube/CreateTeamModal";
+import { useActiveTeam } from "@/context/ActiveTeamContext";
+
+interface TopHeaderProps {
+  teams?: Team[];
+  activeTeam?: Team | null;
+  me?: Utilizador | null;
+  onTeamChange?: (team: Team) => void;
+  onOpenMobileNav?: () => void;
+  onRefreshMe?: () => void;
+}
 
 export function TopHeader({
-  teams = [],
-  activeTeam,
-  me,
-  onTeamChange,
+  teams: propsTeams,
+  activeTeam: propsActiveTeam,
+  me: propsMe,
+  onTeamChange: propsOnTeamChange,
   onOpenMobileNav,
-  onRefreshMe,
-}: {
-  teams?: Team[]
-  activeTeam: Team | null
-  me?: Utilizador | null
-  onTeamChange: (team: Team) => void
-  onOpenMobileNav: () => void
-  onRefreshMe?: () => void
-}) {
-  const [open, setOpen] = useState(false)
-  const [profileOpen, setProfileOpen] = useState(false)
-  const [profileModalOpen, setProfileModalOpen] = useState(false)
-  const ref = useRef<HTMLDivElement>(null)
-  const profileRef = useRef<HTMLDivElement>(null)
+  onRefreshMe: propsOnRefreshMe,
+}: TopHeaderProps) {
+  // Consumo direto do contexto global
+  const context = useActiveTeam();
+  const teams = propsTeams ?? context.teams;
+  const activeTeam = propsActiveTeam !== undefined ? propsActiveTeam : context.activeTeam;
+  const me = propsMe !== undefined ? propsMe : context.me;
+  const handleTeamChange = propsOnTeamChange ?? context.setActiveTeam;
+  const handleRefreshMe = propsOnRefreshMe ?? context.refreshData;
+
+  const [open, setOpen] = useState(false);
+  const [showCreateTeamModal, setShowCreateTeamModal] = useState(false);
+  const [profileOpen, setProfileOpen] = useState(false);
+  const [profileModalOpen, setProfileModalOpen] = useState(false);
+  const ref = useRef<HTMLDivElement>(null);
+  const profileRef = useRef<HTMLDivElement>(null);
 
   useEffect(() => {
     function onClick(e: MouseEvent) {
-      if (ref.current && !ref.current.contains(e.target as Node)) setOpen(false)
-      if (profileRef.current && !profileRef.current.contains(e.target as Node)) setProfileOpen(false)
+      if (ref.current && !ref.current.contains(e.target as Node)) setOpen(false);
+      if (profileRef.current && !profileRef.current.contains(e.target as Node)) setProfileOpen(false);
     }
-    document.addEventListener("mousedown", onClick)
-    return () => document.removeEventListener("mousedown", onClick)
-  }, [])
+    document.addEventListener("mousedown", onClick);
+    return () => document.removeEventListener("mousedown", onClick);
+  }, []);
 
   return (
-    <header className="glass sticky top-0 z-30 flex items-center justify-between gap-3 border-b px-4 py-3 md:px-6">
+    <header className="glass sticky top-0 z-30 flex items-center justify-between gap-3 border-b px-4 py-3 md:px-6 select-none">
       <div className="flex items-center gap-3">
-        <button
-          onClick={onOpenMobileNav}
-          className="flex size-9 items-center justify-center rounded-lg text-muted-foreground hover:bg-foreground/5 hover:text-foreground md:hidden"
-          aria-label="Abrir menu"
-        >
-          <Menu className="size-5" />
-        </button>
+        {onOpenMobileNav && (
+          <button
+            onClick={onOpenMobileNav}
+            className="flex size-9 items-center justify-center rounded-lg text-muted-foreground hover:bg-foreground/5 hover:text-foreground md:hidden"
+            aria-label="Abrir menu"
+          >
+            <Menu className="size-5" />
+          </button>
+        )}
 
         {activeTeam ? (
           <div className="relative" ref={ref}>
@@ -80,12 +95,12 @@ export function TopHeader({
                   <button
                     key={team.id}
                     onClick={() => {
-                      onTeamChange(team)
-                      setOpen(false)
+                      handleTeamChange(team);
+                      setOpen(false);
                     }}
                     className={cn(
                       "flex w-full items-center justify-between rounded-lg px-3 py-2 text-sm transition-colors hover:bg-foreground/5",
-                      team.id === activeTeam.id ? "text-primary" : "text-foreground",
+                      team.id === activeTeam.id ? "text-primary font-bold" : "text-foreground",
                     )}
                   >
                     <div className="flex items-center gap-2 truncate">
@@ -105,6 +120,19 @@ export function TopHeader({
                     {team.id === activeTeam.id && <Check className="size-4 shrink-0" />}
                   </button>
                 ))}
+
+                <div className="border-t border-border/50 my-1 pt-1">
+                  <button
+                    onClick={() => {
+                      setOpen(false);
+                      setShowCreateTeamModal(true);
+                    }}
+                    className="flex w-full items-center gap-2 rounded-lg px-3 py-2 text-xs font-bold text-emerald-400 hover:bg-emerald-500/10 transition-colors"
+                  >
+                    <Plus className="size-3.5" />
+                    <span>Criar Nova Equipa</span>
+                  </button>
+                </div>
               </div>
             )}
           </div>
@@ -113,6 +141,15 @@ export function TopHeader({
             Dossier do Treinador
           </div>
         )}
+
+        <CreateTeamModal
+          isOpen={showCreateTeamModal}
+          onClose={() => setShowCreateTeamModal(false)}
+          onTeamCreated={(newTeam) => {
+            handleRefreshMe();
+            handleTeamChange(newTeam);
+          }}
+        />
       </div>
 
       <div className="flex items-center gap-2">
@@ -186,12 +223,12 @@ export function TopHeader({
               initialData={me} 
               onSuccess={() => {
                 setProfileModalOpen(false);
-                if (onRefreshMe) onRefreshMe();
+                handleRefreshMe();
               }} 
             />
           </div>
         </div>
       )}
     </header>
-  )
+  );
 }

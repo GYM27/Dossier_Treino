@@ -57,7 +57,8 @@ public class SessaoTreinoController {
                         dto.getIntensidadeGeral(),
                         dto.getMesociclo(),
                         dto.getMicrociclo(),
-                        dto.getUnidadeTreino()
+                        dto.getUnidadeTreino(),
+                        dto.getPeriodo()
                 );
                 return new ResponseEntity<>(sessaoTreinoMapper.toResponseDTO(atualizada), HttpStatus.CREATED);
             }
@@ -117,7 +118,8 @@ public class SessaoTreinoController {
                 dto.getIntensidadeGeral(),
                 dto.getMesociclo(),
                 dto.getMicrociclo(),
-                dto.getUnidadeTreino()
+                dto.getUnidadeTreino(),
+                dto.getPeriodo()
         );
         
         return ResponseEntity.ok(sessaoTreinoMapper.toResponseDTO(atualizada));

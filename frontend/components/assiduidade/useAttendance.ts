@@ -1,9 +1,9 @@
 import { useState, useEffect, useMemo, useCallback } from "react";
 import { toast } from "sonner";
 import { Team } from "@/models/team";
-import { EventoCalendario } from "@/models/calendario";
+import { EventoCalendario } from "@/models/planeamento";
 import { RegistoAssiduidade, RegistoAssiduidadeUpdate, TipoAssiduidade } from "@/models/assiduidade";
-import { assiduidadeService, atletaService } from "@/services";
+import { assiduidadeService, atletaService, calendarioService } from "@/services";
 
 export interface JogadorBase {
   id: string;
@@ -53,7 +53,7 @@ export function useAttendance(activeTeam: Team | null) {
     try {
       const [atletasData, eventosData, registosData] = await Promise.all([
         atletaService.getAtletasByEquipa(activeTeam.id),
-        assiduidadeService.getEventosSemana(activeTeam.id, startDateIso, endDateIso),
+        calendarioService.getEventosSemana(activeTeam.id, startDateIso, endDateIso),
         assiduidadeService.getRegistosSemana(activeTeam.id, startDateIso, endDateIso),
       ]);
       setAtletas(atletasData || []);

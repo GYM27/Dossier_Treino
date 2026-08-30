@@ -1,6 +1,7 @@
 "use client";
 
 import React, { useEffect, useState, useCallback, useMemo } from "react";
+import { toast } from "sonner";
 import { Exercicio } from "@/models/exercicio";
 import { 
   PastaItem, 
@@ -33,6 +34,9 @@ import {
   MapPin
 } from "lucide-react";
 import { TacticalBoardThumbnail } from "@/components/prancheta/TacticalBoardThumbnail";
+import { CATEGORIAS_COM_TODOS } from "@/models/categoria-exercicio";
+import { Spinner } from "@/components/ui/Spinner";
+import { ConfirmDialog } from "@/components/ui/ConfirmDialog";
 import { cn } from "@/lib/utils";
 
 interface CatalogoExerciciosModalProps {
@@ -40,16 +44,6 @@ interface CatalogoExerciciosModalProps {
   onSelect: (exercicio: Exercicio) => void;
   replacingExerciseName?: string;
 }
-
-const CATEGORIAS = [
-  { id: "ALL", label: "Todos" },
-  { id: "AQUECIMENTO", label: "Aquecimento" },
-  { id: "TECNICO", label: "Técnico" },
-  { id: "TATICO", label: "Tático" },
-  { id: "FISICO", label: "Físico" },
-  { id: "GUARDA_REDES", label: "Guarda-Redes" },
-  { id: "LUDICO", label: "Lúdico" },
-];
 
 export function CatalogoExerciciosModal({
   onClose,
@@ -59,7 +53,7 @@ export function CatalogoExerciciosModal({
   const [exercicios, setExercicios] = useState<Exercicio[]>([]);
   const [loading, setLoading] = useState(true);
   const [search, setSearch] = useState("");
-  const [selectedCategory, setSelectedCategory] = useState<string>("ALL");
+  const [selectedCategory, setSelectedCategory] = useState<string>("TODOS");
   const [drawerMode, setDrawerMode] = useState<"PASTAS" | "TODOS">("PASTAS");
 
   // Sistema de Pastas
@@ -76,14 +70,26 @@ export function CatalogoExerciciosModal({
   const [isCreatingPasta, setIsCreatingPasta] = useState(false);
   const [creatingParentId, setCreatingParentId] = useState<string | null>(null);
   const [novaPastaNome, setNovaPastaNome] = useState("");
+  const [confirmDialog, setConfirmDialog] = useState<{
+    isOpen: boolean;
+    title: string;
+    description: string;
+    onConfirm: () => void;
+  }>({
+    isOpen: false,
+    title: "",
+    description: "",
+    onConfirm: () => {},
+  });
 
   const loadExercicios = async () => {
-    setLoading(true);
     try {
+      setLoading(true);
       const data = await exercicioService.getExercicios();
       setExercicios(data || []);
     } catch (err) {
-      console.error("Erro ao carregar exercícios", err);
+      console.error("Erro ao carregar catálogo de exercícios:", err);
+      toast.error("Erro ao carregar exercícios do catálogo.");
     } finally {
       setLoading(false);
     }
@@ -94,19 +100,25 @@ export function CatalogoExerciciosModal({
     setPastas(loadStoredPastas());
   }, []);
 
-  const handleDelete = async (e: React.MouseEvent, id: string, nome: string) => {
+  const handleDelete = (e: React.MouseEvent, id: string, nome: string) => {
     e.stopPropagation();
-    if (!confirm(`Tem a certeza que deseja eliminar permanentemente o exercício "${nome}" da biblioteca?`)) {
-      return;
-    }
-
-    try {
-      await exercicioService.eliminarExercicio(id);
-      setExercicios((prev) => prev.filter((ex) => ex.id !== id));
-    } catch (err) {
-      console.error("Erro ao eliminar exercício:", err);
-      alert("Erro ao eliminar exercício do catálogo.");
-    }
+    setConfirmDialog({
+      isOpen: true,
+      title: "Eliminar Exercício",
+      description: `Tem a certeza que deseja eliminar permanentemente o exercício "${nome}" da biblioteca?`,
+      onConfirm: async () => {
+        try {
+          await exercicioService.eliminarExercicio(id);
+          setExercicios((prev) => prev.filter((ex) => ex.id !== id));
+          toast.success("Exercício eliminado com sucesso!");
+        } catch (err) {
+          console.error("Erro ao eliminar exercício:", err);
+          toast.error("Erro ao eliminar exercício do catálogo.");
+        } finally {
+          setConfirmDialog((prev) => ({ ...prev, isOpen: false }));
+        }
+      },
+    });
   };
 
   // Alternar expansão de pasta no acordeão
@@ -137,7 +149,7 @@ export function CatalogoExerciciosModal({
           (p.parentId || null) === (creatingParentId || null)
       )
     ) {
-      alert("Já existe uma pasta com esse nome neste nível.");
+      toast.warning("Já existe uma pasta com esse nome neste nível.");
       return;
     }
     const newId = `pasta-${Date.now()}`;
@@ -162,12 +174,18 @@ export function CatalogoExerciciosModal({
   // Eliminar pasta personalizada
   const handleEliminarPasta = (e: React.MouseEvent, pastaId: string, nomePasta: string) => {
     e.stopPropagation();
-    if (!confirm(`Deseja eliminar a pasta "${nomePasta}"? Os exercícios permanecerão no catálogo geral.`)) {
-      return;
-    }
-    const atualizadas = pastas.filter((p) => p.id !== pastaId && p.parentId !== pastaId);
-    setPastas(atualizadas);
-    saveStoredPastas(atualizadas);
+    setConfirmDialog({
+      isOpen: true,
+      title: "Eliminar Pasta",
+      description: `Deseja eliminar a pasta "${nomePasta}"? Os exercícios permanecerão no catálogo geral.`,
+      onConfirm: () => {
+        const atualizadas = pastas.filter((p) => p.id !== pastaId && p.parentId !== pastaId);
+        setPastas(atualizadas);
+        saveStoredPastas(atualizadas);
+        setConfirmDialog((prev) => ({ ...prev, isOpen: false }));
+        toast.success("Pasta eliminada com sucesso!");
+      },
+    });
   };
 
   // Filtragem de exercícios
@@ -179,7 +197,7 @@ export function CatalogoExerciciosModal({
         (e.objetivosEspecificos || "").toLowerCase().includes(search.toLowerCase()) ||
         (e.descricao || "").toLowerCase().includes(search.toLowerCase());
       const matchesCategory =
-        selectedCategory === "ALL" || e.categoria === selectedCategory;
+        selectedCategory === "TODOS" || e.categoria === selectedCategory;
       return matchesSearch && matchesCategory;
     });
   }, [exercicios, search, selectedCategory]);
@@ -544,12 +562,12 @@ export function CatalogoExerciciosModal({
           {/* Categorias (Apenas no Modo TODOS) */}
           {drawerMode === "TODOS" && (
             <div className="flex gap-1.5 overflow-x-auto pb-0.5 scrollbar-none">
-              {CATEGORIAS.map((cat) => {
-                const isSelected = selectedCategory === cat.id;
+              {CATEGORIAS_COM_TODOS.map((cat) => {
+                const isSelected = selectedCategory === cat.value;
                 return (
                   <button
-                    key={cat.id}
-                    onClick={() => setSelectedCategory(cat.id)}
+                    key={cat.value}
+                    onClick={() => setSelectedCategory(cat.value)}
                     className={`px-3 py-1 rounded-lg text-xs font-semibold whitespace-nowrap transition-all ${
                       isSelected
                         ? "bg-cyan-500 text-slate-950 shadow-sm"
@@ -568,7 +586,7 @@ export function CatalogoExerciciosModal({
         <div className="flex-1 overflow-y-auto p-4 space-y-3">
           {loading ? (
             <div className="flex flex-col items-center justify-center py-16 text-slate-500 text-xs gap-3">
-              <div className="w-6 h-6 border-2 border-cyan-500 border-t-transparent rounded-full animate-spin" />
+              <Spinner size="lg" color="cyan" />
               <span>A carregar catálogo de exercícios...</span>
             </div>
           ) : exerciciosFiltrados.length === 0 ? (
@@ -597,6 +615,15 @@ export function CatalogoExerciciosModal({
             </div>
           )}
         </div>
+
+        {/* Modal de Confirmação Acessível */}
+        <ConfirmDialog
+          isOpen={confirmDialog.isOpen}
+          title={confirmDialog.title}
+          description={confirmDialog.description}
+          onConfirm={confirmDialog.onConfirm}
+          onCancel={() => setConfirmDialog((prev) => ({ ...prev, isOpen: false }))}
+        />
       </div>
     </div>
   );

@@ -7,7 +7,7 @@ import com.dossiertreinador.domain.entities.Atleta;
 import com.dossiertreinador.domain.entities.EstatisticaJogo;
 import com.dossiertreinador.domain.entities.EventoCalendario;
 import com.dossiertreinador.domain.enums.TipoEstatistica;
-import com.dossiertreinador.mappers.EstatisticaJogoMapper;
+import com.dossiertreinador.domain.mappers.EstatisticaJogoMapper;
 import com.dossiertreinador.service.EstatisticaJogoService;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import org.junit.jupiter.api.BeforeEach;

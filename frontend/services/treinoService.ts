@@ -8,6 +8,10 @@ export interface CriarTreinoPayload {
   objetivo: string;
   intensidadeGeral?: number;
   material?: string;
+  mesociclo?: number;
+  microciclo?: number;
+  unidadeTreino?: number;
+  periodo?: string;
 }
 
 export interface AdicionarExercicioPayload {
@@ -24,11 +28,6 @@ export const treinoService = {
 
   async getTreinoById(treinoId: string): Promise<SessaoTreino> {
     return apiFetch(`/treinos/${treinoId}`);
-  },
-
-  async getUltimoNumeroTreino(equipaId: string): Promise<number> {
-    const res = await apiFetch(`/eventos/equipa/${equipaId}/ultimo-numero-treino`);
-    return typeof res === "number" ? res : 0;
   },
 
   async criarTreino(payload: CriarTreinoPayload): Promise<SessaoTreino> {

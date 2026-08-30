@@ -45,6 +45,7 @@ class SessaoTreinoMapperTest {
                 .intensidadeGeral(4)
                 .material("Bolas, Cones, Coletes")
                 .duracaoTotalMinutos(90)
+                .periodo("PREPARATORIO")
                 .exercicios(new ArrayList<>())
                 .build();
 
@@ -61,6 +62,7 @@ class SessaoTreinoMapperTest {
         assertThat(dto.getUnidadeTreino()).isEqualTo(12);
         assertThat(dto.getMicrociclo()).isEqualTo(1);
         assertThat(dto.getMesociclo()).isEqualTo(1);
+        assertThat(dto.getPeriodo()).isEqualTo("PREPARATORIO");
         assertThat(dto.getObjetivo()).isEqualTo("Transição Ofensiva Rápida");
         assertThat(dto.getNumeroJogadores()).isEqualTo(18);
         assertThat(dto.getIntensidadeGeral()).isEqualTo(4);

@@ -15,6 +15,7 @@
 "use client";
 
 import { useState, useEffect, useMemo, useCallback } from "react";
+import { toast } from "sonner";
 import { atletaService } from "@/services";
 import { ATLETA_VAZIO } from "./constants";
 import type { AtletaFormData } from "./constants";
@@ -184,7 +185,7 @@ export function useAtletasCrud(equipaId: string) {
         setShowModal(false);
         fetchJogadores(); // Recarrega a lista instantaneamente
       } catch (err: any) {
-        alert("Erro ao guardar atleta: " + err.message);
+        toast.error("Erro ao guardar atleta: " + (err.message || "Erro desconhecido"));
       } finally {
         setIsSubmitting(false);
       }

@@ -1,5 +1,6 @@
 "use client";
 
+import { toast } from "sonner";
 import { EventoCalendario } from "@/models/planeamento";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
@@ -41,12 +42,12 @@ export function EventoFormModal({
 
   const handleSave = () => {
     if (!formData.dataHoraInicio) {
-      alert("Por favor, preencha a data e hora de início.");
+      toast.warning("Por favor, preencha a data e hora de início.");
       return;
     }
     const start = new Date(formData.dataHoraInicio);
     if (isNaN(start.getTime())) {
-      alert("Data de início inválida.");
+      toast.error("Data de início inválida.");
       return;
     }
 

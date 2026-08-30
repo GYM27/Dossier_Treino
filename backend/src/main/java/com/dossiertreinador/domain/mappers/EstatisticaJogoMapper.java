@@ -1,11 +1,15 @@
-package com.dossiertreinador.mappers;
+package com.dossiertreinador.domain.mappers;
 
 import com.dossiertreinador.domain.dtos.EstatisticaJogoResponseDTO;
 import com.dossiertreinador.domain.entities.EstatisticaJogo;
 import org.springframework.stereotype.Component;
 
-import com.dossiertreinador.domain.mappers.AtletaMapper;
-
+/**
+ * EstatisticaJogoMapper — Converte a Entidade EstatisticaJogo no DTO de Resposta correspondente.
+ *
+ * Padronizado no pacote com.dossiertreinador.domain.mappers em conformidade
+ * com a arquitetura do projeto.
+ */
 @Component
 public class EstatisticaJogoMapper {
 

@@ -2,6 +2,7 @@
 
 import React, { Suspense } from "react";
 import { PranchetaStudio } from "@/components/prancheta/PranchetaStudio";
+import { Spinner } from "@/components/ui/Spinner";
 import Link from "next/link";
 import { ArrowLeft, Dumbbell, LayoutDashboard } from "lucide-react";
 
@@ -32,7 +33,7 @@ export default function PranchetaPage() {
         <Suspense
           fallback={
             <div className="w-full h-full flex items-center justify-center bg-[#070b14] text-slate-500 text-xs gap-2">
-              <div className="w-5 h-5 border-2 border-cyan-500 border-t-transparent rounded-full animate-spin" />
+              <Spinner size="md" color="cyan" />
               <span>A carregar estúdio tático...</span>
             </div>
           }

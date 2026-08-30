@@ -1,9 +1,11 @@
 "use client";
 
 import { useState } from "react";
+import { toast } from "sonner";
 import { Button } from "@/components/ui/button";
 import { Shield } from "lucide-react";
 import { apiFetch } from "@/lib/api";
+import { ESCALOES } from "@/models/team";
 
 interface TeamFormProps {
   onSuccess: () => void;
@@ -12,7 +14,7 @@ interface TeamFormProps {
 export function TeamForm({ onSuccess }: TeamFormProps) {
   const [formData, setFormData] = useState({
     nome: "",
-    escalao: "",
+    escalao: "Sub-17",
     designacaoEpoca: "2026/2027",
   });
   const [loading, setLoading] = useState(false);
@@ -27,11 +29,11 @@ export function TeamForm({ onSuccess }: TeamFormProps) {
         body: JSON.stringify(formData),
       });
 
-      alert("Equipa criada com sucesso!");
+      toast.success("Equipa criada com sucesso!");
       onSuccess();
       
     } catch (err: any) {
-      alert("Erro ao criar equipa: " + err.message);
+      toast.error("Erro ao criar equipa: " + (err.message || "Erro desconhecido"));
     } finally {
       setLoading(false);
     }
@@ -74,17 +76,16 @@ export function TeamForm({ onSuccess }: TeamFormProps) {
             </label>
             <select
               required
-              className="mt-1.5 w-full rounded-xl bg-background/50 border border-border/50 px-4 py-2.5 outline-none focus:border-primary/50 focus:ring-1 focus:ring-primary/50 transition-all appearance-none"
+              className="mt-1.5 w-full rounded-xl bg-background/50 border border-border/50 px-4 py-2.5 outline-none focus:border-primary/50 focus:ring-1 focus:ring-primary/50 transition-all appearance-none cursor-pointer"
               value={formData.escalao}
               onChange={(e) => setFormData({ ...formData, escalao: e.target.value })}
             >
               <option value="" disabled>Selecionar Escalão</option>
-              <option value="Seniores">Seniores</option>
-              <option value="Sub-19">Sub-19 (Juniores)</option>
-              <option value="Sub-17">Sub-17 (Juvenis)</option>
-              <option value="Sub-15">Sub-15 (Iniciados)</option>
-              <option value="Sub-13">Sub-13 (Infantis)</option>
-              <option value="Outro">Outro</option>
+              {ESCALOES.map((esc) => (
+                <option key={esc} value={esc}>
+                  {esc}
+                </option>
+              ))}
             </select>
           </div>
 

@@ -142,11 +142,6 @@ export function TreinoExercicioCard({
           >
             {exercicio.exercicioNome}
           </Link>
-          {exercicio.categoria && (
-            <Badge variant="outline" className="text-[10px] uppercase tracking-wider py-0 px-2 text-slate-400 border-slate-700">
-              {exercicio.categoria}
-            </Badge>
-          )}
         </div>
 
         {/* Controlos de Ordem e Ações */}

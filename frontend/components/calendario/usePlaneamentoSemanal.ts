@@ -1,4 +1,5 @@
 import { useState, useEffect, useMemo, useCallback } from "react";
+import { toast } from "sonner";
 import { Team } from "@/models/team";
 import { EventoCalendario } from "@/models/planeamento";
 import { calendarioService } from "@/services";
@@ -202,32 +203,49 @@ export function usePlaneamentoSemanal(activeTeam: Team | null) {
         } else {
           await calendarioService.criarEvento(activeTeam.id, evento);
         }
+        toast.success("Evento guardado com sucesso!");
         setIsModalOpen(false);
         fetchSemana();
       } catch (error) {
         console.error("Erro ao guardar evento", error);
-        alert("Erro ao guardar o evento.");
+        toast.error("Erro ao guardar o evento.");
       }
     },
     [activeTeam?.id, eventoEdit?.id, fetchSemana]
   );
 
-  const handleDeleteEvent = useCallback(
-    async (eventoId: string) => {
-      if (
-        !confirm(
-          "Tem a certeza que deseja eliminar este evento? Os registos de assiduidade associados também serão eliminados."
-        )
-      )
-        return;
+  const [confirmDialog, setConfirmDialog] = useState<{
+    isOpen: boolean;
+    title: string;
+    description: string;
+    onConfirm: () => void;
+  }>({
+    isOpen: false,
+    title: "",
+    description: "",
+    onConfirm: () => {},
+  });
 
-      try {
-        await calendarioService.eliminarEvento(eventoId);
-        fetchSemana();
-      } catch (error) {
-        console.error("Erro ao eliminar evento", error);
-        alert("Erro ao eliminar o evento.");
-      }
+  const handleDeleteEvent = useCallback(
+    (eventoId: string) => {
+      setConfirmDialog({
+        isOpen: true,
+        title: "Eliminar Evento",
+        description:
+          "Tem a certeza que deseja eliminar este evento? Os registos de assiduidade associados também serão eliminados.",
+        onConfirm: async () => {
+          try {
+            await calendarioService.eliminarEvento(eventoId);
+            toast.success("Evento eliminado com sucesso!");
+            fetchSemana();
+          } catch (error) {
+            console.error("Erro ao eliminar evento", error);
+            toast.error("Erro ao eliminar o evento.");
+          } finally {
+            setConfirmDialog((prev) => ({ ...prev, isOpen: false }));
+          }
+        },
+      });
     },
     [fetchSemana]
   );
@@ -259,5 +277,7 @@ export function usePlaneamentoSemanal(activeTeam: Team | null) {
     handleDeleteEvent,
     saveMorfociclo,
     fetchSemana,
+    confirmDialog,
+    setConfirmDialog,
   };
 }

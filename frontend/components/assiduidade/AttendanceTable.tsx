@@ -1,6 +1,6 @@
 import React from "react";
 import { JogadorBase } from "./useAttendance";
-import { EventoCalendario } from "@/models/calendario";
+import { EventoCalendario } from "@/models/planeamento";
 import { RegistoAssiduidade, TipoAssiduidade } from "@/models/assiduidade";
 import { cn } from "@/lib/utils";
 

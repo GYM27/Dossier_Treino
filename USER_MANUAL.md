@@ -352,21 +352,30 @@ Agora pode rodar livremente **todas as Formas Geométricas** (Quadrados, Círcul
    - É imediatamente redirecionado para a página **"Planos de Treino"** com essa sessão de treino aberta.
    - Todos os dados (Data, Hora, Microciclo e Local) já surgem preenchidos!
 3. **Construir a Sessão de Treino e Estrutura dos Exercícios**:
-   - Clique em **"Editar"** no topo da sessão para definir a **Periodização** (**Mesociclo**, **Microciclo - Semana**, e **Unidade de Treino - UT**), bem como o **Objetivo Geral**, **Nº de Jogadores**, **Intensidade (1-5)** e **Material**.
-   - **Cabeçalho com Hierarquia de Periodização**:
-     - `MESO #X` (Bloco temático da época)
-     - `MICRO #X` (Semana de trabalho)
-     - `UT #X` (Número da sessão de treino individual)
-   - Clique em **"Biblioteca"** para escolher exercícios previamente desenhados do catálogo e adicioná-los à sessão com um clique.
-   - **Cartão do Exercício em 3 Secções**:
+   - Clique em **"Editar"** no topo da sessão para definir a **Hierarquia de Periodização**:
+     - **Período da Época**: Escolha entre 🟢 **Preparatório (Pré-Época)**, 🔵 **Competitivo (Época Regular)** ou 🟡 **Transição (Pós-Época / Regeneração)**.
+     - **Mesociclo**: Número ordinal do bloco da época (ex: `Mesociclo #1`, `#2`).
+     - **Microciclo (Semana)**: Número da semana de trabalho (ex: `Microciclo #3`).
+     - **Unidade de Treino (UT)**: Número da sessão de treino individual (ex: `UT #8`).
+     - **Metadados Adicionais**: **Objetivo Geral**, **Nº de Atletas**, **Intensidade (1-5)** e **Material Necessário**.
+   - **Cabeçalho Visual da Sessão**:
+     - Badge do **Período** com destaque de cor semântica (ex: `🟢 PREPARATÓRIO`).
+     - `MESO #X` (Bloco temático da época).
+     - `MICRO #X` (Semana de trabalho).
+     - `UT #X` (Número da sessão de treino individual).
+   - **Cartão do Exercício no Estúdio (3 Secções)**:
      1. *Esquerda*: Relvado tático em miniatura com botão **[ECRÃ INTEIRO]** para abrir a prancheta completa.
      2. *Centro (Metodologia Tripartida Integral)*:
         - 🎯 **Objetivo(s) específico(s)**: Comportamentos e princípios táticos trabalhados (exibição integral).
         - 📄 **Descrição e Organização Metodológica**: Regras, movimentações e rotações da tarefa (exibição integral).
         - 📝 **Notas do Treino**: Observações contextuais específicas para a sessão.
      3. *Direita*: Badges verticais de **tempo** (minutos), **número** (atletas), **espaço** (dimensões) e **⚡ carga** (séries e pausas).
-   - **Folha de Treino / Impressão PDF**:
-     - Clique em **"PDF"** no topo para abrir a folha oficial de treino com cabeçalho de periodização completo (`MESOCICLO`, `MICROCICLO`, `UNIDADE DE TREINO`, `Nº JOGADORES`, `VOLUME TOTAL`) e todos os blocos de cada exercício perfeitamente discriminados.
+   - **Folha Oficial em PDF / Impressão A4 Limpa**:
+     - Ao clicar no botão **"PDF"** no topo da sessão de treino, abre-se a folha oficial perfeitamente formatada para impressão A4 ou geração de PDF no navegador.
+     - **Isolamento Absoluto**: Toda a interface da aplicação (menus laterais, botões de ação e painéis) é 100% ocultada pelo sistema, sendo impressa **exclusivamente a folha oficial**.
+     - **Layout Idêntico à Ficha Técnica**:
+        - *Cabeçalho Tabular*: Identificação do Clube e Escalão (ex: `PLANO DE TREINO — UNIÃO 1919 • SUB-17`), Badge do Período, matriz de 5 métricas de periodização (`MESOCICLO`, `MICROCICLO`, `UNIDADE TREINO`, `Nº JOGADORES`, `VOLUME TOTAL`), `Data & Hora`, `Local`, `Material` e `Objetivos Gerais`.
+       - *Cartões dos Exercícios*: Numeração circular em preto `( 1 )`, `( 2 )`, `( 3 )`, relvado tático de alta definição sem botões sobrepostos, metodologia completa e métricas verticais (`TEMPO`, `NÚMERO`, `ESPAÇO`, `CARGA`).
 
 ### 2. Como Criar e Gerir Exercícios na Prancheta Tática
  
@@ -393,7 +402,64 @@ Agora pode rodar livremente **todas as Formas Geométricas** (Quadrados, Círcul
       - **"Atualizar Original"**: Altera o exercício base em toda a biblioteca e permite escolher/mudar a pasta de destino.
       - **"Gravar Nova Variante"**: Permite indicar um novo nome e pasta de destino, criando um novo exercício independente. Se abriu o exercício a partir de um plano de treino, apenas essa posição do treino é vinculada à nova variante, mantendo os restantes exercícios do treino 100% inalterados!
     - Utilize o botão **[← Voltar ao Treino]** no topo para regressar diretamente ao estúdio do plano de treino.
+  6. **Edição Contextual na Barra Lateral Esquerda**:
+     - **Arrastar para Mover Livremente**: Toque e arraste qualquer jogador, cone, baliza ou linha pelo campo. O elemento move-se com fluidez total e a **barra lateral NÃO abre**, mantendo o relvado completamente livre para desenhar e posicionar as suas tarefas táticas.
+     - **Clique Estático para Editar (com Sombreado *Glow*)**: Se der um clique simples (sem arrastar) num elemento, este fica instantaneamente iluminado com uma aura ciano neon e abre-se automaticamente a **Barra Lateral de Edição no lado esquerdo da prancheta**.
+     - **Edição de Linhas e Formas**:
+       - Alterne o tipo de traço entre **Simples**, **Passe (Tracejado)**, **Corrida (Seta)** e **Livre**.
+       - Ajuste a espessura em grelha rápida de 1px a 12px, o estilo de traço contínuo/tracejado, a cor da linha e o preenchimento/opacidade (0% a 100%).
+     - **Edição de Jogadores**:
+       - Introduza o **Nº da Camisola** ou **Sigla tática** (ex: `7`, `10`, `GR`, `C`, `PL`).
+       - Alterne o tamanho do marcador (**Pequeno**, **Médio**, **Grande**) e a cor do equipamento/colete com 1 clique.
+     - **Edição de Balizas**:
+       - Escolha o tipo de baliza (**Mini**, **Fut 7**, **Fut 11**).
+       - Alterne a orientação com o botão **`[+90° (R)]`** ou através dos 4 botões direcionais (⬆️, ⬇️, ⬅️, ➡️).
+     - **Duplicação e Eliminação Ágeis**:
+       - Duplique qualquer elemento clicando no botão **"Duplicar"** (ou premindo `Ctrl+V`).
+       - Elimine o elemento no botão **"Apagar"** (ou premindo a tecla `Delete`/`Backspace`).
+     - **Desmarcar e Fechar**: Clique no botão **`[✕]`** no topo da barra lateral esquerda ou clique numa área vazia do relvado para fechar o painel e manter o campo completamente desimpedido.
 
+### 3. Como Criar e Gerir Equipas e Consultar o Clube
+
+1. **Criar Nova Equipa / Escalão**:
+   - No menu lateral, aceda a **"Clube"** e clique no botão verde **`[+ Criar Nova Equipa]`** (ou no seletor de equipas no cabeçalho superior).
+   - Preencha os campos da nova equipa:
+     - **Nome da Equipa / Clube** (ex: *União 1919*, *SC Braga*).
+     - **Escalão**: *Seniores*, *Sub-22*, *Sub-19*, *Sub-18*, *Sub-17*, *Sub-16*, *Sub-15*, *Sub-14*, *Sub-13*, *Sub-12*, *Sub-11*, *Sub-10*, *Traquinas*, *Petizes*.
+     - **Modalidade / Formato** (ex: *Futebol 11*, *Futebol 9*, *Futebol 7*, *Futsal*).
+     - **Época Desportiva** (ex: *2025/2026*).
+     - **Duração Padrão do Jogo** (ex: *45' + 45'* ou *40' + 40'*).
+     - **Logótipo / Emblema (URL)**.
+   - Clique em **"Criar Equipa"**. A equipa é guardada e passa a ser imediatamente a sua equipa ativa em toda a plataforma.
+
+2. **Editar Ficha Técnica da Equipa & Logótipo**:
+   - No separador **"Detalhes do Clube & Plantéis"**, clique em **`[Editar Ficha]`** para alterar nome, escalão, formato de jogo e introduzir/colar o **URL do Logótipo / Emblema** (com pré-visualização instantânea e botão Limpar).
+   - Clique em **"Guardar Alterações"** para sincronizar com a base de dados.
+
+3. **Alternar de Equipa com 1 Clique**:
+   - No separador do clube ou no menu suspenso do topo da página, clique sobre qualquer outro escalão registado para alternar instantaneamente todo o dossier para esse plantel.
+
+### 5. Navegação Direta por Endereço e Memória de Equipa (Sprint 2)
+
+1. **Navegação com URLs Reais e Favoritos**:
+   - Cada secção da plataforma tem agora um endereço web próprio e direto:
+     - `/` — Dashboard e Indicadores
+     - `/plantel` — Gestão de Atletas e Fichas de Jogadores
+     - `/calendario` — Planeamento Semanal e Morfociclo Padrão
+     - `/assiduidade` — Registo Diário de Presenças
+     - `/treinos` — Estúdio de Sessões e Exercícios
+     - `/prancheta` — Prancheta Tática Digital
+     - `/clube` — Gestão do Clube e Estatísticas
+     - `/scouting` — Análise de Equipas Adversárias
+     - `/config` — Configurações e Equipa Técnica
+   - O treinador pode agora guardar os seus ecrãs favoritos nos marcadores do browser ou partilhar links diretos com a sua equipa técnica.
+
+2. **Memória Inteligente da Equipa Selecionada**:
+   - Ao selecionar uma equipa (ex: *Sub-19*), a plataforma memoriza automaticamente a sua escolha.
+   - Pode navegar entre o calendário, a prancheta ou o estúdio de treinos, ou até fechar o browser e voltar mais tarde: a equipa selecionada mantém-se sempre ativa sem necessidade de voltar a selecioná-la!
+
+3. **Primeiros Passos Simplificados (Onboarding)**:
+   - Ao entrar pela primeira vez numa conta nova, o sistema apresenta um ecrã de boas-vindas claro para registar a primeira equipa do clube, orientando o treinador passo a passo.
 
 
 

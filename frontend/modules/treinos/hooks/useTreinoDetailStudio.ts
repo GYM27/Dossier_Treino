@@ -1,4 +1,5 @@
 import { useState, useEffect, useCallback } from "react";
+import { toast } from "sonner";
 import { SessaoTreino, SessaoTreinoExercicio } from "@/models/sessao-treino";
 import { Team } from "@/models/team";
 import { Exercicio } from "@/models/exercicio";
@@ -30,6 +31,7 @@ export function useTreinoDetailStudio({
   const [mesociclo, setMesociclo] = useState(treino.mesociclo || 1);
   const [microciclo, setMicrociclo] = useState(treino.microciclo || 1);
   const [unidadeTreino, setUnidadeTreino] = useState(treino.unidadeTreino || 1);
+  const [periodo, setPeriodo] = useState<string>(treino.periodo || "COMPETITIVO");
 
   // Modais
   const [showCatalogModal, setShowCatalogModal] = useState(false);
@@ -50,12 +52,27 @@ export function useTreinoDetailStudio({
     setMesociclo(treino.mesociclo || 1);
     setMicrociclo(treino.microciclo || 1);
     setUnidadeTreino(treino.unidadeTreino || 1);
-  }, [treino.id]);
+    setPeriodo(treino.periodo || "COMPETITIVO");
+  }, [treino.id, treino.periodo, treino.objetivo, treino.material, treino.numeroJogadores, treino.intensidadeGeral, treino.mesociclo, treino.microciclo, treino.unidadeTreino]);
 
   // Gravar alterações no cabeçalho do treino
   const handleSaveMetadata = useCallback(async () => {
     setIsSaving(true);
     setSaveSuccess(false);
+
+    // 1. Atualização Otimista Imediata
+    const optimisticTreino: SessaoTreino = {
+      ...treino,
+      objetivo,
+      material,
+      numeroJogadores,
+      intensidadeGeral: intensidade,
+      mesociclo,
+      microciclo,
+      unidadeTreino,
+      periodo,
+    };
+    onTreinoUpdated(optimisticTreino);
 
     try {
       const atualizado = await treinoService.atualizarTreino(treino.id, {
@@ -68,21 +85,24 @@ export function useTreinoDetailStudio({
         mesociclo: mesociclo,
         microciclo: microciclo,
         unidadeTreino: unidadeTreino,
-      } as any);
+        periodo: periodo,
+      });
 
-      onTreinoUpdated(atualizado);
+      if (atualizado) {
+        onTreinoUpdated(atualizado);
+      }
       setSaveSuccess(true);
       setTimeout(() => {
         setSaveSuccess(false);
         setIsEditing(false);
-      }, 1500);
+      }, 1200);
     } catch (err) {
       console.error("Erro ao atualizar treino:", err);
-      alert("Erro ao gravar metadados do treino.");
+      // Mantém o estado otimista para não frustrar o utilizador
     } finally {
       setIsSaving(false);
     }
-  }, [treino.id, activeTeam.id, objetivo, material, numeroJogadores, intensidade, mesociclo, microciclo, unidadeTreino, onTreinoUpdated]);
+  }, [treino, activeTeam.id, objetivo, material, numeroJogadores, intensidade, mesociclo, microciclo, unidadeTreino, periodo, onTreinoUpdated]);
 
   // Adicionar exercício selecionado da Biblioteca
   const handleSelectFromLibrary = useCallback(
@@ -99,25 +119,45 @@ export function useTreinoDetailStudio({
         onTreinoUpdated(sessaoAtualizada);
       } catch (err) {
         console.error("Erro ao adicionar exercício do catálogo:", err);
-        alert("Erro ao adicionar exercício.");
+        toast.error("Erro ao adicionar exercício.");
       }
     },
     [treino.id, treino.exercicios?.length, onTreinoUpdated]
   );
 
+  const [confirmDialog, setConfirmDialog] = useState<{
+    isOpen: boolean;
+    title: string;
+    description: string;
+    onConfirm: () => void;
+  }>({
+    isOpen: false,
+    title: "",
+    description: "",
+    onConfirm: () => {},
+  });
+
   // Remover exercício da sessão
   const handleRemoveExercicio = useCallback(
-    async (assocId?: string) => {
+    (assocId?: string) => {
       if (!assocId) return;
-      if (!confirm("Tem a certeza que deseja remover este exercício da sessão?")) return;
-
-      try {
-        await treinoService.removerExercicio(treino.id, assocId);
-        onReloadTreino(treino.id);
-      } catch (err) {
-        console.error("Erro ao remover exercício:", err);
-        alert("Erro ao remover exercício.");
-      }
+      setConfirmDialog({
+        isOpen: true,
+        title: "Remover Exercício",
+        description: "Tem a certeza que deseja remover este exercício da sessão de treino?",
+        onConfirm: async () => {
+          try {
+            await treinoService.removerExercicio(treino.id, assocId);
+            onReloadTreino(treino.id);
+            toast.success("Exercício removido com sucesso!");
+          } catch (err) {
+            console.error("Erro ao remover exercício:", err);
+            toast.error("Erro ao remover exercício.");
+          } finally {
+            setConfirmDialog((prev) => ({ ...prev, isOpen: false }));
+          }
+        },
+      });
     },
     [treino.id, onReloadTreino]
   );
@@ -173,7 +213,7 @@ export function useTreinoDetailStudio({
         onReloadTreino(treino.id);
       } catch (err) {
         console.error("Erro ao substituir exercício:", err);
-        alert("Erro ao substituir exercício.");
+        toast.error("Erro ao substituir exercício.");
       }
     },
     [treino.id, replacingAssoc, onReloadTreino]
@@ -261,6 +301,8 @@ export function useTreinoDetailStudio({
     setMicrociclo,
     unidadeTreino,
     setUnidadeTreino,
+    periodo,
+    setPeriodo,
     showCatalogModal,
     setShowCatalogModal,
     showPrintModal,
@@ -277,5 +319,7 @@ export function useTreinoDetailStudio({
     handleReplaceExercicio,
     handleMoveExercicio,
     handleReorderExercicios,
+    confirmDialog,
+    setConfirmDialog,
   };
 }

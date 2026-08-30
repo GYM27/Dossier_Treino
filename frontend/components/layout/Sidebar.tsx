@@ -1,5 +1,8 @@
 "use client";
 
+import React from "react";
+import Link from "next/link";
+import { usePathname } from "next/navigation";
 import { cn } from "@/lib/utils";
 import {
   Calendar,
@@ -25,33 +28,30 @@ export type NavKey =
   | "config"
   | "scouting";
 
-type NavItem = {
+export type NavItem = {
   key: NavKey;
   label: string;
+  href: string;
   icon: React.ComponentType<{ className?: string }>;
 };
 
-const navItems: NavItem[] = [
-  { key: "dashboard", label: "Dashboard", icon: LayoutDashboard },
-  { key: "clube", label: "Clube", icon: Shield },
-  { key: "plantel", label: "Plantel", icon: Users },
-  { key: "calendario", label: "Calendário", icon: Calendar },
-  { key: "treinos", label: "Planos de Treino", icon: Dumbbell },
-  { key: "prancheta", label: "Prancheta Tática", icon: Sparkles },
-  { key: "assiduidade", label: "Assiduidade", icon: CheckSquare },
-  { key: "scouting", label: "Scouting", icon: Search },
-  { key: "config", label: "Configurações", icon: Settings },
+export const NAV_ITEMS: NavItem[] = [
+  { key: "dashboard", label: "Dashboard", href: "/", icon: LayoutDashboard },
+  { key: "clube", label: "Clube", href: "/clube", icon: Shield },
+  { key: "plantel", label: "Plantel", href: "/plantel", icon: Users },
+  { key: "calendario", label: "Calendário", href: "/calendario", icon: Calendar },
+  { key: "treinos", label: "Planos de Treino", href: "/treinos", icon: Dumbbell },
+  { key: "prancheta", label: "Prancheta Tática", href: "/prancheta", icon: Sparkles },
+  { key: "assiduidade", label: "Assiduidade", href: "/assiduidade", icon: CheckSquare },
+  { key: "scouting", label: "Scouting", href: "/scouting", icon: Search },
+  { key: "config", label: "Configurações", href: "/config", icon: Settings },
 ];
 
-export function Sidebar({
-  active,
-  onNavigate,
-}: {
-  active: NavKey;
-  onNavigate: (key: NavKey) => void;
-}) {
+export function Sidebar() {
+  const pathname = usePathname();
+
   return (
-    <aside className="glass-strong sticky top-0 hidden h-screen w-64 shrink-0 flex-col border-r p-4 md:flex">
+    <aside className="glass-strong sticky top-0 hidden h-screen w-64 shrink-0 flex-col border-r p-4 md:flex select-none">
       <div className="flex items-center gap-3 px-2 py-3">
         <div className="flex size-10 items-center justify-center rounded-xl bg-primary text-primary-foreground shadow-lg shadow-primary/20">
           <ClipboardList className="size-5" />
@@ -66,17 +66,21 @@ export function Sidebar({
         <p className="px-3 pb-2 text-[0.7rem] font-medium uppercase tracking-wider text-muted-foreground">
           Menu
         </p>
-        {navItems.map((item) => {
-          const isActive = active === item.key;
+        {NAV_ITEMS.map((item) => {
+          const isActive =
+            item.href === "/"
+              ? pathname === "/"
+              : pathname === item.href || pathname?.startsWith(item.href + "/");
           const Icon = item.icon;
+
           return (
-            <button
+            <Link
               key={item.key}
-              onClick={() => onNavigate(item.key)}
+              href={item.href}
               className={cn(
                 "group relative flex items-center gap-3 rounded-lg px-3 py-2.5 text-sm font-medium transition-all",
                 isActive
-                  ? "bg-primary/10 text-primary"
+                  ? "bg-primary/10 text-primary font-semibold"
                   : "text-muted-foreground hover:bg-foreground/5 hover:text-foreground",
               )}
             >
@@ -88,8 +92,8 @@ export function Sidebar({
                   "size-[18px] transition-transform group-hover:scale-110",
                 )}
               />
-              {item.label}
-            </button>
+              <span>{item.label}</span>
+            </Link>
           );
         })}
       </nav>

@@ -1207,21 +1207,151 @@ Consagramos a separação de conceitos da Metodologia do Treino de Futebol:
   - `useEffect` dedicado para sincronizar os inputs locais de `duracao` e `obs` com as propriedades atualizadas do exercício.
   - Submissão imediata no `onBlur` ou ao premir `Enter`.
 - **No `useTreinoDetailStudio.ts`**:
-#### 4. Resolução da Inversão de Prioridade no Formulário da Prancheta
-- **Diagnóstico da Causa-Raiz**:
-  - No método `handleExecutarGravacao` de `PranchetaStudio.tsx`, os valores eram recolhidos com a expressão `(currentTactic?.tempo || tempo || "")`. Como `currentTactic` continha o valor antigo carregado da base de dados, a edição efetuada pelo utilizador no input `tempo` era silenciosamente ignorada!
-  - **Correção**: A prioridade foi invertida para `(tempo || currentTactic?.tempo || "")`, garantindo que qualquer alteração digitada pelo treinador nos campos `tempo`, `carga`, `objetivosEspecificos`, `descricao` e `pasta` sobrepõe com autoridade os dados preexistentes.
-- **Edição Inline Ágil no Cartão do Treino (`TreinoExercicioCard.tsx`)**:
-  - Implementado o modo de edição rápida de duração ao clicar diretamente no badge de tempo (`"15 min"`).
-  - Adicionados botões de passo rápido `[-]` e `[+]` de 5 minutos, com propagação reativa e recálculo do tempo total da sessão em tempo real.
+#### 5. Barra Lateral de Edição Contextual na Prancheta Tática (`TacticalEditSidebar.tsx`)
+- **O Problema Resolvido (Por detrás dos Panos)**:
+  - Anteriormente, ao selecionar um elemento (linha tática, jogador, baliza), a aplicação calculava a coordenada do elemento em percentagem (`leftPct%`, `topPct%`) e posicionava uma barra flutuante (`TacticalShapeFloatingBar`, `TacticalGoalFloatingBar`, etc.) com `translate(-50%, -100%) translateY(-40px)` diretamente por cima do objeto.
+  - Quando um elemento se encontrava no topo do campo (ex: linha lateral superior ou jogador extremo), a coordenada Y situava-se perto de 0%. Com a transformação negativa, a barra flutuante era empurrada para fora do ecrã e ficava cortada no topo pelo contentor, impedindo o treinador de ver e clicar nos controlos. Além disso, a barra flutuava em cima dos jogadores vizinhos e impedia movimentações fluidas no relvado.
+- **A Solução Arquitetural - Painel Inspector Desacoplado**:
+  - Criámos o componente `TacticalEditSidebar.tsx`, ancorado na lateral esquerda da prancheta (`w-72 md:w-80 bg-[#131b2f] border-r border-slate-800`), aproveitando o espaço natural existente atrás da baliza esquerda.
+  - **Fluxo de Seleção e Reatividade**:
+    1. Quando o utilizador clica num elemento no modo `select`, o `TacticalBoard` define `selectedDrawingIdx` ou `selectedElementId`.
+    2. O Canvas 2D renderiza o **sombreado neon (*glow*)** e os pontos de ancoragem (*handles*) à volta do elemento selecionado para dar confirmação visual imediata do alvo ativo.
+    3. Em simultâneo, o contentor principal monta a `TacticalEditSidebar` no lado esquerdo com animação suave de entrada (`animate-in slide-in-from-left-4 fade-in`).
+    4. **Edição Contextual Adaptativa**:
+       - Se for uma **Linha / Traço**: Exibe botões para Linha Simples, Passe (Tracejado), Corrida (Seta) ou Desenho Livre; botões de Estilo (Contínua / Tracejada); seletor de Espessura em grelha rápida (1px a 12px); paleta de cores desportivas + seletor custom.
+       - Se for uma **Forma Geométrica**: Exibe geometria (Retângulo, Círculo, Triângulo, Hexágono); cores de traço e fundo; slider de opacidade de 0% a 100%.
+       - Se for um **Jogador**: Input em maiúsculas para o Nº da camisola ou Sigla tática (ex: `7`, `10`, `GR`, `C`, `MC`); seleção de dimensão (Pequeno, Médio, Grande); paleta de cores dos coletes.
+       - Se for uma **Baliza**: Seletor de dimensão (Mini, Fut 7, Fut 11); botões de rotação rápida (+90° ou tecla R) e orientação direcional (⬆️, ⬇️, ⬅️, ➡️).
+       - Se for um **Cone / Equipamento**: Escolha da cor do cone e ações de duplicação/eliminação.
+    5. Cada alteração de propriedade invoca imediatamente `saveStateToHistory()` e dispara um `setUiTick`, propagando as alterações para o motor gráfico e registando o snapshot para Undo/Redo (`Ctrl+Z` / `Ctrl+Y`).
+    6. **Diferenciação Inteligente entre Arrastamento (*Drag*) e Clique Estático (*Click*)**:
+       - Para evitar que a barra lateral de edição salte para o ecrã a cada toque quando o treinador está apenas a mover ou a posicionar jogadores no relvado, implementámos o controlo `pointerInteractionRef`.
+       - No `handlePointerDown`, o sistema guarda as coordenadas iniciais mas **não abre a barra**.
+       - Durante o `handlePointerMove`, se a distância percorrida for superior a $4\text{px}$ (`Math.hypot > 4`), a flag `hasMoved` passa a `true` e o jogador é arrastado livremente pelo relvado.
+       - No `handlePointerUp`:
+         - Se `hasMoved === true`: Foi um **arrastamento livre**. O snapshot da nova posição é gravado no histórico e **a barra NÃO abre**, mantendo o relvado completamente livre.
+         - Se `hasMoved === false`: Foi um **clique parado intencional (*Tap*)**. O sistema conclui que o treinador quer inspecionar/editar aquele elemento, aciona o sombreado neon (*glow*) e **abre a barra lateral esquerda**.
+       - Ao clicar no botão **[✕]** do cabeçalho ou no espaço livre do relvado, a seleção é limpa e a barra lateral recolhe de imediato, devolvendo todo o espaço útil ao campo de jogo.
 
+#### 6. Gestão de Periodização e Tipo de Período da Época (`periodo`)
+- **Conceito Metodológico Desportivo**:
+  - A periodização no futebol divide a época desportiva em três grandes fases/períodos estruturantes:
+    1. **`PREPARATORIO` (Pré-Época)**: Foco na aquisição das componentes físicas, desenvolvimento do modelo de jogo e coesão tática inicial.
+    2. **`COMPETITIVO` (Época Regular)**: Manutenção e otimização das capacidades, afinação tática específica em função do adversário e gestão da prontidão competitiva.
+    3. **`TRANSICAO` (Pós-Época / Regeneração)**: Recuperação ativa e regeneração física e psicológica.
+- **Implementação no Backend (Spring Boot & PostgreSQL)**:
+  - **Entidade `SessaoTreino`**: Adicionada a coluna `@Column(name = "periodo") private String periodo;`.
+  - **DTOs (`SessaoTreinoRequestDTO` & `SessaoTreinoResponseDTO`)**: Exposição do campo `periodo` nos contratos REST da API.
+  - **Mapper (`SessaoTreinoMapper`)**: Mapeamento bidirecional seguro, aplicando o fallback `"COMPETITIVO"` caso o registo não especifique período.
+  - **Serviço (`SessaoTreinoServiceImpl.atualizarSessao`)**: Atualização atómica do campo `periodo` persistida com `@Transactional`.
+- **Implementação no Frontend (Next.js & React)**:
+  - **Modelo (`models/sessao-treino.ts`)**: Tipagem estrita de `periodo?: "PREPARATORIO" | "COMPETITIVO" | "TRANSICAO" | string;`.
+  - **Hook de Estado (`useTreinoDetailStudio.ts`)**: Gestão do estado `const [periodo, setPeriodo] = useState<string>(treino.periodo || "COMPETITIVO")`, sincronizado com a sessão ativa e serializado na mutação `handleSaveMetadata`.
+  - **Formulário (`TreinoStudioMetadataForm.tsx`)**: Seletor dropdown responsivo com cores contextuais (Verde esmeralda para Pré-Época, Azul para Competitivo, Âmbar para Transição).
+  - **Cabeçalho da Sessão (`TreinoStudioHeader.tsx`)**: Badge informativo com destaque visual ao lado do `MESO #X`, `MICRO #X` e `UT #X`.
+  - **Folha de Treino PDF (`TreinoPrintPreviewModal.tsx`)**: Exibição da designação por extenso do período da época no cabeçalho oficial de impressão.
 
+#### 7. Isolamento Absoluto de Impressão e Fidelidade Visual A4 (`TreinoPrintPreviewModal.tsx` & `globals.css`)
+- **Problema de Fuga do DOM no Navegador**:
+  - Quando a janela nativa de impressão (`window.print()`) era invocada, os elementos da página principal (`TreinosOrchestrator`, menus, listas e botões como `ECRÃ INTEIRO` e `Editar`) eram impressos em cascata nas páginas 1 a 3, antes do documento propriamente dito.
+- **Solução Arquitetural com React Portal e CSS `@media print`**:
+  1. **Montagem Desacoplada (`createPortal`)**:
+     - O componente `TreinoPrintPreviewModal` renderiza o seu nó DOM diretamente no `document.body` sob o contentor `#dossier-print-portal`.
+  2. **Regras Estritas de Ocultação em `@media print` (`globals.css`)**:
+     - `body > *:not(#dossier-print-portal) { display: none !important; }` garante que **100% da interface da aplicação** fica oculta aos olhos da impressora.
+     - `#dossier-print-portal { display: block !important; }` força a exibição exclusiva da folha de treino oficial.
+     - `.print-avoid-break { break-inside: avoid !important; }` impede a quebra de cartões de exercícios a meio de páginas.
+  3. **Composição Visual de Alta Fidelidade**:
+     - **Cabeçalho Tabular**: Nome do clube/plantel, badge do período, matriz de 5 métricas de periodização (`MESO`, `MICRO`, `UT`, `Nº Jogadores`, `Volume Total`), `Data & Hora`, `Local`, `Material` e `Objetivos Gerais`.
+     - **Cartões de Exercício**: Numeração circular em preto `( 1 )`, título limpo do exercício sem tags/badges de categoria desnecessários, campo tático escuro sem botões flutuantes, objetivos específicos e metodologia à esquerda e métricas verticais (`TEMPO`, `NÚMERO`, `ESPAÇO`, `CARGA`) à direita.
 
+---
 
+## 9. Gestão Dinâmica do Clube, Criação de Equipas e Isolamento Estrito de Dados
 
+### O Problema dos Dados Estáticos (Hardcoded)
+Anteriormente, a página de estatísticas do clube exibia números fixos inscritos no código ("27 jogadores", "25 treinos", "1ª Divisão AF Leiria"), o que impedia que cada equipa/escalão criado pelo treinador tivesse a sua própria realidade contabilística e estatística.
 
+### A Solução: Arquitetura Multiequipa 100% Dinâmica
+1. **Modal de Criação de Equipas (`CreateTeamModal.tsx`)**:
+   - Permite registar novas equipas/escalões através de um formulário completo com Nome, Escalão (seleção limpa a partir da constante canónica `ESCALOES`: *Seniores*, *Sub-22*, *Sub-19*, *Sub-18*, *Sub-17*, *Sub-16*, *Sub-15*, *Sub-14*, *Sub-13*, *Sub-12*, *Sub-11*, *Sub-10*, *Traquinas*, *Petizes*), Modalidade, Época, Duração Padrão do Jogo, Formato e Emblema.
+   - Envia um `POST /api/equipas` para o backend e, após sucesso, a nova equipa é automaticamente definida como a `activeTeam` da sessão do treinador.
+2. **Edição Estrutural da Ficha da Equipa (`ClubDetailsTab.tsx`)**:
+   - Permite editar qualquer detalhe regulamentar (Nome, Escalão, Modalidade, Duração, Formato e Logótipo) gravando com `PUT /api/equipas/{id}`.
+   - Exibe a lista de todos os plantéis registados do treinador com o badge `Ativa` e atalho para alternar de escalão com 1 clique.
+3. **Cálculo Estatístico Dinâmico e Isolado (`ClubStatsTab.tsx`)**:
+   - Dispara pedidos assíncronos em paralelo (`Promise.allSettled`) para os endpoints isolados por ID da equipa:
+     - Atletas: `/api/atletas/equipa/{team.id}` -> Calcula total de inscritos e distribuição por posições (`GR`, `DEF`, `MED`, `AV`).
+     - Treinos: `/api/treinos/equipa/{team.id}` -> Calcula total de treinos e distribuição real por mês.
+     - Eventos/Jogos: `/api/eventos/equipa/{team.id}` -> Total de jogos agendados e eventos de calendário.
+   - Apresenta estados vazios (*empty states*) amigáveis quando a equipa é nova, incentivando o treinador a criar atletas e treinos.
 
+### Por Detrás dos Panos (Backend):
+- O método `atualizarEquipa` em `EquipaServiceImpl.java` atualiza os atributos `nome` e `escalao`, garantindo que edições na ficha do clube se refletem instantaneamente em todo o ecossistema.
+- O endpoint `POST /api/equipas` valida o cargo do utilizador e associa automaticamente a equipa à época corrente na base de dados PostgreSQL.
 
+---
+
+## 10. Sprint 1: Quick Wins, Limpeza Arquitetural, Setup de Testes e UI Consistente
+
+### 10.1 Infraestrutura de Testes Unitários no Frontend (Vitest + JSDOM)
+- **Ficheiro de Configuração**: `vitest.config.ts`
+- **Ficheiro de Setup**: `vitest.setup.ts`
+- **Por detrás dos panos**: O Vitest corre sobre o Vite/esbuild de ultra-alta performance. Configurámos o `environment: "jsdom"` para simular uma árvore DOM em memória dentro do Node.js, permitindo renderizar componentes React e testar eventos de clique e acessibilidade sem precisar de um browser real aberto.
+
+### 10.2 Limpeza de Código Morto e Eliminação de Duplicações
+- **Ficheiros eliminados**: 7 ficheiros de rascunho na raiz (`new_assiduidade.html`, `planeamento_semanal.html`, `temp.txt`, etc.) e a pasta `_legacy_code/`.
+- **Desduplicação de APIs**:
+  - `getUltimoNumeroTreino`: Removida de `treinoService.ts` e unificada em `calendarioService.ts` (rota canónica `/eventos/equipa/{id}/ultimo-numero-treino`).
+  - `getEventosSemana`: Removida de `assiduidadeService.ts` e centralizada em `calendarioService.ts`.
+- **Realocação de Pacotes Backend**: `EstatisticaJogoMapper.java` foi movido de `com.dossiertreinador.mappers` para `com.dossiertreinador.domain.mappers` em conformidade estrita com a arquitetura padrão do Spring Boot.
+
+### 10.3 Centralização de Categorias de Exercício (`categoria-exercicio.ts`)
+- **Problema**: `PranchetaStudio.tsx` e `CatalogoExerciciosModal.tsx` definiam arrays independentes e divergentes de categorias ("ALL" vs "TODOS", cores repetidas).
+- **Solução**: Criada a constante central `CATEGORIAS_EXERCICIO` e `CATEGORIAS_COM_TODOS`, garantindo alinhamento perfeito com o enum Java `CategoriaExercicio` e testes unitários dedicados em `categoria-exercicio.test.ts`.
+
+### 10.4 Componentes UI Modulares e Acessíveis
+- **`Spinner.tsx`**: Substituiu 9 blocos de spinner inline. Utiliza mapeamentos estáticos (`SIZE_MAP` e `COLOR_MAP`) para evitar interpolação de strings dinâmicas no Tailwind, prevenindo problemas de *purging* em builds de produção.
+- **`ConfirmDialog.tsx`**: Substituiu todas as chamadas bloqueantes `window.confirm()` por um diálogo modal acessível (`role="dialog"`, `aria-modal="true"`, fecho por tecla Escape e backdrop animado), totalmente integrado com `sonner` (`toast.success` e `toast.error`).
+
+---
+
+## 11. Sprint 2: Arquitetura Next.js App Routes e ActiveTeamContext
+
+### 11.1 O Padrão Contexto Global (`ActiveTeamContext.tsx`)
+- **Problema do Estado Local na SPA Monolítica**:
+  Anteriormente, o `activeTeam` vivia apenas como um `useState` dentro do `page.tsx`. Ao navegar para `/treinos` ou recarregar a página, esse estado perdia-se (`activeTeam = null`), provocando erros ou ecrãs em branco.
+- **Implementação com SSR Hydration-Safe**:
+  ```typescript
+  // context/ActiveTeamContext.tsx
+  export function ActiveTeamProvider({ children }: { children: React.ReactNode }) {
+    const [teams, setTeams] = useState<Team[]>([]);
+    const [activeTeam, setActiveTeamState] = useState<Team | null>(null);
+    const [me, setMe] = useState<Utilizador | null>(null);
+    const [loading, setLoading] = useState(true);
+
+    // Carregamento assíncrono seguro
+    const refreshData = useCallback(async () => { ... }, []);
+  ```
+- **Por detrás dos panos**:
+  1. No carregamento do browser, o `ActiveTeamProvider` efetua pedidos concorrentes a `/auth/me` e `/equipas`.
+  2. Verifica se existe a chave `dossier_active_team_id` gravada no `localStorage`.
+  3. Se existir e corresponder a uma equipa válida, ativa essa equipa; caso contrário, seleciona a primeira da lista.
+  4. A leitura do `localStorage` corre estritamente dentro de um `useEffect`, prevenindo 100% dos avisos de *hydration mismatch* entre o HTML pré-renderizado no servidor e o cliente.
+
+### 11.2 Layout Persistente de Rotas (`app/(dashboard)/layout.tsx`)
+- **Padrão Route Group do Next.js**: O diretório `(dashboard)` não afeta a estrutura de URLs mas permite partilhar o layout (`Sidebar`, `TopHeader`, `MobileDrawer`) entre todas as rotas filhas.
+- **Tratamento de Contas Novas (Empty State)**: Se o utilizador não tiver nenhuma equipa criada (`teams.length === 0`), o layout apresenta de imediato o formulário `TeamForm` para o Treinador Principal, eliminando becos sem saída.
+
+### 11.3 Rotas Nativas Dedicadas
+- `/` -> [DashboardPage](file:///c:/Projetos/DossierTreino/frontend/app/(dashboard)/page.tsx)
+- `/plantel` -> [PlantelPage](file:///c:/Projetos/DossierTreino/frontend/app/(dashboard)/plantel/page.tsx)
+- `/calendario` -> [CalendarioPage](file:///c:/Projetos/DossierTreino/frontend/app/(dashboard)/calendario/page.tsx)
+- `/assiduidade` -> [AssiduidadePage](file:///c:/Projetos/DossierTreino/frontend/app/(dashboard)/assiduidade/page.tsx)
+- `/clube` -> [ClubeRoutePage](file:///c:/Projetos/DossierTreino/frontend/app/(dashboard)/clube/page.tsx)
+- `/config` -> [ConfigPage](file:///c:/Projetos/DossierTreino/frontend/app/(dashboard)/config/page.tsx)
+- `/scouting` -> [ScoutingPage](file:///c:/Projetos/DossierTreino/frontend/app/(dashboard)/scouting/page.tsx)
+- `/treinos` -> [TreinosPage](file:///c:/Projetos/DossierTreino/frontend/app/(dashboard)/treinos/page.tsx)
 
 
 

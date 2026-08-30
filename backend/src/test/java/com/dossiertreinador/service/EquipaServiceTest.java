@@ -79,4 +79,43 @@ class EquipaServiceTest {
         assertEquals("Apenas o Treinador Principal pode criar equipas.", exception.getMessage());
         verify(equipaRepository, never()).save(any(Equipa.class));
     }
+
+    @Test
+    void deveAtualizarEquipaComSucesso() {
+        // Arrange
+        java.util.UUID equipaId = java.util.UUID.randomUUID();
+        Equipa equipaExistente = Equipa.builder()
+                .id(equipaId)
+                .nome("União")
+                .escalao("Sub-17")
+                .modalidade("Futebol")
+                .duracaoJogo("40' + 40'")
+                .numeroJogadores("Futebol 11")
+                .emblemaUrl("https://example.com/old.png")
+                .build();
+
+        Equipa dadosAtualizados = Equipa.builder()
+                .nome("União 1919")
+                .escalao("Sub-19")
+                .modalidade("Futebol 11")
+                .duracaoJogo("45' + 45'")
+                .numeroJogadores("Futebol 11")
+                .emblemaUrl("https://example.com/new.png")
+                .build();
+
+        when(equipaRepository.findById(equipaId)).thenReturn(java.util.Optional.of(equipaExistente));
+        when(equipaRepository.save(any(Equipa.class))).thenAnswer(i -> i.getArguments()[0]);
+
+        // Act
+        Equipa resultado = equipaService.atualizarEquipa(equipaId, dadosAtualizados);
+
+        // Assert
+        assertNotNull(resultado);
+        assertEquals("União 1919", resultado.getNome());
+        assertEquals("Sub-19", resultado.getEscalao());
+        assertEquals("Futebol 11", resultado.getModalidade());
+        assertEquals("45' + 45'", resultado.getDuracaoJogo());
+        assertEquals("https://example.com/new.png", resultado.getEmblemaUrl());
+        verify(equipaRepository, times(1)).save(equipaExistente);
+    }
 }

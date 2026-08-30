@@ -392,13 +392,56 @@ Eliminou-se a redundância de formulários de criação de treinos, separando a 
 - **Estratégia de Sincronização Otimista no Cliente**:
   - O hook `useTreinoDetailStudio` implementa atualização otimista imediata na memória do cliente (`onTreinoUpdated({ ...treino, exercicios: novaLista })`).
   - O resultado da chamada atómica do backend substitui o estado local de forma idempotente, eliminando o padrão de *bouncing* (onde os cartões regressavam à posição anterior).
-### 14. Arquitetura de Pastas Partilhadas e Sincronização de Metadados de Treino
-- **Extração de Modelo de Domínio (`models/pasta.ts`)**:
-  - Centralização de tipos e algoritmos em árvore (`matchesPasta`, `getExercisesForFolderAndDescendants`, `buildHierarchicalOptions`) promovendo o princípio DRY (Don't Repeat Yourself).
-  - Interoperabilidade transparente entre o Estúdio de Treinos e a Prancheta Tática.
-- **Pipeline de Atualização de Duração Bidirecional**:
-  - Propagação reativa de `duracaoMinutos` no cartão do exercício com recálculo em tempo real de `duracaoTotalMinutos` na barra superior do treino.
-  - Sincronização transacional no Spring Boot com recalculo forçado da duração da sessão em todas as mutações relacionais.
+### 15. Arquitetura de Edição Contextual Desacoplada (`TacticalEditSidebar`)
+- **Padrão de Desenho: Properties Inspector Desacoplado vs. Floating Overlays**:
+  - A abordagem inicial de desenhar modais/toolbars flutuantes com posicionamento absoluto no interior do canvas sofria de limitações geométricas estruturais: nós com coordenadas no topo do relvado projetavam a barra flutuante para fora da *bounding box* do elemento pai (`overflow: hidden`), resultando em cortes de interface e obstrução visual dos elementos envolventes.
+  - A arquitetura migrou para um **Properties Inspector Desacoplado** (`TacticalEditSidebar.tsx`), montado condicionalmente na lateral esquerda do `TacticalBoard`.
+- **Vantagens de Engenharia & UX**:
+  - **Isolamento de Layout**: O canvas 2D permanece 100% livre de sobreposições DOM, facilitando o arrastamento (*drag & drop*), a rotação e a visibilidade dos restantes atletas e trajetórias.
+  - **Ergonomia e Acessibilidade**: Acesso a controlos complexos (paletas de cores com seletores hexadecimais nativos, sliders contínuos de opacidade, botões de rotação direcional e inputs tipados para camisolas/siglas) numa coluna estruturada e rolável.
+  - **Feedback Bidirecional**: O elemento selecionado no relvado recebe um halo luminoso (*neon aura*) desenhado nativamente via Canvas API, enquanto a barra lateral esquerda reflete e altera o seu estado em tempo real com histórico automático (`HistorySnapshot`).
+- **Padrão de Interação: Drag vs. Click Threshold (4px)**:
+  - Eliminação do falso positivo de seleção através de rastreamento vetorial `pointerInteractionRef`. 
+  - Ações com deslocamento $\Delta > 4\text{px}$ são classificadas estritamente como *Drag Operations* (translação pura do nó sem abrir a barra de propriedades).
+  - Apenas ações estáticas ($\Delta \le 4\text{px}$) no evento `pointerUp` acionam o *Select & Inspect Mode*, preservando o relvado desimpedido durante a rápida montagem posicional de exercícios.
+
+### 16. Arquitetura da Periodização da Época (`Periodo` & Ciclos)
+- **Modelação de Dados da Periodização Desportiva**:
+  - A estruturação do treino no futebol baseia-se na hierarquia canónica:
+    - **Macroestrutura**: `Periodo` (`PREPARATORIO`, `COMPETITIVO`, `TRANSICAO`).
+    - **Mesoestrutura**: `Mesociclo` (Blocos de 3 a 6 semanas com objetivos específicos).
+    - **Microestrutura**: `Microciclo` (Semana padrão de treino e competição).
+    - **Unidade de Treino**: `UnidadeTreino` / UT (Sessão diária singular).
+- **Consistência de API e Contratos REST**:
+  - A entidade `SessaoTreino` armazena a propriedade `periodo` como coluna persistida, com fallback seguro para `"COMPETITIVO"` nos mappers DTO para manter compatibilidade com sessões legadas.
+  - A interface de utilizador consome os metadados de forma reativa, integrando o seletor contextual no formulário de estúdio e refletindo-o instantaneamente nos componentes de visualização (`TreinoStudioHeader`, `TreinoPrintPreviewModal`).
+
+### 17. Arquitetura de Impressão e Exportação PDF de Alta Fidelidade
+- **Padrão de Desenho: React Portal com Desacoplamento do DOM**:
+  - Para garantir que a folha de impressão em PDF nunca seja contaminada por elementos da aplicação (sidebars, toolbars, cabeçalhos ou menus), o componente `TreinoPrintPreviewModal` utiliza `createPortal` para se anexar diretamente ao `document.body` sob o identificador `#dossier-print-portal`.
+- **Camada de Isolamento CSS `@media print`**:
+  - A folha de estilo global (`globals.css`) aplica uma regra de exclusão total: `body > *:not(#dossier-print-portal) { display: none !important; }`.
+  - Isto garante que apenas o nó da folha A4 oficial seja processado pelo motor de impressão do browser, assegurando dimensões exatas de A4 portrait (`210mm` de largura com margem padrão de `8mm`) e prevenindo quebras indevidas de cartões táticos através de `.print-avoid-break { break-inside: avoid !important; }`.
+
+### 18. Arquitetura Multiequipa, Gestão do Clube e Agregação Dinâmica de Dados
+- **Isolamento Estrito por Equipa Ativa (`activeTeam`)**:
+  - Cada domínio de negócio (`Atletas`, `Treinos`, `Calendário`, `Assiduidade`, `Estatísticas`) opera sob um esquema de particionamento lógico amarrado à chave estrangeira `equipa_id`.
+  - A alternância de equipa no estado global (`TopHeader`, `ClubePage`) desencadeia a re-execução de consultas isoladas, garantindo que nenhum dado de uma equipa (ex: Seniores) transborde para outra (ex: Sub-17).
+### 20. Sprint 2: Arquitetura de Navegação Next.js App Routes e ActiveTeamContext
+- **Padrão de Estado Global com React Context (`ActiveTeamContext`)**:
+  - Centralização de `activeTeam`, `teams`, `me` e `refreshData` na raiz da aplicação (`app/layout.tsx`).
+  - Prevenção de *hydration mismatch* através de leitura assíncrona do `localStorage` no ciclo de montagem (`useEffect`), garantindo consistência entre a renderização de servidor e a árvore do cliente.
+- **Transição de SPA Monolítica para Next.js App Router Nativo**:
+  - Adoção de Route Groups `(dashboard)` para encapsulamento do layout partilhado (`Sidebar`, `TopHeader`, `MobileDrawer`).
+  - Navegação declarativa com `next/link` e resolução ativa de rotas via `usePathname()`.
+  - Tratamento resiliente de novos utilizadores com renderização imediata do formulário de criação de equipa (`TeamForm`), eliminando estados nulos e ecrãs em branco.
+
+
+
+
+
+
+
 
 
 

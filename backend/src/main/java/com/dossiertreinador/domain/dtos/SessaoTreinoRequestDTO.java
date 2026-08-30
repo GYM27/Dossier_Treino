@@ -27,6 +27,7 @@ public class SessaoTreinoRequestDTO {
     private Integer mesociclo;
     private Integer microciclo;
     private Integer unidadeTreino;
+    private String periodo;
 
     @NotNull(message = "O ID da equipa é obrigatório.")
     private UUID equipaId;

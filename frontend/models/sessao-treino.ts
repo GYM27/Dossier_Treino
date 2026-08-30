@@ -25,6 +25,7 @@ export interface SessaoTreino {
   mesociclo?: number;
   microciclo?: number;
   unidadeTreino?: number;
+  periodo?: "PREPARATORIO" | "COMPETITIVO" | "TRANSICAO" | string;
   fase?: string;
   numeroJogadores?: number;
   material?: string;

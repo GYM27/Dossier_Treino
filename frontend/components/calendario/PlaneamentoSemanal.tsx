@@ -9,6 +9,8 @@ import { CalendarioMonthView } from "./CalendarioMonthView";
 import { CalendarioDayView } from "./CalendarioDayView";
 import { EventoFormModal } from "./EventoFormModal";
 import { CalendarioSyncModal } from "./CalendarioSyncModal";
+import { Spinner } from "@/components/ui/Spinner";
+import { ConfirmDialog } from "@/components/ui/ConfirmDialog";
 
 interface PlaneamentoSemanalProps {
   activeTeam: Team | null;
@@ -40,6 +42,8 @@ export function PlaneamentoSemanal({ activeTeam, onPlanTreino }: PlaneamentoSema
     handleSaveEvent,
     handleDeleteEvent,
     saveMorfociclo,
+    confirmDialog,
+    setConfirmDialog,
   } = usePlaneamentoSemanal(activeTeam);
 
   return (
@@ -61,7 +65,7 @@ export function PlaneamentoSemanal({ activeTeam, onPlanTreino }: PlaneamentoSema
       {/* Conteúdo Dinâmico Consoante a Vista */}
       {loading ? (
         <div className="flex flex-col items-center justify-center py-20 text-slate-500 text-xs gap-2">
-          <div className="w-6 h-6 border-2 border-cyan-500 border-t-transparent rounded-full animate-spin" />
+          <Spinner size="lg" color="cyan" />
           <span>A carregar planeamento...</span>
         </div>
       ) : viewType === "week" ? (
@@ -108,6 +112,15 @@ export function PlaneamentoSemanal({ activeTeam, onPlanTreino }: PlaneamentoSema
         isOpen={isSyncModalOpen}
         activeTeam={activeTeam}
         onClose={() => setIsSyncModalOpen(false)}
+      />
+
+      {/* Modal de Confirmação Acessível */}
+      <ConfirmDialog
+        isOpen={confirmDialog.isOpen}
+        title={confirmDialog.title}
+        description={confirmDialog.description}
+        onConfirm={confirmDialog.onConfirm}
+        onCancel={() => setConfirmDialog((prev) => ({ ...prev, isOpen: false }))}
       />
     </div>
   );

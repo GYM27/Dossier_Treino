@@ -1,6 +1,7 @@
 "use client";
 
 import { useState } from "react";
+import { toast } from "sonner";
 import { Button } from "@/components/ui/button";
 import { UserPlus } from "lucide-react";
 import { apiFetch } from "@/lib/api";
@@ -32,7 +33,7 @@ export function StaffForm({ onSuccess, onCancel }: StaffFormProps) {
         body: JSON.stringify(payload),
       });
 
-      alert("Membro da Equipa Técnica convidado com sucesso!");
+      toast.success("Membro da Equipa Técnica convidado com sucesso!");
       
       setFormData({
         nomeCompleto: "",
@@ -43,7 +44,7 @@ export function StaffForm({ onSuccess, onCancel }: StaffFormProps) {
       onSuccess(); 
       
     } catch (err: any) {
-      alert("Erro ao registar: " + err.message);
+      toast.error("Erro ao registar: " + (err.message || "Erro desconhecido"));
     }
   };
 

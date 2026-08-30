@@ -1,57 +1,25 @@
 "use client";
 
+import React from "react";
+import Link from "next/link";
+import { usePathname } from "next/navigation";
 import { cn } from "@/lib/utils";
-import {
-  Calendar,
-  CheckSquare,
-  LayoutDashboard,
-  Settings,
-  Users,
-  Dumbbell,
-  Sparkles,
-  Shield,
-  Search,
-  X,
-  type LucideIcon,
-} from "lucide-react";
-import { type NavKey } from "./Sidebar";
-
-interface MobileNavItem {
-  key: NavKey;
-  label: string;
-  icon: LucideIcon;
-}
-
-const mobileNav: MobileNavItem[] = [
-  { key: "dashboard", label: "Dashboard", icon: LayoutDashboard },
-  { key: "clube", label: "Clube", icon: Shield },
-  { key: "plantel", label: "Plantel", icon: Users },
-  { key: "calendario", label: "Calendário", icon: Calendar },
-  { key: "treinos", label: "Planos de Treino", icon: Dumbbell },
-  { key: "prancheta", label: "Prancheta Tática", icon: Sparkles },
-  { key: "assiduidade", label: "Assiduidade", icon: CheckSquare },
-  { key: "scouting", label: "Scouting", icon: Search },
-  { key: "config", label: "Configurações", icon: Settings },
-];
+import { X } from "lucide-react";
+import { NAV_ITEMS } from "./Sidebar";
 
 interface MobileDrawerProps {
   isOpen: boolean;
-  active: NavKey;
-  onNavigate: (key: NavKey) => void;
   onClose: () => void;
 }
 
-export function MobileDrawer({
-  isOpen,
-  active,
-  onNavigate,
-  onClose,
-}: MobileDrawerProps) {
+export function MobileDrawer({ isOpen, onClose }: MobileDrawerProps) {
+  const pathname = usePathname();
+
   if (!isOpen) return null;
 
   return (
     <div
-      className="fixed inset-0 z-50 md:hidden"
+      className="fixed inset-0 z-50 md:hidden select-none"
       role="dialog"
       aria-modal="true"
     >
@@ -71,23 +39,28 @@ export function MobileDrawer({
           </button>
         </div>
         <nav className="mt-4 flex flex-col gap-1">
-          {mobileNav.map((item) => {
+          {NAV_ITEMS.map((item) => {
             const Icon = item.icon;
-            const isActive = active === item.key;
+            const isActive =
+              item.href === "/"
+                ? pathname === "/"
+                : pathname === item.href || pathname?.startsWith(item.href + "/");
+
             return (
-              <button
+              <Link
                 key={item.key}
-                onClick={() => onNavigate(item.key)}
+                href={item.href}
+                onClick={onClose}
                 className={cn(
                   "flex items-center gap-3 rounded-lg px-3 py-2.5 text-sm font-medium transition-colors",
                   isActive
-                    ? "bg-primary/10 text-primary"
+                    ? "bg-primary/10 text-primary font-semibold"
                     : "text-muted-foreground hover:bg-foreground/5 hover:text-foreground",
                 )}
               >
                 <Icon className="size-[18px]" />
-                {item.label}
-              </button>
+                <span>{item.label}</span>
+              </Link>
             );
           })}
         </nav>

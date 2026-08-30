@@ -2,6 +2,7 @@ import { Analytics } from '@vercel/analytics/next'
 import type { Metadata, Viewport } from 'next'
 import { Inter, JetBrains_Mono } from 'next/font/google'
 import { ThemeProvider } from '@/components/layout/ThemeProvider'
+import { ActiveTeamProvider } from '@/context/ActiveTeamContext'
 import { Toaster } from 'sonner'
 import './globals.css'
 
@@ -48,7 +49,9 @@ export default function RootLayout({
     <html lang="pt" className={`${inter.variable} ${jetbrainsMono.variable} bg-background`} suppressHydrationWarning>
       <body className="font-sans antialiased">
         <ThemeProvider attribute="class" defaultTheme="dark" enableSystem disableTransitionOnChange>
-          {children}
+          <ActiveTeamProvider>
+            {children}
+          </ActiveTeamProvider>
         </ThemeProvider>
         {process.env.NODE_ENV === 'production' && <Analytics />}
         <Toaster position="bottom-right" theme="dark" />

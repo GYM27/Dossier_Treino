@@ -9,6 +9,7 @@ import { TreinoStudioMetadataForm } from "./TreinoStudioMetadataForm";
 import { TreinoExercicioCard } from "./TreinoExercicioCard";
 import { CatalogoExerciciosModal } from "../modals/CatalogoExerciciosModal";
 import { TreinoPrintPreviewModal } from "../modals/TreinoPrintPreviewModal";
+import { ConfirmDialog } from "@/components/ui/ConfirmDialog";
 import { Dumbbell, Library } from "lucide-react";
 import { Button } from "@/components/ui/button";
 
@@ -47,6 +48,8 @@ export function TreinoDetailStudio({
     setMicrociclo,
     unidadeTreino,
     setUnidadeTreino,
+    periodo,
+    setPeriodo,
     showCatalogModal,
     setShowCatalogModal,
     showPrintModal,
@@ -62,6 +65,8 @@ export function TreinoDetailStudio({
     handleStartReplace,
     handleReplaceExercicio,
     handleMoveExercicio,
+    confirmDialog,
+    setConfirmDialog,
   } = useTreinoDetailStudio({
     treino,
     activeTeam,
@@ -138,6 +143,8 @@ export function TreinoDetailStudio({
           setMicrociclo={setMicrociclo}
           unidadeTreino={unidadeTreino}
           setUnidadeTreino={setUnidadeTreino}
+          periodo={periodo}
+          setPeriodo={setPeriodo}
         />
 
         {/* Timeline de Exercícios da Sessão */}
@@ -243,6 +250,15 @@ export function TreinoDetailStudio({
           onClose={() => setShowPrintModal(false)}
         />
       )}
+
+      {/* Modal de Confirmação Acessível */}
+      <ConfirmDialog
+        isOpen={confirmDialog.isOpen}
+        title={confirmDialog.title}
+        description={confirmDialog.description}
+        onConfirm={confirmDialog.onConfirm}
+        onCancel={() => setConfirmDialog((prev) => ({ ...prev, isOpen: false }))}
+      />
     </div>
   );
 }

@@ -85,7 +85,7 @@ public class SessaoTreinoServiceImpl implements SessaoTreinoService {
 
     @Override
     @Transactional
-    public SessaoTreino atualizarSessao(UUID id, String objetivo, String material, Integer numeroJogadores, Integer intensidadeGeral, Integer mesociclo, Integer microciclo, Integer unidadeTreino) {
+    public SessaoTreino atualizarSessao(UUID id, String objetivo, String material, Integer numeroJogadores, Integer intensidadeGeral, Integer mesociclo, Integer microciclo, Integer unidadeTreino, String periodo) {
         SessaoTreino sessao = buscarPorId(id);
         
         if (objetivo != null) sessao.setObjetivo(objetivo);
@@ -94,6 +94,7 @@ public class SessaoTreinoServiceImpl implements SessaoTreinoService {
         if (intensidadeGeral != null) sessao.setIntensidadeGeral(intensidadeGeral);
         if (mesociclo != null) sessao.setMesociclo(mesociclo);
         if (microciclo != null) sessao.setMicrociclo(microciclo);
+        if (periodo != null) sessao.setPeriodo(periodo);
         if (unidadeTreino != null) {
             sessao.setUnidadeTreino(unidadeTreino);
             if (sessao.getEventoCalendario() != null) {

@@ -21,7 +21,7 @@ public class EquipaServiceImpl implements EquipaService {
 
     @Override
     public Equipa criarEquipa(Equipa equipa, String designacaoEpoca, Utilizador utilizador) {
-        if (utilizador.getCargo() != Cargo.TREINADOR_PRINCIPAL) {
+        if (utilizador != null && utilizador.getCargo() != null && utilizador.getCargo() != Cargo.TREINADOR_PRINCIPAL) {
             throw new AccessDeniedException("Apenas o Treinador Principal pode criar equipas.");
         }
         
@@ -48,6 +48,12 @@ public class EquipaServiceImpl implements EquipaService {
         Equipa equipa = equipaRepository.findById(id)
                 .orElseThrow(() -> new RuntimeException("Equipa não encontrada."));
         
+        if (equipaAtualizada.getNome() != null && !equipaAtualizada.getNome().isBlank()) {
+            equipa.setNome(equipaAtualizada.getNome());
+        }
+        if (equipaAtualizada.getEscalao() != null && !equipaAtualizada.getEscalao().isBlank()) {
+            equipa.setEscalao(equipaAtualizada.getEscalao());
+        }
         if (equipaAtualizada.getDuracaoJogo() != null) {
             equipa.setDuracaoJogo(equipaAtualizada.getDuracaoJogo());
         }

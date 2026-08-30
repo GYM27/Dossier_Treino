@@ -6,9 +6,7 @@ import { INITIAL_STATE, CANVAS_WIDTH, CANVAS_HEIGHT, FIELD_BG, HOME_TEAM_COLOR, 
 import { DrawingHandleType, DrawingBounds, getDrawingBounds } from "./utils/tacticalGeometry";
 import { TacticalBottomBar } from "./TacticalBottomBar";
 import { TacticalSidebar } from "./TacticalSidebar";
-import { TacticalShapeFloatingBar } from "./TacticalShapeFloatingBar";
-import { TacticalGoalFloatingBar } from "./TacticalGoalFloatingBar";
-import { TacticalPlayerFloatingBar } from "./TacticalPlayerFloatingBar";
+import { TacticalEditSidebar } from "./TacticalEditSidebar";
 import { Clock, Users, Maximize2, LayoutDashboard } from "lucide-react";
 import { cn } from "@/lib/utils";
 
@@ -36,9 +34,7 @@ import { cn } from "@/lib/utils";
  * - TacticalBoardThumbnail: Versão estática/miniatura
  * - TacticalBottomBar: Controles de modo, ferramentas e ação
  * - TacticalSidebar: Metadados do exercício, histórico e operações de persistência
- * - TacticalShapeFloatingBar: Edição contextual de formas geométricas
- * - TacticalGoalFloatingBar: Edição de balizas (tamanho, cor)
- * - TacticalPlayerFloatingBar: Edição de propriedades de jogadores selecionados
+ * - TacticalEditSidebar: Barra lateral de edição contextual de linhas, formas, jogadores e balizas
  */
 export default function TacticalBoard({ 
   initialTacticData, 
@@ -85,6 +81,15 @@ export default function TacticalBoard({
   const clipboardRef = useRef<{
     type: "drawing" | "element";
     data: any;
+  } | null>(null);
+
+  // Interaction tracking for distinguishing Drag (Move) vs Tap/Click (Edit Sidebar)
+  const pointerInteractionRef = useRef<{
+    downCoords: Point;
+    hasMoved: boolean;
+    targetElementType: "element" | "drawing" | "handle" | "canvas" | null;
+    targetId: string | null;
+    targetDrawingIdx: number | null;
   } | null>(null);
 
   const getActiveFrameId = () => stateRef.current.activePath[stateRef.current.currentFrameIdx];
@@ -342,6 +347,13 @@ export default function TacticalBoard({
         }
 
         if (Math.hypot(localCoords.x - handleLocal.x, localCoords.y - handleLocal.y) <= 24) {
+          pointerInteractionRef.current = {
+            downCoords: coords,
+            hasMoved: false,
+            targetElementType: "handle",
+            targetId: null,
+            targetDrawingIdx: null,
+          };
           drawingDragRef.current = {
             active: true,
             mode: "rotate_element" as DrawingHandleType,
@@ -354,7 +366,6 @@ export default function TacticalBoard({
       }
     }
 
-    // 1. Check if clicking on an Element (Player, Cone, Ball)
     try {
       e.currentTarget.setPointerCapture(e.pointerId);
     } catch (_) {}
@@ -368,7 +379,7 @@ export default function TacticalBoard({
     }
 
     // Mode: "select"
-    // 1. Check if clicking on an Element (Player, Cone, Ball)
+    // 1. Check if clicking on an Element (Player, Cone, Ball, Mini Goal)
     const currentFrameElements = getActiveElements();
     for (let i = currentFrameElements.length - 1; i >= 0; i--) {
       const el = currentFrameElements[i];
@@ -382,9 +393,14 @@ export default function TacticalBoard({
         s.originalDragPos = { x: el.x, y: el.y };
         currentFrameElements.splice(i, 1);
         currentFrameElements.push(el);
-        setDrawingSelection(null);
-        setElementSelection(el.id);
-        setUiTick((t) => t + 1);
+        
+        pointerInteractionRef.current = {
+          downCoords: coords,
+          hasMoved: false,
+          targetElementType: "element",
+          targetId: el.id,
+          targetDrawingIdx: null,
+        };
         return;
       }
     }
@@ -406,6 +422,13 @@ export default function TacticalBoard({
 
         for (const h of bounds.handles) {
           if (Math.hypot(localCoords.x - h.x, localCoords.y - h.y) <= 24) {
+            pointerInteractionRef.current = {
+              downCoords: coords,
+              hasMoved: false,
+              targetElementType: "handle",
+              targetId: null,
+              targetDrawingIdx: null,
+            };
             drawingDragRef.current = {
               active: true,
               mode: h.type,
@@ -427,9 +450,6 @@ export default function TacticalBoard({
       const pLast = d.points[d.points.length - 1];
 
       let isHit = false;
-      const strokeWidth = d.config?.size || 2;
-      const fillOpacity = d.config?.opacity !== undefined ? d.config.opacity : 100;
-      
       let shapeCoords = { ...coords };
       if (d.rotation && (d.type === "rect" || d.type === "circle" || d.type === "triangle" || d.type === "pentagon" || d.type === "hexagon")) {
         const b = getDrawingBounds(d);
@@ -452,8 +472,6 @@ export default function TacticalBoard({
         const isInside = shapeCoords.x >= minX && shapeCoords.x <= maxX && shapeCoords.y >= minY && shapeCoords.y <= maxY;
         const isNearBorder = shapeCoords.x >= minX - 8 && shapeCoords.x <= maxX + 8 && shapeCoords.y >= minY - 8 && shapeCoords.y <= maxY + 8;
         
-        // Se tiver preenchimento, clicar em qualquer lugar dentro funciona.
-        // Se não tiver, clicar perto da borda funciona, OU dentro (o utilizador pediu para funcionar sempre)
         if (isInside || isNearBorder) {
           isHit = true;
         }
@@ -481,8 +499,13 @@ export default function TacticalBoard({
       }
 
       if (isHit) {
-        setDrawingSelection(i);
-        setElementSelection(null);
+        pointerInteractionRef.current = {
+          downCoords: coords,
+          hasMoved: false,
+          targetElementType: "drawing",
+          targetId: null,
+          targetDrawingIdx: i,
+        };
         drawingDragRef.current = {
           active: true,
           mode: "move",
@@ -490,21 +513,34 @@ export default function TacticalBoard({
           startCoords: coords,
           initialPoints: JSON.parse(JSON.stringify(d.points)),
         };
-        setUiTick((t) => t + 1);
         return;
       }
     }
 
-    // 4. Clicked on empty canvas in select mode: clear selection
-    setDrawingSelection(null);
-    setElementSelection(null);
-    setUiTick((t) => t + 1);
+    // 4. Clicked on empty canvas in select mode
+    pointerInteractionRef.current = {
+      downCoords: coords,
+      hasMoved: false,
+      targetElementType: "canvas",
+      targetId: null,
+      targetDrawingIdx: null,
+    };
   };
 
   const handlePointerMove = (e: React.PointerEvent<HTMLCanvasElement>) => {
     if (readOnly) return;
     const coords = getCanvasCoords(e);
     const s = stateRef.current;
+
+    if (pointerInteractionRef.current) {
+      const dist = Math.hypot(
+        coords.x - pointerInteractionRef.current.downCoords.x,
+        coords.y - pointerInteractionRef.current.downCoords.y
+      );
+      if (dist > 4) {
+        pointerInteractionRef.current.hasMoved = true;
+      }
+    }
 
     if (s.isDrawing) {
       s.currentDrawingPoints.push(coords);
@@ -549,8 +585,8 @@ export default function TacticalBoard({
           const dry = coords.y - cy;
           const cos = Math.cos(-d.rotation);
           const sin = Math.sin(-d.rotation);
-          localCoords.x = cx + drx * cos - dry * sin;
-          localCoords.y = cy + drx * sin + dry * cos;
+          localCoords.x = cx + drx * cos - dy * sin;
+          localCoords.y = cy + drx * sin + dy * cos;
         }
 
         if (d.type === "circle") {
@@ -628,6 +664,8 @@ export default function TacticalBoard({
   const handlePointerUp = (e: React.PointerEvent<HTMLCanvasElement>) => {
     if (readOnly) return;
     const s = stateRef.current;
+    const interaction = pointerInteractionRef.current;
+    pointerInteractionRef.current = null;
 
     if (s.isDrawing) {
       if (s.currentDrawingPoints.length >= 2) {
@@ -663,8 +701,32 @@ export default function TacticalBoard({
     s.selectedElement = null;
 
     if (drawingDragRef.current && drawingDragRef.current.active) {
-      saveStateToHistory();
+      if (interaction?.hasMoved) {
+        saveStateToHistory();
+      }
       drawingDragRef.current = null;
+    }
+
+    // Gestão de Seleção: Apenas em Clique Simples Parado (Tap / Click sem arrastar)
+    if (interaction && s.drawingMode === "select") {
+      if (!interaction.hasMoved) {
+        // Clique parado (Tap): Intenção expressa de editar -> abre a barra lateral!
+        if (interaction.targetElementType === "element" && interaction.targetId) {
+          setDrawingSelection(null);
+          setElementSelection(interaction.targetId);
+          setUiTick((t) => t + 1);
+        } else if (interaction.targetElementType === "drawing" && interaction.targetDrawingIdx !== null) {
+          setElementSelection(null);
+          setDrawingSelection(interaction.targetDrawingIdx);
+          setUiTick((t) => t + 1);
+        } else if (interaction.targetElementType === "canvas") {
+          // Clique no relvado vazio -> desmarca e fecha a barra
+          setDrawingSelection(null);
+          setElementSelection(null);
+          setUiTick((t) => t + 1);
+        }
+      }
+      // Se interaction.hasMoved === true, foi um arrasto: o jogador moveu-se livremente e a barra NÃO abre!
     }
   };
 
@@ -682,6 +744,88 @@ export default function TacticalBoard({
     if (s.drawings[index]) {
       s.drawings.splice(index, 1);
       setDrawingSelection(null);
+      saveStateToHistory();
+      setUiTick((t) => t + 1);
+    }
+  };
+
+  const handleDuplicateDrawing = (drawing: TacticalDrawing) => {
+    const s = stateRef.current;
+    const cloned: TacticalDrawing = JSON.parse(JSON.stringify(drawing));
+    cloned.points = cloned.points.map((pt) => ({
+      x: Math.min(CANVAS_WIDTH - 20, pt.x + 25),
+      y: Math.min(CANVAS_HEIGHT - 20, pt.y + 25),
+    }));
+    s.drawings.push(cloned);
+    const newIdx = s.drawings.length - 1;
+    setDrawingSelection(newIdx);
+    setElementSelection(null);
+    saveStateToHistory();
+    setUiTick((t) => t + 1);
+  };
+
+  const handleUpdateElement = (updated: Partial<TacticalElement>) => {
+    const activeId = selectedElementIdRef.current;
+    if (!activeId) return;
+    const elements = getActiveElements();
+    const el = elements.find((item) => item.id === activeId);
+    if (el) {
+      Object.assign(el, updated);
+      saveStateToHistory();
+      setUiTick((t) => t + 1);
+    }
+  };
+
+  const handleDeleteElement = () => {
+    const activeId = selectedElementIdRef.current;
+    if (!activeId) return;
+    const elements = getActiveElements();
+    const idx = elements.findIndex((item) => item.id === activeId);
+    if (idx !== -1) {
+      elements.splice(idx, 1);
+      setElementSelection(null);
+      saveStateToHistory();
+      setUiTick((t) => t + 1);
+    }
+  };
+
+  const handleDuplicateElement = () => {
+    const activeId = selectedElementIdRef.current;
+    if (!activeId) return;
+    const elements = getActiveElements();
+    const base = elements.find((item) => item.id === activeId);
+    if (!base) return;
+
+    let newNumber = base.number;
+    if (base.type === "home" || base.type === "away") {
+      const existingNumbers = elements.filter((el) => el.type === base.type).map((el) => el.number || 0);
+      let n = 1;
+      while (existingNumbers.includes(n)) n++;
+      newNumber = n;
+    }
+
+    const cloned: TacticalElement = {
+      ...base,
+      id: (base.type === "home" ? "H" : base.type === "away" ? "A" : base.type === "cone" ? "C" : base.type === "mini_goal" ? "G" : "B") + (Date.now() % 100000),
+      number: newNumber,
+      x: Math.min(CANVAS_WIDTH - 30, Math.max(30, base.x + 25)),
+      y: Math.min(CANVAS_HEIGHT - 30, Math.max(30, base.y + 25)),
+    };
+
+    elements.push(cloned);
+    setDrawingSelection(null);
+    setElementSelection(cloned.id);
+    saveStateToHistory();
+    setUiTick((t) => t + 1);
+  };
+
+  const handleRotateElement = (newAngle: number) => {
+    const activeId = selectedElementIdRef.current;
+    if (!activeId) return;
+    const elements = getActiveElements();
+    const el = elements.find((item) => item.id === activeId);
+    if (el) {
+      el.rotation = newAngle;
       saveStateToHistory();
       setUiTick((t) => t + 1);
     }
@@ -1389,6 +1533,27 @@ export default function TacticalBoard({
   return (
     <div className="w-full h-full min-h-0 bg-[#0a0f1c] text-slate-300 font-sans flex gap-2.5 p-2 md:p-3 rounded-xl border border-slate-800 shadow-2xl">
       
+      {/* Left Edit Sidebar for Selected Item */}
+      {!readOnly && (selectedDrawingIdx !== null || selectedElementId !== null) && (
+        <TacticalEditSidebar
+          selectedDrawing={selectedDrawingIdx !== null ? s.drawings[selectedDrawingIdx] || null : null}
+          selectedDrawingIdx={selectedDrawingIdx}
+          selectedElement={selectedElementId !== null ? getActiveElements().find((el) => el.id === selectedElementId) || null : null}
+          onUpdateDrawing={handleUpdateDrawing}
+          onDeleteDrawing={handleDeleteDrawing}
+          onDuplicateDrawing={handleDuplicateDrawing}
+          onUpdateElement={handleUpdateElement}
+          onDeleteElement={handleDeleteElement}
+          onDuplicateElement={handleDuplicateElement}
+          onRotateElement={handleRotateElement}
+          onClose={() => {
+            setDrawingSelection(null);
+            setElementSelection(null);
+            setUiTick((t) => t + 1);
+          }}
+        />
+      )}
+
       {/* Main Area: Canvas + Bottom Bar */}
       <div className="flex-1 flex flex-col min-h-0 w-full h-full overflow-hidden bg-transparent rounded-2xl border border-slate-800 shadow-lg">
         <div className="w-full flex-1 min-h-0 bg-[#1b4332] flex items-center justify-center overflow-hidden relative p-1">
@@ -1404,157 +1569,6 @@ export default function TacticalBoard({
               s.drawingMode === "select" ? "cursor-default" : "cursor-crosshair"
             )}
           />
-
-          {/* Floating Contextual Toolbar for Selected Shape */}
-          {selectedDrawingIdx !== null && s.drawingMode === "select" && s.drawings[selectedDrawingIdx] && !readOnly && (
-            (() => {
-              const bounds = getDrawingBounds(s.drawings[selectedDrawingIdx]);
-              if (!bounds) return null;
-
-              const centerX = (bounds.minX + bounds.maxX) / 2;
-              const topY = Math.max(10, bounds.minY);
-              const leftPct = (centerX / CANVAS_WIDTH) * 100;
-              const topPct = (topY / CANVAS_HEIGHT) * 100;
-
-              const isDraggingNow = s.selectedElement !== null || (drawingDragRef.current && drawingDragRef.current.active);
-
-              return (
-                <div
-                  className={cn(
-                    "absolute z-30 transition-opacity duration-200",
-                    isDraggingNow ? "opacity-0 pointer-events-none" : "opacity-100 pointer-events-auto"
-                  )}
-                  style={{
-                    left: `${leftPct}%`,
-                    top: `${topPct}%`,
-                    transform: "translate(-50%, -100%) translateY(-40px)",
-                  }}
-                >
-                  <TacticalShapeFloatingBar
-                    drawing={s.drawings[selectedDrawingIdx]}
-                    drawingIndex={selectedDrawingIdx}
-                    onUpdate={handleUpdateDrawing}
-                    onDelete={handleDeleteDrawing}
-                  />
-                </div>
-              );
-            })()
-          )}
-
-          {/* Floating Contextual Toolbar for Selected Mini Goal */}
-          {selectedElementId !== null && s.drawingMode === "select" && !readOnly && (() => {
-            const elements = getActiveElements();
-            const selectedGoal = elements.find(el => el.id === selectedElementId && el.type === "mini_goal");
-            if (!selectedGoal) return null;
-
-            const leftPct = (selectedGoal.x / CANVAS_WIDTH) * 100;
-            const topPct = (Math.max(15, selectedGoal.y - 18) / CANVAS_HEIGHT) * 100;
-            const isDraggingNow = s.selectedElement !== null || (drawingDragRef.current && drawingDragRef.current.active);
-
-            return (
-              <div
-                className={cn(
-                  "absolute z-30 transition-opacity duration-200",
-                  isDraggingNow ? "opacity-0 pointer-events-none" : "opacity-100 pointer-events-auto"
-                )}
-                style={{
-                  left: `${leftPct}%`,
-                  top: `${topPct}%`,
-                  transform: "translate(-50%, -100%) translateY(-40px)",
-                }}
-              >
-                <TacticalGoalFloatingBar
-                  element={selectedGoal}
-                  onRotate={(newAngle) => {
-                    selectedGoal.rotation = newAngle;
-                    saveStateToHistory();
-                    setUiTick(t => t + 1);
-                  }}
-                  onSetSize={(newSize) => {
-                    selectedGoal.goalSize = newSize;
-                    saveStateToHistory();
-                    setUiTick(t => t + 1);
-                  }}
-                  onDuplicate={() => {
-                    const cloned: TacticalElement = {
-                      ...selectedGoal,
-                      id: "G" + (Date.now() % 100000),
-                      x: Math.min(CANVAS_WIDTH - 30, selectedGoal.x + 25),
-                      y: Math.min(CANVAS_HEIGHT - 30, selectedGoal.y + 25),
-                    };
-                    elements.push(cloned);
-                    setElementSelection(cloned.id);
-                    saveStateToHistory();
-                    setUiTick(t => t + 1);
-                  }}
-                  onDelete={() => {
-                    const idx = elements.findIndex(el => el.id === selectedGoal.id);
-                    if (idx !== -1) {
-                      elements.splice(idx, 1);
-                      setElementSelection(null);
-                      saveStateToHistory();
-                      setUiTick(t => t + 1);
-                    }
-                  }}
-                />
-              </div>
-            );
-          })()}
-
-        {/* Floating Contextual Toolbar for Selected Player */}
-          {selectedElementId !== null && s.drawingMode === "select" && !readOnly && (() => {
-            const elements = getActiveElements();
-            const selectedPlayer = elements.find(el => el.id === selectedElementId && (el.type === "home" || el.type === "away"));
-            if (!selectedPlayer) return null;
-
-            const leftPct = (selectedPlayer.x / CANVAS_WIDTH) * 100;
-            const topPct = (Math.max(15, selectedPlayer.y - 20) / CANVAS_HEIGHT) * 100;
-            const isDraggingNow = s.selectedElement !== null || (drawingDragRef.current && drawingDragRef.current.active);
-
-            return (
-              <div
-                className={cn(
-                  "absolute z-30 transition-opacity duration-200",
-                  isDraggingNow ? "opacity-0 pointer-events-none" : "opacity-100 pointer-events-auto"
-                )}
-                style={{
-                  left: `${leftPct}%`,
-                  top: `${topPct}%`,
-                  transform: "translate(-50%, -100%) translateY(-40px)",
-                }}
-              >
-                <TacticalPlayerFloatingBar
-                  element={selectedPlayer}
-                  onUpdate={(updated) => {
-                    Object.assign(selectedPlayer, updated);
-                    saveStateToHistory();
-                    setUiTick(t => t + 1);
-                  }}
-                  onDuplicate={() => {
-                    const cloned: TacticalElement = {
-                      ...selectedPlayer,
-                      id: (selectedPlayer.type === "home" ? "H" : "A") + (Date.now() % 100000),
-                      x: Math.min(CANVAS_WIDTH - 30, selectedPlayer.x + 25),
-                      y: Math.min(CANVAS_HEIGHT - 30, selectedPlayer.y + 25),
-                    };
-                    elements.push(cloned);
-                    setElementSelection(cloned.id);
-                    saveStateToHistory();
-                    setUiTick(t => t + 1);
-                  }}
-                  onDelete={() => {
-                    const idx = elements.findIndex(el => el.id === selectedPlayer.id);
-                    if (idx !== -1) {
-                      elements.splice(idx, 1);
-                      setElementSelection(null);
-                      saveStateToHistory();
-                      setUiTick(t => t + 1);
-                    }
-                  }}
-                />
-              </div>
-            );
-          })()}
         </div>
         
         {!readOnly && (

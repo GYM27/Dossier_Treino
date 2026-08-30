@@ -12,6 +12,7 @@ import {
   MapPin
 } from "lucide-react";
 import { SessaoTreino } from "@/models/sessao-treino";
+import { Spinner } from "@/components/ui/Spinner";
 import { cn } from "@/lib/utils";
 
 interface TreinosSidebarListProps {
@@ -86,7 +87,7 @@ export function TreinosSidebarList({
       <div className="flex-1 overflow-y-auto p-3 space-y-2">
         {isLoading ? (
           <div className="flex flex-col items-center justify-center py-12 text-slate-500 text-xs gap-2">
-            <div className="w-5 h-5 border-2 border-cyan-500 border-t-transparent rounded-full animate-spin" />
+            <Spinner size="md" color="cyan" />
             <span>A carregar treinos...</span>
           </div>
         ) : filteredTreinos.length === 0 ? (

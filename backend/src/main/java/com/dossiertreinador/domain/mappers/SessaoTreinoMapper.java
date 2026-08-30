@@ -30,6 +30,7 @@ public class SessaoTreinoMapper {
                 .mesociclo(dto.getMesociclo())
                 .microciclo(dto.getMicrociclo())
                 .unidadeTreino(dto.getUnidadeTreino() != null ? dto.getUnidadeTreino() : (evento != null ? evento.getNumeroTreino() : null))
+                .periodo(dto.getPeriodo() != null ? dto.getPeriodo() : "COMPETITIVO")
                 .equipa(equipa)
                 .build();
     }
@@ -40,6 +41,7 @@ public class SessaoTreinoMapper {
         Integer micro = entity.getMicrociclo();
         Integer ut = entity.getUnidadeTreino() != null ? entity.getUnidadeTreino() : (entity.getEventoCalendario() != null ? entity.getEventoCalendario().getNumeroTreino() : 1);
         Integer meso = entity.getMesociclo();
+        String periodo = entity.getPeriodo() != null ? entity.getPeriodo() : "COMPETITIVO";
 
         return SessaoTreinoResponseDTO.builder()
                 .id(entity.getId())
@@ -51,6 +53,7 @@ public class SessaoTreinoMapper {
                 .mesociclo(meso != null ? meso : 1)
                 .microciclo(micro != null ? micro : 1)
                 .unidadeTreino(ut != null ? ut : 1)
+                .periodo(periodo)
                 .fase(null)
                 .numeroJogadores(entity.getNumeroJogadores())
                 .material(entity.getMaterial())

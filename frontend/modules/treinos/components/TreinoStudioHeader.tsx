@@ -2,6 +2,7 @@ import React from "react";
 import { SessaoTreino } from "@/models/sessao-treino";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
+import { Spinner } from "@/components/ui/Spinner";
 import {
   Calendar,
   Clock,
@@ -44,6 +45,16 @@ export function TreinoStudioHeader({
     <header className="p-4 border-b border-slate-800 bg-[#0d131f] flex flex-col md:flex-row md:items-center justify-between gap-4 shrink-0">
       <div className="flex items-center gap-3">
         <div className="flex items-center gap-1.5 flex-wrap">
+          {/* Badge Período */}
+          <span className={`text-[10px] font-black uppercase tracking-wider px-2 py-1 rounded-md border ${
+            treino.periodo === "PREPARATORIO"
+              ? "bg-emerald-500/20 text-emerald-300 border-emerald-500/30"
+              : treino.periodo === "TRANSICAO"
+              ? "bg-amber-500/20 text-amber-300 border-amber-500/30"
+              : "bg-blue-500/20 text-blue-300 border-blue-500/30"
+          }`} title="Período da Época Desportiva">
+            {treino.periodo === "PREPARATORIO" ? "PREPARATÓRIO" : treino.periodo === "TRANSICAO" ? "TRANSIÇÃO" : "COMPETITIVO"}
+          </span>
           <span className="text-[10px] font-black uppercase tracking-wider px-2 py-1 rounded-md bg-blue-500/20 text-blue-300 border border-blue-500/30" title="Mesociclo da Época">
             MESO #{treino.mesociclo || 1}
           </span>
@@ -107,12 +118,19 @@ export function TreinoStudioHeader({
         <Button
           variant="amber"
           size="sm"
-          onClick={() => setIsEditing(!isEditing)}
+          onClick={() => {
+            if (isEditing) {
+              onSaveMetadata();
+            } else {
+              setIsEditing(true);
+            }
+          }}
+          title={isEditing ? "Gravar e voltar ao Modo Leitura" : "Editar metadados da sessão"}
         >
           {isEditing ? (
             <>
               <Eye className="w-3.5 h-3.5 mr-1" />
-              <span>Ver</span>
+              <span>Ver / Concluir</span>
             </>
           ) : (
             <>
@@ -130,7 +148,7 @@ export function TreinoStudioHeader({
             disabled={isSaving}
           >
             {isSaving ? (
-              <div className="w-3.5 h-3.5 border-2 border-white border-t-transparent rounded-full animate-spin mr-1" />
+              <Spinner size="sm" color="white" className="mr-1" />
             ) : saveSuccess ? (
               <CheckCircle2 className="w-3.5 h-3.5 mr-1" />
             ) : (

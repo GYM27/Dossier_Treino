@@ -83,6 +83,7 @@ class SessaoTreinoRepositoryTest {
                 .mesociclo(1)
                 .microciclo(1)
                 .unidadeTreino(1)
+                .periodo("COMPETITIVO")
                 .equipa(equipa)
                 .build();
 
@@ -101,6 +102,7 @@ class SessaoTreinoRepositoryTest {
         
         // Assert
         assertThat(savedSessao.getId()).isNotNull();
+        assertThat(savedSessao.getPeriodo()).isEqualTo("COMPETITIVO");
         assertThat(savedSessao.getExercicios()).hasSize(1);
         assertThat(savedSessao.getExercicios().get(0).getExercicio().getNome()).isEqualTo("Remates");
         

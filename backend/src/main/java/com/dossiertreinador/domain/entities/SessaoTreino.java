@@ -59,6 +59,9 @@ public class SessaoTreino {
     @Column(name = "unidade_treino")
     private Integer unidadeTreino;
 
+    @Column(name = "periodo")
+    private String periodo;
+
     @Column(nullable = false)
     @Builder.Default
     private Integer duracaoTotalMinutos = 0; // Calculado automaticamente pela soma dos exercícios

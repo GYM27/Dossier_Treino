@@ -34,7 +34,7 @@ public class EquipaController {
 
     @GetMapping
     public ResponseEntity<List<EquipaResponseDTO>> listarTodasAsEquipas() {
-        List<Equipa> equipas = equipaRepository.findAll();
+        List<Equipa> equipas = equipaRepository.findAllByOrderByNomeAsc();
         
         List<EquipaResponseDTO> resposta = equipas.stream()
                 .map(equipaMapper::toResponseDTO)
@@ -68,6 +68,8 @@ public class EquipaController {
             @RequestBody EquipaRequestDTO requestDTO
     ) {
         Equipa equipaAtualizada = Equipa.builder()
+                .nome(requestDTO.getNome())
+                .escalao(requestDTO.getEscalao())
                 .modalidade(requestDTO.getModalidade())
                 .duracaoJogo(requestDTO.getDuracaoJogo())
                 .numeroJogadores(requestDTO.getNumeroJogadores())

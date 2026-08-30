@@ -1,7 +1,9 @@
+import { toast } from "sonner";
+
 const API_BASE_URL =
   process.env.NEXT_PUBLIC_API_URL || "/api";
 
-export async function apiFetch(endpoint: string, options: RequestInit = {}) {
+export async function apiFetch<T = any>(endpoint: string, options: RequestInit = {}): Promise<T> {
   // Prepara os cabeçalhos padrão
   const headers = new Headers(options.headers);
 
@@ -26,7 +28,7 @@ export async function apiFetch(endpoint: string, options: RequestInit = {}) {
         window.location.pathname !== "/login" &&
         window.location.pathname !== "/register"
       ) {
-        alert("Ligação ao servidor perdida. A redirecionar para o Login...");
+        toast.error("Ligação ao servidor perdida. A redirecionar para o Login...");
         window.location.href = "/login";
       }
     }
@@ -67,8 +69,8 @@ export async function apiFetch(endpoint: string, options: RequestInit = {}) {
   // Alguns endpoints podem não devolver JSON
   const contentType = response.headers.get("content-type");
   if (contentType && contentType.includes("application/json")) {
-    return response.json();
+    return (await response.json()) as T;
   }
 
-  return response.text();
+  return (await response.text()) as unknown as T;
 }

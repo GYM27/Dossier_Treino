@@ -18,6 +18,8 @@ interface TreinoStudioMetadataFormProps {
   setMicrociclo: (val: number) => void;
   unidadeTreino: number;
   setUnidadeTreino: (val: number) => void;
+  periodo: string;
+  setPeriodo: (val: string) => void;
 }
 
 export function TreinoStudioMetadataForm({
@@ -36,11 +38,44 @@ export function TreinoStudioMetadataForm({
   setMicrociclo,
   unidadeTreino,
   setUnidadeTreino,
+  periodo,
+  setPeriodo,
 }: TreinoStudioMetadataFormProps) {
   return (
     <section className="bg-[#111827] border border-slate-800/80 rounded-xl p-4 shadow-md space-y-4">
       {/* Linha 1: Hierarquia de Periodização e Intensidade */}
-      <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-4 gap-3 bg-[#0d131f] p-3 rounded-lg border border-slate-800/60">
+      <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-5 gap-3 bg-[#0d131f] p-3 rounded-lg border border-slate-800/60">
+        {/* Período da Época */}
+        <div className="space-y-1">
+          <label className="text-[10px] font-bold text-emerald-400 uppercase tracking-wider flex items-center gap-1">
+            <span className="w-2 h-2 rounded-full bg-emerald-400 inline-block animate-pulse" />
+            <span>Período</span>
+          </label>
+          {isEditing ? (
+            <select
+              value={periodo || "COMPETITIVO"}
+              onChange={(e) => setPeriodo(e.target.value)}
+              className="h-8 text-xs font-bold bg-[#162032] border border-emerald-500/30 text-emerald-200 rounded-md px-2 w-full focus:outline-none focus:border-emerald-400 cursor-pointer"
+            >
+              <option value="PREPARATORIO" className="bg-[#0f172a] text-emerald-300">Preparatório (Pré-Época)</option>
+              <option value="COMPETITIVO" className="bg-[#0f172a] text-blue-300">Competitivo (Época)</option>
+              <option value="TRANSICAO" className="bg-[#0f172a] text-amber-300">Transição (Pós-Época)</option>
+            </select>
+          ) : (
+            <div className={`h-8 px-2.5 rounded-lg border flex items-center ${
+              periodo === "PREPARATORIO"
+                ? "bg-emerald-500/15 border-emerald-500/30 text-emerald-300"
+                : periodo === "TRANSICAO"
+                ? "bg-amber-500/15 border-amber-500/30 text-amber-300"
+                : "bg-blue-500/15 border-blue-500/30 text-blue-300"
+            }`}>
+              <span className="text-[11px] font-black uppercase tracking-wider truncate">
+                {periodo === "PREPARATORIO" ? "Preparatório" : periodo === "TRANSICAO" ? "Transição" : "Competitivo"}
+              </span>
+            </div>
+          )}
+        </div>
+
         {/* Mesociclo */}
         <div className="space-y-1">
           <label className="text-[10px] font-bold text-blue-400 uppercase tracking-wider flex items-center gap-1">
@@ -87,7 +122,7 @@ export function TreinoStudioMetadataForm({
         <div className="space-y-1">
           <label className="text-[10px] font-bold text-amber-400 uppercase tracking-wider flex items-center gap-1">
             <Zap className="w-3 h-3 text-amber-400" />
-            <span>Unidade de Treino (UT)</span>
+            <span>Unidade Treino (UT)</span>
           </label>
           {isEditing ? (
             <Input

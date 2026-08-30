@@ -95,9 +95,9 @@ export function TreinosOrchestrator({ activeTeam, initialTreinoId }: TreinosOrch
   };
 
   return (
-    <div className="flex h-[calc(100vh-80px)] print:h-auto print:block w-full overflow-hidden print:overflow-visible bg-[#070b14] print:bg-white border border-slate-800/80 rounded-2xl print:border-none print:shadow-none shadow-2xl">
+    <div className="flex h-[calc(100vh-80px)] print:hidden w-full overflow-hidden bg-[#070b14] border border-slate-800/80 rounded-2xl shadow-2xl">
       {/* Barra Lateral Esquerda: Lista de Treinos */}
-      <div className="print:hidden h-full shrink-0 flex">
+      <div className="h-full shrink-0 flex">
         <TreinosSidebarList
           treinos={treinos}
           selectedTreinoId={selectedTreinoId}

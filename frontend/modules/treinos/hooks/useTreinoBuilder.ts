@@ -1,4 +1,5 @@
 import { useState, useEffect, useCallback } from "react";
+import { toast } from "sonner";
 import { SessaoTreino, SessaoTreinoExercicio } from "@/models/sessao-treino";
 import { Team } from "@/models/team";
 import { Exercicio } from "@/models/exercicio";
@@ -39,7 +40,7 @@ export function useTreinoBuilder({
 
   useEffect(() => {
     if (!treino && activeTeam) {
-      treinoService
+      calendarioService
         .getUltimoNumeroTreino(activeTeam.id)
         .then((num) => {
           if (typeof num === "number" && num > 0) {
@@ -72,7 +73,7 @@ export function useTreinoBuilder({
         setIsModalOpen(false);
       } catch (e) {
         console.error("Erro ao criar evento e treino", e);
-        alert("Erro ao criar sessão.");
+        toast.error("Erro ao criar sessão.");
       }
     },
     [activeTeam.id]
@@ -88,10 +89,10 @@ export function useTreinoBuilder({
         material: material,
         numeroJogadores: jogadores,
       });
-      alert("Treino guardado com sucesso!");
+      toast.success("Treino guardado com sucesso!");
     } catch (e) {
       console.error("Erro ao gravar treino:", e);
-      alert("Erro ao gravar treino.");
+      toast.error("Erro ao gravar treino.");
     } finally {
       setIsSaving(false);
     }

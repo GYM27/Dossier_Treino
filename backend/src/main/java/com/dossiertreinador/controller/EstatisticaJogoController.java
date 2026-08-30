@@ -3,7 +3,7 @@ package com.dossiertreinador.controller;
 import com.dossiertreinador.domain.dtos.EstatisticaJogoRequestDTO;
 import com.dossiertreinador.domain.dtos.EstatisticaJogoResponseDTO;
 import com.dossiertreinador.domain.entities.EstatisticaJogo;
-import com.dossiertreinador.mappers.EstatisticaJogoMapper;
+import com.dossiertreinador.domain.mappers.EstatisticaJogoMapper;
 import com.dossiertreinador.service.EstatisticaJogoService;
 import jakarta.validation.Valid;
 import lombok.RequiredArgsConstructor;

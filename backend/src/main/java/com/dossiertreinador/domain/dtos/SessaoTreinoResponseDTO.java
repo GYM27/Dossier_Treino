@@ -22,6 +22,7 @@ public class SessaoTreinoResponseDTO {
     private Integer mesociclo;
     private Integer microciclo;
     private Integer unidadeTreino;
+    private String periodo;
     private String fase;
     
     private Integer numeroJogadores;
