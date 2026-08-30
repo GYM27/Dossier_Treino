@@ -1456,6 +1456,19 @@ Anteriormente, a página de estatísticas do clube exibia números fixos inscrit
 ### 15.3 Orquestrador Enxuto (`TacticalEditSidebar.tsx`)
 - Reduzido de 859 linhas para menos de 150 linhas, atuando apenas como contentor com cabeçalho contextual e botões globais de `Duplicar` e `Apagar`.
 
+---
+
+## 16. Sprint 7: Modularização do Catálogo de Exercícios no Módulo de Treinos
+
+### 16.1 Decomposição do `CatalogoExerciciosModal.tsx` (604 Linhas -> Arquitetura Modular)
+- **Problema**: O modal continha num único ficheiro a gestão de navegação de pastas, criação de subpastas, renderização da grelha, cartões de exercícios, preview de miniaturas táticas e filtros por tags.
+- **Estrutura Modular Criada (`modules/treinos/modals/catalogo/`)**:
+  1. `CatalogoSidebarPastas.tsx`: Painel lateral retrátil com acordeão hierárquico, criação de subpastas inline e contadores de exercícios.
+  2. `CatalogoExerciseCard.tsx`: Card individual com miniatura gráfica via `TacticalBoardThumbnail`, tags coloridas de categoria técnica, metadados (tempo, jogadores, espaço) e botão de eliminação.
+  3. `CatalogoExerciseGrid.tsx`: Renderizador de grelha responsiva com gestão de estado de carregamento e estado vazio (*empty state*).
+  4. `CatalogoExerciciosModal.tsx`: Orquestrador limpo e legível (< 200 linhas).
+
+
 
 
 

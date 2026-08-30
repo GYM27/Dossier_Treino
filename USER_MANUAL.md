@@ -457,6 +457,14 @@ Agora pode rodar livremente **todas as Formas Geométricas** (Quadrados, Círcul
    - **Linhas e Passes**: Alterne entre linha simples, passe tracejado com seta e corrida de deslocamento com ajuste fino de espessura (1px a 12px) e cor.
    - **Formas e Zonas**: Defina retângulos, círculos, triângulos e hexágonos com regulação precisa de opacidade (0% a 100%) e cor de preenchimento.
 
+### 10. Catálogo Rápido no Planeamento de Sessões de Treino (Sprint 7)
+
+1. **Inserção Rápida de Exercícios na Sessão**:
+   - Ao construir um treino no planeador, clique em **"Adicionar Exercício"** ou **"Substituir"** para abrir o catálogo.
+   - **Navegação por Pastas e Tags**: Filtre diretamente por pastas táticas (*Organização Ofensiva*, *Bolas Paradas*, etc.) ou filtre por categorias (*Aquecimento*, *Técnico*, *Tático*, *Físico*, *Guarda-Redes*).
+   - **Pré-visualização Instantânea**: O cartão apresenta a miniatura vetorial da prancheta, tempo previsto em minutos, número de atletas envolvidos e dimensões do campo.
+
+
 
 
 

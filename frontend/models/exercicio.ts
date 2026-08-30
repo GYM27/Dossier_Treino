@@ -9,4 +9,7 @@ export interface Exercicio {
   espaco?: string;
   jogadoresEnvolvidos?: number;
   dadosTaticos?: Record<string, any> | any;
+  pasta?: string;
+  tempo?: number;
+  tacticData?: Record<string, any> | any;
 }

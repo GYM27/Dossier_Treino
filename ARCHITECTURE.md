@@ -459,6 +459,14 @@ Eliminou-se a redundância de formulários de criação de treinos, separando a 
 - **Reutilização de Constantes Visuais**:
   - Extração de `constants.ts` com paletas de cores táticas e presets de espessura/opacidade partilhados entre o canvas e as ferramentas laterais.
 
+### 25. Sprint 7: Arquitetura Modular do Catálogo de Exercícios no Módulo de Treinos
+- **Encapsulamento Feature-Based**:
+  - Organização dos sub-componentes de catálogo na pasta `frontend/modules/treinos/modals/catalogo/`.
+  - Reutilização dos utilitários centrais de hierarquia de pastas (`models/pasta.ts`) e constantes unificadas de categorias (`models/categoria-exercicio.ts`).
+- **Desacoplamento Visual e Performance**:
+  - `TacticalBoardThumbnail` isolado para renderização de miniaturas leves no catálogo sem instanciar a engine completa do canvas 2D interativo.
+
+
 
 
 
